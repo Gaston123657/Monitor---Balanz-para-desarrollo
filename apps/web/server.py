@@ -54,9 +54,6 @@ def _get_columns(monitor_id: str):
         {"key": "price", "label": "Precio", "kind": "number", "decimals": 2},
         {"key": "tir", "label": "TIR", "kind": "percent", "decimals": 2},
         {"key": "change_pct", "label": "%Día", "kind": "percent_signed", "decimals": 2},
-        {"key": "v7d", "label": "Var 7d", "kind": "percent_signed", "decimals": 2},
-        {"key": "bid", "label": "Bid", "kind": "number", "decimals": 2},
-        {"key": "ask", "label": "Ask", "kind": "number", "decimals": 2},
         {"key": "volume", "label": "Vol $", "kind": "volume"},
     ]
     schemas = {
@@ -137,9 +134,6 @@ def _refresh_loop(snapshot: Snapshot):
                     "price": m.snapshot.price,
                     "tir": _scale(m.tir),
                     "change_pct": m.snapshot.change_pct,
-                    "v7d": _scale(m.variance_7d),
-                    "bid": m.snapshot.bid,
-                    "ask": m.snapshot.ask,
                     "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("bonares", rows=rows_bonares, status="ok")
@@ -170,9 +164,6 @@ def _refresh_loop(snapshot: Snapshot):
                     "price": m.snapshot.price,
                     "tir": _scale(m.tir),
                     "change_pct": m.snapshot.change_pct,
-                    "v7d": _scale(m.variance_7d),
-                    "bid": m.snapshot.bid,
-                    "ask": m.snapshot.ask,
                     "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("bopreales", rows=rows_bop, status="ok")
