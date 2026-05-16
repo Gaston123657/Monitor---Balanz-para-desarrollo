@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from config.settings import MASTER_XLSX, setup_logging
-from core.domain.instrument_groups import BOPREALES, CER, SOBERANOS, TASA_FIJA
+from core.domain.instrument_groups import BOPREALES, CER, DOLAR_LINKED, SOBERANOS, TASA_FIJA
 from core.infrastructure.repositories import ExcelInstrumentsRepository, Data912MarketDataProvider
 from core.use_cases.generate_report import GenerateMonitorReport
 
@@ -60,6 +60,7 @@ def _get_columns(monitor_id: str):
     schemas = {
         "bonares": bonares_cols,
         "bopreales": bonares_cols,
+        "dolar_linked": bonares_cols,
         "cer": [
             {"key": "ticker", "label": "Ticker", "kind": "text"},
             {"key": "category", "label": "Categoría", "kind": "text"},
@@ -94,6 +95,7 @@ class Snapshot:
                 {"id": "bopreales", "title": "BOPREALES", "status": "loading", "rows": [], "columns": _get_columns("bopreales")},
                 {"id": "cer", "title": "BONOS CER", "status": "loading", "rows": [], "columns": _get_columns("cer")},
                 {"id": "tasa_fija", "title": "TASA FIJA", "status": "loading", "rows": [], "columns": _get_columns("tasa_fija")},
+                {"id": "dolar_linked", "title": "DOLAR LINKED", "status": "loading", "rows": [], "columns": _get_columns("dolar_linked")},
             ],
         }
 
@@ -186,6 +188,21 @@ def _refresh_loop(snapshot: Snapshot):
                     "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("tasa_fija", rows=rows_fija, status="ok")
+
+            # Dolar Linked
+            m_dl = use_case.execute(DOLAR_LINKED)
+            rows_dl = []
+            for m in m_dl:
+                rows_dl.append({
+                    "ticker": m.snapshot.instrument.ticker,
+                    "vto": m.snapshot.instrument.maturity_date,
+                    "price": m.snapshot.price,
+                    "tir": _scale(m.tir),
+                    "duration": m.duration,
+                    "change_pct": m.snapshot.change_pct,
+                    "volume": m.snapshot.volume,
+                })
+            snapshot.update_monitor("dolar_linked", rows=rows_dl, status="ok")
 
         except Exception as e:
             logger.error(f"Error in web refresh loop: {e}")

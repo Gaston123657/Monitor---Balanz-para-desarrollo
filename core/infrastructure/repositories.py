@@ -22,6 +22,11 @@ logger = logging.getLogger(__name__)
 def normalize_symbol(ticker: str, ric: str) -> str:
     """Reduce a Refinitiv RIC (e.g. 'ARAL29D1=BA') to the canonical clean ticker
     used throughout the system ('AL29D'). Falls back to `ticker` if no RIC.
+
+    Strips the trailing serie digit in two cases:
+      - Soberanos / BOPREALES style: D-then-digit ending (AL29D1 -> AL29D)
+      - Dolar Linked style: 6+ chars ending in two digits (D30A61 -> D30A6,
+        TZV261 -> TZV26)
     """
     if not ric or pd.isna(ric):
         return ticker
@@ -31,6 +36,8 @@ def normalize_symbol(ticker: str, ric: str) -> str:
     if "=" in norm:
         norm = norm.split("=")[0]
     if len(norm) > 1 and norm[-2] == "D" and norm[-1].isdigit():
+        norm = norm[:-1]
+    elif len(norm) >= 6 and norm[-1].isdigit() and norm[-2].isdigit():
         norm = norm[:-1]
     return norm
 
