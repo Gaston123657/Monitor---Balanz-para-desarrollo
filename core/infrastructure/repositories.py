@@ -61,54 +61,145 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
             except (ValueError, TypeError):
                 return None
 
-    def _generate_bond_cashflows(self, row: pd.Series) -> List[Cashflow]:
-        """Generates cashflows from bond parameters if sheet is missing them."""
-        try:
-            vto = None
-            for d_cand in ["fecha_vencimiento", "fecha vencimiento", "fecha_pago", "maturity"]:
-                if d_cand in row:
-                    vto = self._parse_date(row[d_cand])
-                    if vto: break
-            
-            if not vto: return []
-            
-            # Parameters
-            coupon_rate = float(row.get("cupon anual %", row.get("cupon", 0))) / 100.0
-            freq = int(float(row.get("frecuencia pagos", row.get("frecuencia", 2))))
-            if freq <= 0: freq = 2
-            
-            # Start date
-            start_date = None
-            for d_cand in ["fecha_emision", "fecha emision"]:
-                if d_cand in row:
-                    start_date = self._parse_date(row[d_cand])
-                    if start_date: break
-            
-            if not start_date: start_date = vto - relativedelta(years=1)
-            
-            cfs = []
-            itype = str(row.get("tipo", "")).upper()
-            
-            # Zero-coupon fallback
-            if coupon_rate == 0 or any(t in itype for t in ("LECER", "ZC", "LECAP")):
-                cfs.append(Cashflow(date=vto, amortization=100.0, interest=0.0))
-                return cfs
-            
-            # Special case: TX26 amortizing fallback
-            if "TX26" in str(row.get("ticker", "")):
-                for i in range(5):
-                    d = date(2024, 11, 9) + relativedelta(months=i*6)
-                    if d > date.today() - timedelta(days=180):
-                        cfs.append(Cashflow(date=d, amortization=20.0, interest=1.0))
-                return cfs
+    _ZC_TYPE_TOKENS = ("LECER", "ZC", "LECAP")
 
-            # Default: Single payment at maturity
-            cfs.append(Cashflow(date=vto, amortization=100.0, interest=coupon_rate * 100 / freq))
-            return cfs
-            
-        except Exception as e:
-            logger.debug(f"Could not generate cashflows: {e}")
+    @staticmethod
+    def _safe_int(val, default=0):
+        try:
+            if pd.isna(val):
+                return default
+            return int(float(val))
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _safe_float(val, default=0.0):
+        try:
+            if pd.isna(val):
+                return default
+            return float(val)
+        except (TypeError, ValueError):
+            return default
+
+    def _get_date(self, row: pd.Series, candidates):
+        for c in candidates:
+            if c in row.index:
+                d = self._parse_date(row[c])
+                if d:
+                    return d
+        return None
+
+    def _parse_coupon_rate(self, raw, asof: date):
+        """Return coupon as decimal (0.05 = 5%). Supports step-up schedules
+        like '2003-12-31:0.63;2009-03-31:1.18' (picks rate active at `asof`).
+        """
+        if raw is None or (not isinstance(raw, str) and pd.isna(raw)):
+            return None
+        if isinstance(raw, (int, float)):
+            return float(raw) / 100.0
+        s = str(raw).strip()
+        if not s:
+            return None
+        if ";" in s and ":" in s:
+            try:
+                pairs = []
+                for entry in s.split(";"):
+                    d_str, r_str = entry.split(":")
+                    d = self._parse_date(d_str.strip())
+                    if d is not None:
+                        pairs.append((d, float(r_str.strip()) / 100.0))
+                pairs.sort()
+                applicable = [r for d, r in pairs if d <= asof]
+                return applicable[-1] if applicable else (pairs[0][1] if pairs else None)
+            except (ValueError, TypeError):
+                return None
+        try:
+            return float(s) / 100.0
+        except ValueError:
+            return None
+
+    def _generate_bond_cashflows(self, row: pd.Series) -> List[Cashflow]:
+        """Synthesize cashflows from Excel CER/Soberanos sheet parameters.
+
+        Used only when the explicit Cashflows sheet has no rows for the ticker.
+        Results are indicative — for production accuracy, populate `Cashflows`.
+
+        Handles:
+          - Zero-coupon (LECER, BONCER ZC, LECAP) -> single payment of 100 at vto
+          - Bullet with coupon -> coupons every (12/freq) months + 100 at vto
+          - Amortizing with coupon -> coupons on outstanding + equal amort
+            installments of `amort cantidad`% starting at `amort inicio`
+          - Step-up coupons (PARP) -> uses currently-applicable rate (approximation)
+        """
+        vto = self._get_date(row, (
+            "fecha_vencimiento", "fecha vencimiento", "fecha_pago", "maturity",
+        ))
+        if not vto:
             return []
+
+        itype = str(row.get("tipo", "")).upper()
+
+        if any(t in itype for t in self._ZC_TYPE_TOKENS):
+            return [Cashflow(date=vto, amortization=100.0, interest=0.0)]
+
+        coupon_rate = self._parse_coupon_rate(
+            row.get("cupon anual %", row.get("cupon")), asof=date.today()
+        )
+        if coupon_rate is None:
+            return []
+
+        freq = self._safe_int(row.get("frecuencia pagos", row.get("frecuencia")), default=2)
+        if freq <= 0:
+            freq = 2
+        months_between = max(12 // freq, 1)
+
+        emision = self._get_date(row, ("fecha_emision", "fecha emision")) \
+            or (vto - relativedelta(years=2))
+
+        coupon_dates = []
+        cd = emision
+        while True:
+            cd = cd + relativedelta(months=months_between)
+            if cd > vto:
+                break
+            coupon_dates.append(cd)
+        if not coupon_dates or coupon_dates[-1] != vto:
+            coupon_dates.append(vto)
+
+        amort_inicio = self._get_date(row, ("amort_inicio", "amort inicio"))
+        amort_count = self._safe_int(row.get("amort cantidad"), default=0)
+        is_amortizing = (
+            "amortizing" in str(row.get("tipo amortizacion", "")).lower()
+            and amort_inicio is not None
+            and amort_count > 0
+        )
+
+        amort_map = {}
+        if is_amortizing:
+            per_installment = 100.0 / amort_count
+            ad = amort_inicio
+            remaining = 100.0
+            placed = 0
+            while placed < amort_count and ad <= vto and remaining > 1e-9:
+                amount = min(per_installment, remaining)
+                amort_map[ad] = amort_map.get(ad, 0.0) + amount
+                remaining -= amount
+                placed += 1
+                ad = ad + relativedelta(months=months_between)
+            if remaining > 1e-9:
+                amort_map[vto] = amort_map.get(vto, 0.0) + remaining
+        else:
+            amort_map[vto] = 100.0
+
+        cfs = []
+        outstanding = 100.0
+        all_dates = sorted(set(coupon_dates) | set(amort_map.keys()))
+        for d in all_dates:
+            interest = outstanding * coupon_rate / freq if d in coupon_dates else 0.0
+            amort = amort_map.get(d, 0.0)
+            outstanding = max(outstanding - amort, 0.0)
+            cfs.append(Cashflow(date=d, amortization=amort, interest=interest))
+        return cfs
 
     def _load_all(self):
         try:
