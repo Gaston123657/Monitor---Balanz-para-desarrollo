@@ -53,6 +53,7 @@ def _get_columns(monitor_id: str):
         {"key": "vto", "label": "Vto", "kind": "date"},
         {"key": "price", "label": "Precio", "kind": "number", "decimals": 2},
         {"key": "tir", "label": "TIR", "kind": "percent", "decimals": 2},
+        {"key": "duration", "label": "MD", "kind": "number", "decimals": 2},
         {"key": "change_pct", "label": "%Día", "kind": "percent_signed", "decimals": 2},
         {"key": "volume", "label": "Vol $", "kind": "volume"},
     ]
@@ -133,6 +134,7 @@ def _refresh_loop(snapshot: Snapshot):
                     "vto": m.snapshot.instrument.maturity_date,
                     "price": m.snapshot.price,
                     "tir": _scale(m.tir),
+                    "duration": m.duration,
                     "change_pct": m.snapshot.change_pct,
                     "volume": m.snapshot.volume,
                 })
@@ -163,6 +165,7 @@ def _refresh_loop(snapshot: Snapshot):
                     "vto": m.snapshot.instrument.maturity_date,
                     "price": m.snapshot.price,
                     "tir": _scale(m.tir),
+                    "duration": m.duration,
                     "change_pct": m.snapshot.change_pct,
                     "volume": m.snapshot.volume,
                 })
