@@ -4,6 +4,7 @@ import logging
 
 from config.settings import setup_logging
 
+from apps.cli.monitors.bei import generate_bei_report
 from apps.cli.monitors.bonares import generate_bonares_report
 from apps.cli.monitors.bopreales import generate_bopreales_report
 from apps.cli.monitors.cer import generate_cer_report
@@ -26,6 +27,7 @@ def main():
         {"name": "BONOS CER", "func": generate_cer_report},
         {"name": "DOLAR LINKED", "func": generate_dolar_linked_report},
         {"name": "COMPARACION DE TIR'S", "func": generate_comparacion_report},
+        {"name": "BREAK-EVEN INFLATION (Fisher + Nelson-Siegel)", "func": generate_bei_report},
         {"name": "INICIAR MONITOR WEB (Dashboard Interactivo)", "func": lambda _: web_server_main()},
     ]
 

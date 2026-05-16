@@ -61,7 +61,13 @@ class FinancialEngine:
 
     @staticmethod
     def calculate_technical_value(snapshot: MarketSnapshot, indices_provider) -> float:
-        """Technical Value (Valor Par) for CER bonds; 100.0 otherwise."""
+        """Valor Técnico (Valor Par) for CER bonds; 100.0 otherwise.
+
+        Per BCRA Nota Técnica N°8/2024, the indexation factor is CER_LIQ-10h
+        over CER_BASE (where BASE = CER 10 business days before emission, stored
+        in `inst.cer_base`). For amortizing bonds, residual principal already
+        paid down is excluded.
+        """
         inst = snapshot.instrument
         if not inst or not _is_cer_type(inst.instrument_type):
             return 100.0
@@ -69,12 +75,23 @@ class FinancialEngine:
         settle = settlement_byma(date.today().strftime("%Y-%m-%d"), lag=1).date()
         target_date = _cer_reference_date(settle, inst.cer_lag)
         cer_val = indices_provider.get_cer(target_date)
-        if cer_val and inst.cer_base:
-            return 100.0 * cer_val / inst.cer_base
-        return 100.0
+        if not (cer_val and inst.cer_base):
+            return 100.0
+
+        # Residual nominal after past amortizations (matters only for amortizing bonds).
+        amortized = sum(cf.amortization for cf in inst.cashflows if cf.date < settle)
+        residual = max(100.0 - amortized, 0.0)
+        return residual * cer_val / inst.cer_base
 
     @staticmethod
     def calculate_tir(snapshot: MarketSnapshot, indices_provider=None) -> Optional[float]:
+        """Internal Rate of Return (TIR) as a decimal fraction (0.30 = 30%).
+
+        For CER-indexed bonds, computes the REAL TIR per BCRA Nota Técnica
+        N°8/2024 Eq. A7: price is deflated by CER_LIQ-10h / CER_BASE and IRR
+        is solved against the nominal-base cashflows (per-100 nominal).
+        Requires Excel `Cashflows` to be stored in base terms — see agents.md.
+        """
         inst = snapshot.instrument
         if not inst or not snapshot.price:
             return None

@@ -113,6 +113,35 @@ Monitores - Data912/
 
 ---
 
+## CONVENCIONES CRÍTICAS — BONOS CER
+
+Basado en BCRA Nota Técnica N°8/2024 ("Expectativas de inflación implícitas en el mercado de renta fija argentino", Matarrelli & Pastore, Dic 2024). Si las convenciones de datos en el Excel no se respetan, el cálculo de TIR real y Valor Técnico para bonos CER queda mal por ~0.5-2%.
+
+### CER_BASE en la hoja de instrumentos
+
+La columna `cer emision` / `cer_emision` del Excel maestro **debe contener el CER 10 días hábiles antes de la fecha de emisión**, no el CER del día de emisión.
+
+Ejemplo del paper (T2X5):
+- Fecha de Emisión: 14/03/2023
+- Valor a cargar: CER del **28/02/2023** (= emisión - 10 días hábiles BYMA) = **81.22**
+- ❌ Cargar el CER del 14/03/2023 directamente es incorrecto.
+
+### Cashflows de bonos CER
+
+La hoja `Cashflows` debe almacenar **montos per-100-nominal en términos de "base"**, NO valores nominales-al-pago. Es decir:
+
+- Para un BONCER ZC bullet: `amortizacion=100, cupon_interes=0` (un solo flujo, valor base)
+- Para un BONCER cuponado: `cupon_interes` = tasa de cupón × 100 / frecuencia (en base, sin indexar)
+- Para un BONCER amortizable: cada fila con la porción amortizada **en base** (ej. 20% del nominal = 20)
+
+El sistema multiplica internamente por `CER_LIQ-10h / CER_BASE` al deflactar el precio. Si los flujos del Excel ya vienen indexados a fecha de pago, hay **doble-conteo** y la TIR real queda sobreestimada.
+
+### Lag de 10 días hábiles BYMA
+
+El parámetro `dias habiles previos` / `dias_lag` por instrumento controla el lag. Default = 10. Solo cambiarlo si el prospecto del bono especifica un lag distinto (raro).
+
+---
+
 ## CÓMO EXTENDER LA MATEMÁTICA FINANCIERA
 
 Todo va en [`core/domain/services.py::FinancialEngine`](core/domain/services.py) como `@staticmethod`. Métodos existentes:
