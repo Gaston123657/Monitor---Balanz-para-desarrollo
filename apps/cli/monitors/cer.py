@@ -15,6 +15,7 @@ def _row(m):
     vto = last_future_cashflow_date(m)
     return {
         "Ticker": s.instrument.ticker,
+        "Categoría": s.instrument.category or "-",
         "Tipo": s.instrument.instrument_type,
         "Precio": fmt_num(s.price) if s.price else "-",
         "TIR": fmt_tir(m.tir),

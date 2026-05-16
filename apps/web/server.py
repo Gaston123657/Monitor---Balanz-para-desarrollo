@@ -64,6 +64,7 @@ def _get_columns(monitor_id: str):
         "bopreales": bonares_cols,
         "cer": [
             {"key": "ticker", "label": "Ticker", "kind": "text"},
+            {"key": "category", "label": "Categoría", "kind": "text"},
             {"key": "vto", "label": "Vto", "kind": "date"},
             {"key": "price", "label": "Precio", "kind": "number", "decimals": 2},
             {"key": "tir", "label": "TIR", "kind": "percent", "decimals": 2},
@@ -149,6 +150,7 @@ def _refresh_loop(snapshot: Snapshot):
             for m in m_cer:
                 rows_cer.append({
                     "ticker": m.snapshot.instrument.ticker,
+                    "category": m.snapshot.instrument.category,
                     "vto": m.snapshot.instrument.maturity_date,
                     "price": m.snapshot.price,
                     "tir": _scale(m.tir),

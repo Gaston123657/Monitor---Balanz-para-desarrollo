@@ -290,6 +290,9 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                         cer_b = float(row.get("cer emision", row.get("cer_emision", 1.0)))
                         lag_val = int(float(row.get("dias habiles previos", row.get("dias_lag", 10))))
 
+                        cat_raw = row.get("categoria")
+                        category = str(cat_raw).strip() if cat_raw is not None and not pd.isna(cat_raw) else None
+
                         self._cache_instruments.append(Instrument(
                             ticker=clean_ticker,
                             ric=ric,
@@ -298,7 +301,8 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                             maturity_date=m_date,
                             cashflows=cfs,
                             cer_base=cer_b,
-                            cer_lag=lag_val
+                            cer_lag=lag_val,
+                            category=category,
                         ))
                 except Exception as e:
                     logger.warning(f"Could not load sheet {sheet}: {e}")
