@@ -114,6 +114,13 @@ def _refresh_loop(snapshot: Snapshot):
     provider = Data912MarketDataProvider()
     use_case = GenerateMonitorReport(repo, provider)
     
+    # Backend returns TIR and variance_* as decimal fractions (0.0131 = 1.31%).
+    # The web JS formatter renders the raw value with a "%" suffix, so we
+    # scale those fields to percentage units here. change_pct from Data912
+    # is already in percent units and must NOT be scaled.
+    def _scale(v):
+        return v * 100 if v is not None else None
+
     while True:
         try:
             # Bonares
@@ -124,11 +131,11 @@ def _refresh_loop(snapshot: Snapshot):
                     "ticker": m.snapshot.instrument.ticker,
                     "vto": m.snapshot.instrument.maturity_date,
                     "price": m.snapshot.price,
-                    "tir": m.tir,
+                    "tir": _scale(m.tir),
                     "change_pct": m.snapshot.change_pct,
-                    "v7d": m.variance_7d,
+                    "v7d": _scale(m.variance_7d),
                     "bid": m.snapshot.bid,
-                    "ask": m.snapshot.ask
+                    "ask": m.snapshot.ask,
                 })
             snapshot.update_monitor("bonares", rows=rows_bonares, status="ok")
 
@@ -140,9 +147,9 @@ def _refresh_loop(snapshot: Snapshot):
                     "ticker": m.snapshot.instrument.ticker,
                     "vto": m.snapshot.instrument.maturity_date,
                     "price": m.snapshot.price,
-                    "tir": m.tir,
+                    "tir": _scale(m.tir),
                     "duration": m.duration,
-                    "change_pct": m.snapshot.change_pct
+                    "change_pct": m.snapshot.change_pct,
                 })
             snapshot.update_monitor("cer", rows=rows_cer, status="ok")
 
@@ -154,11 +161,11 @@ def _refresh_loop(snapshot: Snapshot):
                     "ticker": m.snapshot.instrument.ticker,
                     "vto": m.snapshot.instrument.maturity_date,
                     "price": m.snapshot.price,
-                    "tir": m.tir,
+                    "tir": _scale(m.tir),
                     "change_pct": m.snapshot.change_pct,
-                    "v7d": m.variance_7d,
+                    "v7d": _scale(m.variance_7d),
                     "bid": m.snapshot.bid,
-                    "ask": m.snapshot.ask
+                    "ask": m.snapshot.ask,
                 })
             snapshot.update_monitor("bopreales", rows=rows_bop, status="ok")
 
@@ -172,8 +179,8 @@ def _refresh_loop(snapshot: Snapshot):
                     "ticker": m.snapshot.instrument.ticker,
                     "dias": dias,
                     "price": m.snapshot.price,
-                    "tir": m.tir,
-                    "change_pct": m.snapshot.change_pct
+                    "tir": _scale(m.tir),
+                    "change_pct": m.snapshot.change_pct,
                 })
             snapshot.update_monitor("tasa_fija", rows=rows_fija, status="ok")
 
