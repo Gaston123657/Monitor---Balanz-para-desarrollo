@@ -90,6 +90,7 @@ class Snapshot:
         self._lock = threading.Lock()
         self._data = {
             "ts": None,
+            "fx": {},
             "monitors": [
                 {"id": "bonares", "title": "BONARES Y GLOBALES", "status": "loading", "rows": [], "columns": _get_columns("bonares")},
                 {"id": "bopreales", "title": "BOPREALES", "status": "loading", "rows": [], "columns": _get_columns("bopreales")},
@@ -113,10 +114,17 @@ class Snapshot:
                     break
             self._data["ts"] = now
 
+    def update_fx(self, fx_dict):
+        with self._lock:
+            self._data["fx"] = fx_dict
+            self._data["ts"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
 def _refresh_loop(snapshot: Snapshot):
+    from core.infrastructure.fx_provider import DolarAPIProvider
     repo = ExcelInstrumentsRepository(MASTER_XLSX)
     provider = Data912MarketDataProvider()
     use_case = GenerateMonitorReport(repo, provider)
+    fx = DolarAPIProvider()
     
     # Backend returns TIR and variance_* as decimal fractions (0.0131 = 1.31%).
     # The web JS formatter renders the raw value with a "%" suffix, so we
@@ -127,6 +135,8 @@ def _refresh_loop(snapshot: Snapshot):
 
     while True:
         try:
+            snapshot.update_fx(fx.get_all())
+
             # Bonares
             m_bonares = use_case.execute(SOBERANOS)
             rows_bonares = []

@@ -18,6 +18,10 @@ def _is_cer_type(instrument_type: str) -> bool:
     return any(token in instrument_type for token in ("CER", "CON CUPON", "STEP-UP"))
 
 
+def _is_dolar_linked_type(instrument_type: str) -> bool:
+    return "DOLAR_LINKED" in instrument_type or "DOLAR LINKED" in instrument_type
+
+
 def _settlement_for(instrument_type: str) -> date:
     lag = 0 if any(t in instrument_type for t in ("LECER", "LECAP", "CI")) else 1
     return settlement_byma(date.today().strftime("%Y-%m-%d"), lag=lag).date()
@@ -86,12 +90,21 @@ class FinancialEngine:
         return residual * cer_val / inst.cer_base
 
     @staticmethod
-    def calculate_tir(snapshot: MarketSnapshot, indices_provider=None) -> Optional[float]:
+    def calculate_tir(
+        snapshot: MarketSnapshot,
+        indices_provider=None,
+        fx_provider=None,
+    ) -> Optional[float]:
         """Internal Rate of Return (TIR) as a decimal fraction (0.30 = 30%).
 
         For CER-indexed bonds, computes the REAL TIR per BCRA Nota Técnica
         N°8/2024 Eq. A7: price is deflated by CER_LIQ-10h / CER_BASE and IRR
         is solved against the nominal-base cashflows (per-100 nominal).
+
+        For DOLAR_LINKED bonds, computes the USD TIR: price is deflated by
+        the mayorista venta rate (pesos/USD) to express today's investment in
+        USD, then solved against USD-100 payback at maturity.
+
         Requires Excel `Cashflows` to be stored in base terms — see agents.md.
         """
         inst = snapshot.instrument
@@ -99,6 +112,18 @@ class FinancialEngine:
             return None
 
         settle_date = _settlement_for(inst.instrument_type)
+
+        # USD TIR for DOLAR LINKED bonds
+        if _is_dolar_linked_type(inst.instrument_type) and fx_provider:
+            fx = fx_provider.get_mayorista_venta()
+            if fx and fx > 0 and inst.maturity_date and inst.maturity_date > settle_date:
+                real_price_usd = snapshot.price / fx
+                flows = [-real_price_usd, 100.0]
+                dates = [settle_date, inst.maturity_date]
+                tir = FinancialEngine.xirr(flows, dates)
+                return float(tir) if not np.isnan(tir) else None
+            return None
+
         future_cfs = inst.get_future_cashflows(settle_date)
         if not future_cfs:
             return None
@@ -127,6 +152,12 @@ class FinancialEngine:
 
         lag = 0 if "LECER" in inst.instrument_type else 1
         settle_date = settlement_byma(date.today().strftime("%Y-%m-%d"), lag=lag).date()
+
+        # DOLAR_LINKED: treat as bullet, single payment at maturity.
+        if _is_dolar_linked_type(inst.instrument_type) and inst.maturity_date and inst.maturity_date > settle_date:
+            years = (inst.maturity_date - settle_date).days / 365.25
+            return years / (1 + tir)
+
         future_cfs = inst.get_future_cashflows(settle_date)
         if not future_cfs:
             return None

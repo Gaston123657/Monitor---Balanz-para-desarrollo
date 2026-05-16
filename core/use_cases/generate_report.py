@@ -6,6 +6,7 @@ from typing import List
 from core.domain.interfaces import IInstrumentsRepository, IMarketDataProvider
 from core.domain.models import Instrument, InstrumentMetrics, MarketSnapshot
 from core.domain.services import FinancialEngine
+from core.infrastructure.fx_provider import DolarAPIProvider
 from core.infrastructure.indices_provider import BCRAIndicesProvider
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class GenerateMonitorReport:
 
     def execute(self, instrument_types: List[str]) -> List[InstrumentMetrics]:
         indices = BCRAIndicesProvider(excel_repo=self.repo)
+        fx = DolarAPIProvider()
 
         all_instruments: List[Instrument] = []
         for t in instrument_types:
@@ -39,13 +41,13 @@ class GenerateMonitorReport:
                 if snapshot is None:
                     continue
                 snapshot.instrument = inst
-                futures.append(executor.submit(self._enrich_metrics, inst, snapshot, indices))
+                futures.append(executor.submit(self._enrich_metrics, inst, snapshot, indices, fx))
 
             results = [f.result() for f in futures]
 
         return [r for r in results if r is not None]
 
-    def _enrich_metrics(self, inst: Instrument, snapshot: MarketSnapshot, indices) -> InstrumentMetrics:
+    def _enrich_metrics(self, inst: Instrument, snapshot: MarketSnapshot, indices, fx) -> InstrumentMetrics:
         hist = self.provider.fetch_historical_prices(inst.ric, 365)
 
         today = date.today()
@@ -54,7 +56,7 @@ class GenerateMonitorReport:
         px_1y = hist.get(today - timedelta(days=365))
 
         metrics = InstrumentMetrics(snapshot=snapshot)
-        metrics.tir = FinancialEngine.calculate_tir(snapshot, indices_provider=indices)
+        metrics.tir = FinancialEngine.calculate_tir(snapshot, indices_provider=indices, fx_provider=fx)
         metrics.technical_value = FinancialEngine.calculate_technical_value(snapshot, indices_provider=indices)
 
         if metrics.technical_value and snapshot.price:

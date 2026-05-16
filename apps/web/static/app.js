@@ -503,9 +503,35 @@ function setLiveStatus(state, ts) {
 // Render global + fetch
 // =====================================================================
 
+function renderFxStrip(fx) {
+  const el = document.getElementById("fx-strip");
+  if (!el) return;
+  if (!fx || Object.keys(fx).length === 0) {
+    el.innerHTML = '<span class="fx-empty">Cargando cotizaciones USD…</span>';
+    return;
+  }
+  // Stable display order
+  const ORDER = ["oficial", "mayorista", "blue", "bolsa", "contadoconliqui", "cripto", "tarjeta"];
+  const parts = [];
+  for (const casa of ORDER) {
+    const q = fx[casa];
+    if (!q) continue;
+    const nombre = q.nombre || casa;
+    const venta = q.venta != null
+      ? Number(q.venta).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : "—";
+    parts.push(
+      `<div class="fx-quote"><span class="fx-name">${nombre}</span><span class="fx-val">$${venta}</span></div>`
+    );
+  }
+  el.innerHTML = parts.join("");
+}
+
 function renderAll(snapshot) {
   let anyError = false;
   let anyLoading = false;
+
+  renderFxStrip(snapshot.fx || {});
 
   snapshot.monitors.forEach((m) => {
     if (m.status === "error")   anyError = true;
