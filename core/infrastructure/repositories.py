@@ -276,6 +276,9 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                         cat_raw = row.get("categoria")
                         category = str(cat_raw).strip() if cat_raw is not None and not pd.isna(cat_raw) else None
 
+                        floor_raw = row.get("tasa_fija_mensual")
+                        floor = float(floor_raw) if floor_raw is not None and not pd.isna(floor_raw) else None
+
                         self._cache_instruments.append(Instrument(
                             ticker=clean_ticker,
                             ric=ric,
@@ -286,12 +289,19 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                             cer_base=cer_b,
                             cer_lag=lag_val,
                             category=category,
+                            floor_rate_monthly=floor,
                         ))
                 except Exception as e:
                     logger.warning(f"Could not load sheet {sheet}: {e}")
 
-            self._by_ticker = {i.ticker: i for i in self._cache_instruments}
-            logger.info(f"Repository loaded {len(self._cache_instruments)} instruments.")
+            # Dedupe by ticker — later sheets override earlier ones. Prevents
+            # double-counting when a bond appears in both Tasa_Fija and TAMAR.
+            seen: Dict[str, Instrument] = {}
+            for inst in self._cache_instruments:
+                seen[inst.ticker] = inst
+            self._cache_instruments = list(seen.values())
+            self._by_ticker = seen
+            logger.info(f"Repository loaded {len(self._cache_instruments)} unique instruments.")
         except Exception as e:
             logger.error(f"Error loading Excel repository: {e}")
 

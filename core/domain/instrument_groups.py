@@ -7,6 +7,8 @@ column in `data/instruments_master.xlsx` (uppercased, stripped).
 
 SOBERANOS = ["BONAR", "GLOBAL"]
 BOPREALES = ["BOPREAL"]
-TASA_FIJA = ["LECAP", "BONCAP", "DUAL", "BONOFIJA", "PURO"]
+TASA_FIJA = ["LECAP", "BONCAP", "BONOFIJA"]
 CER = ["CER", "LECER", "BONCER", "BONCER ZC", "CON CUPON", "STEP-UP"]
 DOLAR_LINKED = ["DOLAR_LINKED"]
+TAMAR = ["PURO"]            # TAMAR-linked: pay accrued TAMAR rate at maturity
+DUAL_TAMAR = ["DUAL"]       # Dual: pay max(accrued TAMAR, compounded fixed floor)

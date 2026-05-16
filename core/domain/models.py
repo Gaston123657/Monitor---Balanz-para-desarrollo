@@ -24,6 +24,7 @@ class Instrument:
     cer_base: Optional[float] = None
     cer_lag: int = 10  # Default 10 business days for AR CER bonds
     category: Optional[str] = None  # Market-facing label (e.g. "BONCERES CERO CUPON")
+    floor_rate_monthly: Optional[float] = None  # DUAL TAMAR: monthly floor rate (decimal)
     
     def get_future_cashflows(self, reference_date: date) -> List[Cashflow]:
         return [cf for cf in self.cashflows if cf.date >= reference_date]

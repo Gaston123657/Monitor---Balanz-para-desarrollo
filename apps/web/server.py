@@ -13,7 +13,9 @@ import numpy as np
 import pandas as pd
 
 from config.settings import MASTER_XLSX, setup_logging
-from core.domain.instrument_groups import BOPREALES, CER, DOLAR_LINKED, SOBERANOS, TASA_FIJA
+from core.domain.instrument_groups import (
+    BOPREALES, CER, DOLAR_LINKED, DUAL_TAMAR, SOBERANOS, TAMAR, TASA_FIJA,
+)
 from core.infrastructure.repositories import ExcelInstrumentsRepository, Data912MarketDataProvider
 from core.use_cases.generate_report import GenerateMonitorReport
 
@@ -79,6 +81,23 @@ def _get_columns(monitor_id: str):
             {"key": "change_pct", "label": "Var %", "kind": "percent_signed", "decimals": 2},
             {"key": "volume", "label": "Vol $", "kind": "volume"},
         ],
+        "tamar": [
+            {"key": "ticker", "label": "Ticker", "kind": "text"},
+            {"key": "vto", "label": "Vto", "kind": "date"},
+            {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
+            {"key": "price", "label": "Precio", "kind": "number", "decimals": 2},
+            {"key": "change_pct", "label": "%Día", "kind": "percent_signed", "decimals": 2},
+            {"key": "volume", "label": "Vol $", "kind": "volume"},
+        ],
+        "dual_tamar": [
+            {"key": "ticker", "label": "Ticker", "kind": "text"},
+            {"key": "vto", "label": "Vto", "kind": "date"},
+            {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
+            {"key": "price", "label": "Precio", "kind": "number", "decimals": 2},
+            {"key": "floor", "label": "Floor mes", "kind": "percent", "decimals": 2},
+            {"key": "change_pct", "label": "%Día", "kind": "percent_signed", "decimals": 2},
+            {"key": "volume", "label": "Vol $", "kind": "volume"},
+        ],
         "futuros": [
             {"key": "ticker", "label": "Contrato", "kind": "text"},
             {"key": "vto", "label": "Vto", "kind": "date"},
@@ -108,6 +127,8 @@ class Snapshot:
                 {"id": "cer", "title": "BONOS CER", "status": "loading", "rows": [], "columns": _get_columns("cer")},
                 {"id": "tasa_fija", "title": "TASA FIJA", "status": "loading", "rows": [], "columns": _get_columns("tasa_fija")},
                 {"id": "dolar_linked", "title": "DOLAR LINKED", "status": "loading", "rows": [], "columns": _get_columns("dolar_linked")},
+                {"id": "tamar", "title": "TAMAR (PURO)", "status": "loading", "rows": [], "columns": _get_columns("tamar")},
+                {"id": "dual_tamar", "title": "DUALES TAMAR / TASA FIJA", "status": "loading", "rows": [], "columns": _get_columns("dual_tamar")},
                 {"id": "futuros", "title": "FUTUROS ROFEX", "status": "loading", "rows": [], "columns": _get_columns("futuros")},
             ],
         }
@@ -137,11 +158,13 @@ def _refresh_loop(snapshot: Snapshot):
         RofexProvider, DEFAULT_SYMBOLS as ROFEX_SYMBOLS, SPOT_SYMBOL,
         parse_contract_maturity, implied_tna,
     )
+    from core.infrastructure.indices_provider import BCRAIndicesProvider
     repo = ExcelInstrumentsRepository(MASTER_XLSX)
     provider = Data912MarketDataProvider()
     use_case = GenerateMonitorReport(repo, provider)
     fx = DolarAPIProvider()
     rofex = RofexProvider()
+    bcra = BCRAIndicesProvider()
     
     # Backend returns TIR and variance_* as decimal fractions (0.0131 = 1.31%).
     # The web JS formatter renders the raw value with a "%" suffix, so we
@@ -152,7 +175,19 @@ def _refresh_loop(snapshot: Snapshot):
 
     while True:
         try:
-            snapshot.update_fx(fx.get_all())
+            # FX + reference rates. TAMAR comes from BCRA as a TNA %; we
+            # surface it in the same fx strip with a synthetic chip.
+            fx_data = fx.get_all()
+            tamar_tna = bcra.get_tamar()
+            if tamar_tna is not None:
+                fx_data = dict(fx_data)
+                fx_data["tamar"] = {
+                    "nombre": "TAMAR (TNA)",
+                    "compra": None,
+                    "venta": tamar_tna,
+                    "fechaActualizacion": None,
+                }
+            snapshot.update_fx(fx_data)
 
             # Bonares
             m_bonares = use_case.execute(SOBERANOS)
@@ -230,6 +265,42 @@ def _refresh_loop(snapshot: Snapshot):
                     "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("dolar_linked", rows=rows_dl, status="ok")
+
+            # TAMAR PURO bonds
+            today = date.today()
+            m_tamar = use_case.execute(TAMAR)
+            rows_tamar = []
+            for m in m_tamar:
+                inst = m.snapshot.instrument
+                vto = inst.maturity_date
+                dias = (vto - today).days if vto else 0
+                rows_tamar.append({
+                    "ticker": inst.ticker,
+                    "vto": vto,
+                    "dias": dias,
+                    "price": m.snapshot.price,
+                    "change_pct": m.snapshot.change_pct,
+                    "volume": m.snapshot.volume,
+                })
+            snapshot.update_monitor("tamar", rows=rows_tamar, status="ok")
+
+            # DUAL TAMAR / Tasa Fija
+            m_dual = use_case.execute(DUAL_TAMAR)
+            rows_dual = []
+            for m in m_dual:
+                inst = m.snapshot.instrument
+                vto = inst.maturity_date
+                dias = (vto - today).days if vto else 0
+                rows_dual.append({
+                    "ticker": inst.ticker,
+                    "vto": vto,
+                    "dias": dias,
+                    "price": m.snapshot.price,
+                    "floor": _scale(inst.floor_rate_monthly),
+                    "change_pct": m.snapshot.change_pct,
+                    "volume": m.snapshot.volume,
+                })
+            snapshot.update_monitor("dual_tamar", rows=rows_dual, status="ok")
 
             # Futuros Rofex (DLR curve). TNA implícita = (futuro_last/spot)^(365/d) - 1.
             # Spot = DLR/SPOT (índice Matba). Si futuro.last es None, TNA queda en blanco.

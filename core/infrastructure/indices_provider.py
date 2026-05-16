@@ -1,87 +1,99 @@
-import urllib.request
+"""BCRA reference indices (CER, TAMAR).
+
+Architectural exception: market data must come from Data912, but BCRA
+publishes reference series only available from its own API.
+
+Variables fetched (BCRA `Monetarias/{id}`):
+  - 30: CER (Coeficiente de Estabilización de Referencia) — daily index level
+  - 44: Tasa de interés TAMAR de bancos privados (TNA %)
+"""
+
 import json
-import ssl
 import logging
+import ssl
 import threading
+import urllib.request
 from datetime import date, datetime, timedelta
 from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
-class BCRAIndicesProvider:
-    """CER reference index from BCRA (api.bcra.gob.ar).
 
-    Architectural exception: market data must come from Data912, but the CER
-    coefficient is published only by the BCRA (Argentine Central Bank). It is
-    reference data, not price data — used to compute real TIR and technical
-    value for CER-indexed bonds. This is the ONLY allowed external source
-    outside Data912 in the system.
-    """
-    BCRA_URL = "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/30"
-    
+_BCRA_BASE = "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias"
+_RANGE_DAYS = 60
+
+
+def _fetch_series(variable_id: int) -> Dict[date, float]:
+    """Pull last `_RANGE_DAYS` days of a BCRA monetary variable."""
+    end = date.today()
+    start = end - timedelta(days=_RANGE_DAYS)
+    url = f"{_BCRA_BASE}/{variable_id}?Desde={start}&Hasta={end}"
+    ctx = ssl._create_unverified_context()
+    out: Dict[date, float] = {}
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
+            payload = json.loads(r.read().decode("utf-8"))
+        results = payload.get("results", [])
+        if results and "detalle" in results[0]:
+            for item in results[0]["detalle"]:
+                try:
+                    d = datetime.strptime(item["fecha"], "%Y-%m-%d").date()
+                    out[d] = float(item["valor"])
+                except (KeyError, ValueError, TypeError):
+                    continue
+    except Exception as e:
+        logger.warning(f"BCRA fetch failed for variable {variable_id}: {e}")
+    return out
+
+
+class BCRAIndicesProvider:
+    """CER + TAMAR from BCRA, with per-day in-memory cache."""
+
     _lock = threading.Lock()
-    _instance_cache: Dict[date, float] = {}
+    _cache_cer: Dict[date, float] = {}
+    _cache_tamar: Dict[date, float] = {}
     _last_attempt: Optional[date] = None
-    _failed_recently = False
 
     def __init__(self, excel_repo=None):
         self.excel_repo = excel_repo
 
     def _fetch_all(self):
         with self._lock:
-            if self._instance_cache and self._last_attempt == date.today():
+            if self._cache_cer and self._last_attempt == date.today():
                 return
-
             self._last_attempt = date.today()
-            data_map = {}
-            ctx = ssl._create_unverified_context()
-            
-            try:
-                # Try BCRA with correct parameter casing: Desde and Hasta
-                # Range from 60 days ago to today
-                end_date = date.today()
-                start_date = end_date - timedelta(days=60)
-                url = f"{self.BCRA_URL}?Desde={start_date}&Hasta={end_date}"
-                
-                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
-                    payload = json.loads(r.read().decode("utf-8"))
-                    # In v4.0, data is inside results[0]["detalle"]
-                    results = payload.get("results", [])
-                    if results and "detalle" in results[0]:
-                        items = results[0]["detalle"]
-                        for item in items:
-                            try:
-                                d = datetime.strptime(item["fecha"], "%Y-%m-%d").date()
-                                data_map[d] = float(item["valor"])
-                            except (KeyError, ValueError, TypeError):
-                                continue
 
-                if data_map:
-                    logger.info(f"Successfully loaded {len(data_map)} CER points from official BCRA API.")
-                    self._instance_cache = data_map
-                    self._failed_recently = False
-                    return
-            except Exception as e:
-                if not self._failed_recently:
-                    logger.warning(f"BCRA API connection error: {e}")
+            cer = _fetch_series(30)
+            if cer:
+                self._cache_cer = cer
+                logger.info(f"Loaded {len(cer)} CER points from BCRA.")
 
-            self._failed_recently = True
+            tamar = _fetch_series(44)
+            if tamar:
+                self._cache_tamar = tamar
+                logger.info(f"Loaded {len(tamar)} TAMAR points from BCRA.")
+
+    @staticmethod
+    def _lookup(target: date, cache: Dict[date, float]) -> Optional[float]:
+        if not cache:
+            return None
+        if target in cache:
+            return cache[target]
+        for i in range(1, 15):
+            prev = target - timedelta(days=i)
+            if prev in cache:
+                return cache[prev]
+        return cache[max(cache.keys())]
 
     def get_cer(self, target_date: date) -> Optional[float]:
         self._fetch_all()
-        
-        if target_date in self._instance_cache:
-            return self._instance_cache[target_date]
-        
-        # Search backwards (up to 15 days)
-        for i in range(1, 15):
-            prev = target_date - timedelta(days=i)
-            if prev in self._instance_cache:
-                return self._instance_cache[prev]
-        
-        # Final fallback: last known value
-        if self._instance_cache:
-            return self._instance_cache[max(self._instance_cache.keys())]
-            
-        return None
+        return self._lookup(target_date, self._cache_cer)
+
+    def get_tamar(self, target_date: Optional[date] = None) -> Optional[float]:
+        """TAMAR TNA (%) — annualized nominal rate published by BCRA.
+        Returns the rate at `target_date` (defaults to today, with 14-day
+        backward search if the exact date is missing from the series).
+        """
+        self._fetch_all()
+        return self._lookup(target_date or date.today(), self._cache_tamar)

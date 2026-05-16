@@ -510,7 +510,7 @@ function renderFxStrip(fx) {
     el.innerHTML = '<span class="fx-empty">Cargando cotizaciones USD…</span>';
     return;
   }
-  const ORDER = ["oficial", "mayorista", "blue", "bolsa", "contadoconliqui", "cripto", "tarjeta"];
+  const ORDER = ["oficial", "mayorista", "blue", "bolsa", "contadoconliqui", "cripto", "tarjeta", "tamar"];
   const num = (v) => v != null
     ? Number(v).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : "—";
@@ -519,6 +519,18 @@ function renderFxStrip(fx) {
     const q = fx[casa];
     if (!q) continue;
     const nombre = q.nombre || casa;
+    // TAMAR is a single rate (TNA %), not a compra/venta pair.
+    if (casa === "tamar") {
+      parts.push(
+        `<div class="fx-quote">
+           <span class="fx-name">${nombre}</span>
+           <div class="fx-prices">
+             <span class="fx-side"><span class="fx-side-label">TNA</span><span class="fx-val">${num(q.venta)}%</span></span>
+           </div>
+         </div>`
+      );
+      continue;
+    }
     parts.push(
       `<div class="fx-quote">
          <span class="fx-name">${nombre}</span>
