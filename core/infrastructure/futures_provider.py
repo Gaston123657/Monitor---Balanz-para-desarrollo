@@ -62,6 +62,10 @@ def implied_tna(future_price: float, spot: float, mat: date, today: Optional[dat
     except (ValueError, ZeroDivisionError, OverflowError):
         return None
 
+# Spot reference Matba publishes for DLR settlement. Used as the canonical
+# spot for TNA implícita — same number Matba uses to liquidate the futures.
+SPOT_SYMBOL = "DLR/SPOT"
+
 # Default universe: full curve of Dolar futuro (DLR) — all monthly contracts
 # from front month out to ~12 months ahead.
 DEFAULT_SYMBOLS: List[str] = [

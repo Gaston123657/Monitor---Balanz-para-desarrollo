@@ -134,7 +134,7 @@ class Snapshot:
 def _refresh_loop(snapshot: Snapshot):
     from core.infrastructure.fx_provider import DolarAPIProvider
     from core.infrastructure.futures_provider import (
-        RofexProvider, DEFAULT_SYMBOLS as ROFEX_SYMBOLS,
+        RofexProvider, DEFAULT_SYMBOLS as ROFEX_SYMBOLS, SPOT_SYMBOL,
         parse_contract_maturity, implied_tna,
     )
     repo = ExcelInstrumentsRepository(MASTER_XLSX)
@@ -231,23 +231,25 @@ def _refresh_loop(snapshot: Snapshot):
                 })
             snapshot.update_monitor("dolar_linked", rows=rows_dl, status="ok")
 
-            # Futuros Rofex (DLR curve)
-            quotes = rofex.get_quotes(ROFEX_SYMBOLS)
-            spot = fx.get_mayorista_venta()
+            # Futuros Rofex (DLR curve). TNA implícita = (futuro_last/spot)^(365/d) - 1.
+            # Spot = DLR/SPOT (índice Matba). Si futuro.last es None, TNA queda en blanco.
+            quotes = rofex.get_quotes(ROFEX_SYMBOLS + [SPOT_SYMBOL])
+            spot_q = quotes.get(SPOT_SYMBOL) or {}
+            spot = spot_q.get("last") or spot_q.get("settle")
             rows_fut = []
             for sym in ROFEX_SYMBOLS:
                 q = quotes.get(sym)
                 if not q:
                     continue
                 mat = parse_contract_maturity(sym)
-                ref_price = q.get("last") or q.get("settle")
-                tna = implied_tna(ref_price, spot, mat) if (ref_price and spot and mat) else None
+                last = q.get("last")
+                tna = implied_tna(last, spot, mat) if (last and spot and mat) else None
                 rows_fut.append({
                     "ticker": sym,
                     "vto": mat,
                     "bid": q.get("bid"),
                     "ask": q.get("ask"),
-                    "last": q.get("last"),
+                    "last": last,
                     "settle": q.get("settle"),
                     "tna": _scale(tna),
                     "open_interest": q.get("open_interest"),
