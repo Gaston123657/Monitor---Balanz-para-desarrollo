@@ -262,6 +262,12 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                             if d_cand in row:
                                 m_date = self._parse_date(row[d_cand])
                                 if m_date: break
+
+                        e_date = None
+                        for d_cand in ["fecha_emision", "fecha emision"]:
+                            if d_cand in row:
+                                e_date = self._parse_date(row[d_cand])
+                                if e_date: break
                         
                         # Link cashflows
                         cfs = cf_map.get(short.upper(), cf_map.get(raw_ticker, cf_map.get(clean_ticker, [])))
@@ -285,6 +291,7 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                             short_name=short,
                             instrument_type=itype,
                             maturity_date=m_date,
+                            emission_date=e_date,
                             cashflows=cfs,
                             cer_base=cer_b,
                             cer_lag=lag_val,

@@ -20,13 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 _BCRA_BASE = "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias"
-_RANGE_DAYS = 60
 
 
-def _fetch_series(variable_id: int) -> Dict[date, float]:
-    """Pull last `_RANGE_DAYS` days of a BCRA monetary variable."""
+def _fetch_series(variable_id: int, days: int = 60) -> Dict[date, float]:
+    """Pull last `days` days of a BCRA monetary variable."""
     end = date.today()
-    start = end - timedelta(days=_RANGE_DAYS)
+    start = end - timedelta(days=days)
     url = f"{_BCRA_BASE}/{variable_id}?Desde={start}&Hasta={end}"
     ctx = ssl._create_unverified_context()
     out: Dict[date, float] = {}
@@ -64,12 +63,14 @@ class BCRAIndicesProvider:
                 return
             self._last_attempt = date.today()
 
-            cer = _fetch_series(30)
+            cer = _fetch_series(30, days=60)
             if cer:
                 self._cache_cer = cer
                 logger.info(f"Loaded {len(cer)} CER points from BCRA.")
 
-            tamar = _fetch_series(44)
+            # TAMAR needs deep history for bonds emitted up to ~2 years ago
+            # (TTJ26 was issued 2025-01-29). Pull 3 years to be safe.
+            tamar = _fetch_series(44, days=3 * 365)
             if tamar:
                 self._cache_tamar = tamar
                 logger.info(f"Loaded {len(tamar)} TAMAR points from BCRA.")

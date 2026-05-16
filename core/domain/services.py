@@ -22,6 +22,66 @@ def _is_dolar_linked_type(instrument_type: str) -> bool:
     return "DOLAR_LINKED" in instrument_type or "DOLAR LINKED" in instrument_type
 
 
+def _is_tamar_puro_type(instrument_type: str) -> bool:
+    return instrument_type.upper().strip() == "PURO"
+
+
+def _is_dual_tamar_type(instrument_type: str) -> bool:
+    return instrument_type.upper().strip() == "DUAL"
+
+
+def _tamar_daily_factor(tna_pct: Optional[float]) -> Optional[float]:
+    """BCRA TAMAR is TNA in percent units. Daily compounding factor = 1 + TNA/100/365."""
+    if tna_pct is None:
+        return None
+    return 1.0 + (tna_pct / 100.0) / 365.0
+
+
+def _fixed_daily_factor_from_monthly(floor_monthly: Optional[float]) -> Optional[float]:
+    """Convert TEM (monthly effective rate, decimal) to daily factor: (1+TEM)^(1/30)."""
+    if floor_monthly is None or floor_monthly <= -1:
+        return None
+    try:
+        return (1.0 + floor_monthly) ** (1.0 / 30.0)
+    except (ValueError, OverflowError):
+        return None
+
+
+def _accrued_tamar_factor(emission: date, end: date, tamar_provider) -> Optional[float]:
+    """Compound daily TAMAR from emission to `end`. Returns multiplicative factor.
+
+    Missing daily values are filled by the 14-day backward lookup that
+    `BCRAIndicesProvider.get_tamar` already performs (weekends + holidays
+    inherit the previous business-day rate, which matches market convention).
+    """
+    if not emission or end <= emission:
+        return 1.0
+    factor = 1.0
+    d = emission
+    one_day = timedelta(days=1)
+    while d < end:
+        df = _tamar_daily_factor(tamar_provider.get_tamar(d))
+        if df:
+            factor *= df
+        d = d + one_day
+    return factor
+
+
+def _accrued_dual_factor(emission: date, end: date, floor_monthly: float, tamar_provider) -> Optional[float]:
+    """Compound daily max(TAMAR_daily, fixed_daily) from emission to `end`."""
+    fixed_daily = _fixed_daily_factor_from_monthly(floor_monthly)
+    if not emission or end <= emission or fixed_daily is None:
+        return 1.0
+    factor = 1.0
+    d = emission
+    one_day = timedelta(days=1)
+    while d < end:
+        tamar_df = _tamar_daily_factor(tamar_provider.get_tamar(d)) or 1.0
+        factor *= max(tamar_df, fixed_daily)
+        d = d + one_day
+    return factor
+
+
 def _settlement_for(instrument_type: str) -> date:
     lag = 0 if any(t in instrument_type for t in ("LECER", "LECAP", "CI")) else 1
     return settlement_byma(date.today().strftime("%Y-%m-%d"), lag=lag).date()
@@ -113,6 +173,41 @@ class FinancialEngine:
 
         settle_date = _settlement_for(inst.instrument_type)
 
+        # TAMAR PURO: bond accrues at daily TAMAR rate from emission to maturity.
+        # Expected payback = 100 * accrued_so_far * (1 + TAMAR_today/365)^days_remaining.
+        if _is_tamar_puro_type(inst.instrument_type) and indices_provider \
+                and inst.emission_date and inst.maturity_date and inst.maturity_date > settle_date:
+            accrued = _accrued_tamar_factor(inst.emission_date, settle_date, indices_provider)
+            tamar_today_pct = indices_provider.get_tamar()
+            df_today = _tamar_daily_factor(tamar_today_pct)
+            if accrued is None or df_today is None:
+                return None
+            days_remaining = (inst.maturity_date - settle_date).days
+            expected_payback = 100.0 * accrued * (df_today ** days_remaining)
+            flows = [-snapshot.price, expected_payback]
+            dates = [settle_date, inst.maturity_date]
+            tir = FinancialEngine.xirr(flows, dates)
+            return float(tir) if not np.isnan(tir) else None
+
+        # DUAL TAMAR: daily payoff = max(TAMAR_daily, fixed_daily_from_TEM).
+        if _is_dual_tamar_type(inst.instrument_type) and indices_provider \
+                and inst.emission_date and inst.maturity_date and inst.maturity_date > settle_date \
+                and inst.floor_rate_monthly is not None:
+            accrued = _accrued_dual_factor(inst.emission_date, settle_date,
+                                           inst.floor_rate_monthly, indices_provider)
+            tamar_today_pct = indices_provider.get_tamar()
+            tamar_df = _tamar_daily_factor(tamar_today_pct) or 1.0
+            fixed_df = _fixed_daily_factor_from_monthly(inst.floor_rate_monthly) or 1.0
+            fwd_df = max(tamar_df, fixed_df)
+            if accrued is None:
+                return None
+            days_remaining = (inst.maturity_date - settle_date).days
+            expected_payback = 100.0 * accrued * (fwd_df ** days_remaining)
+            flows = [-snapshot.price, expected_payback]
+            dates = [settle_date, inst.maturity_date]
+            tir = FinancialEngine.xirr(flows, dates)
+            return float(tir) if not np.isnan(tir) else None
+
         # USD TIR for DOLAR LINKED bonds
         if _is_dolar_linked_type(inst.instrument_type) and fx_provider:
             fx = fx_provider.get_mayorista_venta()
@@ -153,8 +248,13 @@ class FinancialEngine:
         lag = 0 if "LECER" in inst.instrument_type else 1
         settle_date = settlement_byma(date.today().strftime("%Y-%m-%d"), lag=lag).date()
 
-        # DOLAR_LINKED: treat as bullet, single payment at maturity.
-        if _is_dolar_linked_type(inst.instrument_type) and inst.maturity_date and inst.maturity_date > settle_date:
+        # Bullet bonds (single payment at maturity): DL, TAMAR PURO, DUAL TAMAR.
+        is_bullet = (
+            _is_dolar_linked_type(inst.instrument_type)
+            or _is_tamar_puro_type(inst.instrument_type)
+            or _is_dual_tamar_type(inst.instrument_type)
+        )
+        if is_bullet and inst.maturity_date and inst.maturity_date > settle_date:
             years = (inst.maturity_date - settle_date).days / 365.25
             return years / (1 + tir)
 

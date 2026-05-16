@@ -20,6 +20,7 @@ class Instrument:
     short_name: str
     instrument_type: str  # CER, LECAP, BONAR, etc.
     maturity_date: Optional[date] = None
+    emission_date: Optional[date] = None  # Needed by TAMAR engine for accrual factor
     cashflows: List[Cashflow] = field(default_factory=list)
     cer_base: Optional[float] = None
     cer_lag: int = 10  # Default 10 business days for AR CER bonds
