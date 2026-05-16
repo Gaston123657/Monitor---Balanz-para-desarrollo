@@ -361,35 +361,35 @@ function curvaDatasets(series, color, label, labelAlign) {
   ];
 }
 
-function renderCurvaPanel(panel, comparacionMonitor, bopMonitor) {
+function renderCurvaPanel(panel, bonaresMonitor, bopMonitor) {
   panel.classList.remove("loading", "error");
-  if (comparacionMonitor.status === "loading") { panel.classList.add("loading"); return; }
-  if (comparacionMonitor.status === "error")   { panel.classList.add("error");   return; }
+  if (bonaresMonitor.status === "loading") { panel.classList.add("loading"); return; }
+  if (bonaresMonitor.status === "error")   { panel.classList.add("error");   return; }
 
   const sub    = panel.querySelector("[data-role='subtitle']");
   const ts     = panel.querySelector("[data-role='ts']");
   const canvas = panel.querySelector("[data-role='canvas']");
 
-  // Puntos AL/GD desde comparacion_tir (filtra excluidos por si hubiera)
-  const cmpPoints = (comparacionMonitor.rows || [])
-    .map((row) => ({ ticker: row.ticker, x: row.dm, y: row.tir }))
+  // Puntos AL/AE/GD desde bonares (bonares row schema: ticker, tir, duration, ...)
+  const sovPoints = (bonaresMonitor.rows || [])
+    .map((row) => ({ ticker: row.ticker, x: row.duration, y: row.tir }))
     .filter((p) => p.x != null && p.y != null
                  && !CURVA_EXCLUDED_TICKERS.has(String(p.ticker).toUpperCase()));
 
-  // Puntos BOPREALES (DM se calcula localmente; excluimos BPY6D que esta a vto)
+  // Puntos BOPREALES (excluimos BPY6D que esta a vto -> TIR -93%)
   const bpRows = (bopMonitor && bopMonitor.rows) || [];
   const bopr = bpRows
-    .map((row) => ({ ticker: row.ticker, x: row.dm, y: row.tir }))
+    .map((row) => ({ ticker: row.ticker, x: row.duration, y: row.tir }))
     .filter((p) => p.x != null && p.y != null
                  && !CURVA_EXCLUDED_TICKERS.has(String(p.ticker).toUpperCase()))
     .sort((a, b) => a.x - b.x);
 
-  const { al, gd } = splitBySeries(cmpPoints);
+  const { al, gd } = splitBySeries(sovPoints);
 
   const totalBonos = al.length + gd.length + bopr.length;
   sub.textContent = `${totalBonos} bonos · regresión logarítmica · TIR vs Duration`;
-  ts.textContent  = comparacionMonitor.ts
-    ? `Act. ${fmt.timeHMS(new Date(comparacionMonitor.ts))}`
+  ts.textContent  = bonaresMonitor.ts
+    ? `Act. ${fmt.timeHMS(new Date(bonaresMonitor.ts))}`
     : "—";
 
   const datasets = [
@@ -514,12 +514,12 @@ function renderAll(snapshot) {
     if (panel) renderPanel(panel, m);
   });
 
-  // Curva soberana: panel "virtual" que combina datos de comparacion_tir
-  // (AL/AE + GD) y de bopreales (BOPREALES con su DM calculada localmente).
-  const ct = snapshot.monitors.find((m) => m.id === "comparacion_tir");
-  const bp = snapshot.monitors.find((m) => m.id === "bopreales");
+  // Curva soberana: panel virtual que combina AL/AE + GD desde el monitor
+  // bonares (3 colores: AL/AE, GD, BOPREALES).
+  const bnr = snapshot.monitors.find((m) => m.id === "bonares");
+  const bp  = snapshot.monitors.find((m) => m.id === "bopreales");
   const curvaPanel = document.querySelector(".panel[data-id='curva_soberana']");
-  if (curvaPanel && ct) renderCurvaPanel(curvaPanel, ct, bp);
+  if (curvaPanel && bnr) renderCurvaPanel(curvaPanel, bnr, bp);
 
   if (anyError)        setLiveStatus("error", snapshot.ts);
   else if (anyLoading) setLiveStatus("loading", snapshot.ts);
