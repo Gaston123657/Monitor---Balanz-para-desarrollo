@@ -1,0 +1,469 @@
+/* =====================================================================
+   MONITOR DE BONOS - Balanz
+   Paleta navy + blanco. Layout 2x2. Mini-barras en celdas con signo.
+   ===================================================================== */
+
+:root {
+  /* Paleta Balanz (idem mockup.py) */
+  --navy:           #0a1d4a;
+  --navy-dark:      #06143b;
+  --navy-light:     #1c3170;
+  --navy-band:      #142a66;
+  --accent-blue:    #3a5fcf;
+  --accent-light:   #dde5fb;
+
+  --page-bg:        #f3f5fa;
+  --panel-bg:       #ffffff;
+  --panel-border:   #d2d8e6;
+  --row-alt:        #f6f8fc;
+  --row-hover:      #eef2fb;
+
+  --text:           #0e1834;
+  --text-dim:       #4a5780;
+  --text-faint:     #8993b8;
+  --text-white:     #ffffff;
+
+  --pos-text:       #0d6e3a;
+  --neg-text:       #a8242b;
+
+  --bar-pos-light:  #cde9d6;
+  --bar-pos-strong: #5fbf81;
+  --bar-neg-light:  #f3d6d8;
+  --bar-neg-strong: #dc6e74;
+
+  --live-dot:       #37d67a;
+
+  --shadow-soft:    0 2px 6px rgba(10, 29, 74, 0.08);
+  --shadow-panel:   0 4px 14px rgba(10, 29, 74, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--page-bg);
+  min-height: 100vh;
+}
+
+/* =====================================================================
+   HEADER (banda navy con logo + MONITOR/fecha + EN VIVO + botones)
+   ===================================================================== */
+
+.page-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 28px;
+  background: var(--navy);
+  color: var(--text-white);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* --- Bloque izquierdo: logo BALANZ + MONITOR + fecha --- */
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-balanz {
+  /* Caja invisible (mismo navy que el header). Solo el texto BALANZ se ve. */
+  background: var(--navy);
+  color: var(--text-white);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  line-height: 1;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.brand-text .brand-monitor {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-white);
+}
+
+.brand-text .brand-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-white);
+  opacity: 0.92;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+/* --- Bloque centro: dot verde + EN VIVO + last update --- */
+.live-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.live-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--live-dot);
+  box-shadow: 0 0 6px rgba(55, 214, 122, 0.6);
+}
+
+.live-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: var(--text-white);
+}
+
+.live-time {
+  font-size: 11px;
+  color: #c4cdf0;
+}
+
+/* Estados del live indicator */
+.live-block.loading .live-dot { background: #f5c451; box-shadow: 0 0 6px rgba(245,196,81,0.6); }
+.live-block.error   .live-dot { background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.6); }
+.live-block.loading .live-label::after { content: " · CARGANDO"; opacity: 0.7; }
+.live-block.error   .live-label::after { content: " · ERROR";    opacity: 0.9; color: #ff9aa0; }
+
+/* --- Bloque derecho: botones Capturar / WhatsApp --- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn {
+  background: var(--navy-light);
+  color: var(--text-white);
+  border: 1px solid var(--accent-blue);
+  border-radius: 4px;
+  padding: 7px 16px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 110px;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.btn:hover    { background: #2a4499; }
+.btn:active   { transform: translateY(1px); }
+.btn:disabled { opacity: 0.5; cursor: wait; }
+
+/* =====================================================================
+   LAYOUT 3 FILAS x 2 COLUMNAS (CURVA SOBERANA full-width en el medio)
+   Fila 1: BONARES        | PROVINCIALES
+   Fila 2: CURVA SOBERANA          (span 2 col)
+   Fila 3: COMPARACION    | BOPREALES
+   ===================================================================== */
+
+main#monitors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px 20px 24px;
+  max-width: 1700px;
+  margin: 0 auto;
+  align-items: start;        /* paneles en su tamaño natural, no se estiran */
+}
+
+/* La curva ocupa ambas columnas (full width) */
+.panel-curva {
+  grid-column: 1 / -1;
+}
+
+/* =====================================================================
+   PANEL (un monitor)
+   ===================================================================== */
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--navy-band);
+  color: var(--text-white);
+  border-bottom: 1px solid var(--navy-dark);
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: var(--text-white);
+}
+
+.panel-sub {
+  flex: 1;
+  text-align: right;
+  font-size: 10.5px;
+  color: #c8d0ec;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 8px;
+}
+
+.panel-ts {
+  font-size: 10px;
+  color: #99a4cf;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.panel-body {
+  padding: 0;
+  overflow-x: auto;
+}
+
+/* =====================================================================
+   TABLA DE BONOS
+   ===================================================================== */
+
+table.bonds {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+table.bonds thead th {
+  background: var(--accent-light);
+  color: var(--navy-dark);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 1px solid #c2cbe5;
+  white-space: nowrap;
+}
+
+table.bonds thead th:first-child,
+table.bonds thead th.col-text {
+  text-align: left;
+}
+
+table.bonds tbody td {
+  padding: 7px 10px;
+  font-size: 12.5px;
+  color: var(--text);
+  text-align: right;
+  border-bottom: 1px solid #eaeef6;
+  white-space: nowrap;
+  position: relative;        /* base para mini-barras absolutas */
+}
+
+table.bonds tbody td.col-text,
+table.bonds tbody td:first-child {
+  text-align: left;
+}
+
+table.bonds tbody tr:nth-child(even) { background: var(--row-alt); }
+table.bonds tbody tr:hover           { background: var(--row-hover); }
+
+td.ticker, td.col-text {
+  color: var(--navy-dark);
+  font-weight: 700;
+}
+
+/* Variaciones positivas / negativas (texto solo) */
+td.pos { color: var(--pos-text); font-weight: 700; }
+td.neg { color: var(--neg-text); font-weight: 700; }
+
+td.empty { color: var(--text-faint); font-weight: 400; }
+
+/* =====================================================================
+   MINI-BARRAS (track tenue + relleno proporcional anclado a la derecha)
+   La JS inserta en celdas con signo:
+     <td class="num pos|neg has-bar">
+       <div class="bar-track">
+         <div class="bar-fill" style="width: XX%"></div>
+       </div>
+       <span class="cell-text">+1.23%</span>
+     </td>
+   ===================================================================== */
+
+td.has-bar .cell-text {
+  position: relative;
+  z-index: 2;
+}
+
+.bar-track {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  background: var(--bar-pos-light);
+  opacity: 0.55;
+  border-radius: 2px;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 0;                  /* la JS setea como % del track */
+  background: var(--bar-pos-strong);
+  opacity: 0.85;
+  border-radius: 2px;
+}
+
+td.neg .bar-track { background: var(--bar-neg-light); }
+td.neg .bar-fill  { background: var(--bar-neg-strong); }
+
+/* Celdas de escenario - mismo tratamiento que percent_signed pero con
+   tipografia mas marcada */
+td.scenario { font-weight: 800; }
+
+/* =====================================================================
+   PANEL CURVA SOBERANA (chart con Chart.js)
+   ===================================================================== */
+
+.panel-curva .panel-body {
+  padding: 0;
+  overflow: visible;
+}
+
+.chart-container {
+  position: relative;
+  height: 460px;
+  width: 100%;
+  padding: 12px 14px 14px;
+  box-sizing: border-box;
+}
+
+.chart-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* En modo WhatsApp el chart respira un poco mas */
+body.wa-mode .chart-container { height: 540px; }
+
+/* =====================================================================
+   ESTADOS (loading / error)
+   ===================================================================== */
+
+.panel.loading .panel-body::before {
+  content: "Cargando...";
+  display: block;
+  padding: 16px 18px;
+  color: var(--text-dim);
+}
+
+.panel.error .panel-body::before {
+  content: "Error obteniendo datos";
+  display: block;
+  padding: 16px 18px;
+  color: var(--neg-text);
+  font-weight: 700;
+}
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+
+.page-footer {
+  text-align: center;
+  padding: 14px 20px 24px;
+  color: var(--text-faint);
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+}
+
+/* =====================================================================
+   MODO WHATSAPP (lo activa el boton: body.wa-mode)
+   Reflowea a una columna vertical ~1080px de ancho para screenshot mobile.
+   Esconde botones y header sticky para captura limpia.
+   ===================================================================== */
+
+body.wa-mode {
+  width: 1080px;
+  margin: 0 auto;
+  background: var(--page-bg);
+}
+
+body.wa-mode .page-header {
+  position: static;
+  padding: 12px 22px;
+}
+
+body.wa-mode .actions { display: none; }
+
+body.wa-mode main#monitors {
+  grid-template-columns: 1fr;   /* todo apilado en una columna */
+  padding: 12px 16px 16px;
+  gap: 12px;
+}
+
+/* En WA la curva sigue full-width (que es lo unico que hay igual) */
+body.wa-mode .panel-curva { grid-column: 1 / -1; }
+
+body.wa-mode .panel-body { overflow-x: visible; }
+body.wa-mode table.bonds tbody td { font-size: 13px; padding: 8px 10px; }
+body.wa-mode table.bonds thead th  { font-size: 11px; padding: 8px 10px; }
+
+/* Modo capturando: oculta botones para que no salgan en el screenshot */
+body.capturing .actions { visibility: hidden; }
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+
+@media (max-width: 1100px) {
+  main#monitors { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .page-header {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  .live-block, .actions { align-items: flex-start; }
+  .actions { flex-direction: row; }
+  main#monitors { padding: 12px; }
+}

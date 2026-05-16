@@ -1,0 +1,70 @@
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, timedelta
+from typing import List
+
+from core.domain.interfaces import IInstrumentsRepository, IMarketDataProvider
+from core.domain.models import Instrument, InstrumentMetrics, MarketSnapshot
+from core.domain.services import FinancialEngine
+from core.infrastructure.indices_provider import BCRAIndicesProvider
+
+logger = logging.getLogger(__name__)
+
+
+class GenerateMonitorReport:
+    def __init__(self,
+                 instruments_repo: IInstrumentsRepository,
+                 market_provider: IMarketDataProvider):
+        self.repo = instruments_repo
+        self.provider = market_provider
+
+    def execute(self, instrument_types: List[str]) -> List[InstrumentMetrics]:
+        indices = BCRAIndicesProvider(excel_repo=self.repo)
+
+        all_instruments: List[Instrument] = []
+        for t in instrument_types:
+            all_instruments.extend(self.repo.get_instruments_by_type(t))
+
+        if not all_instruments:
+            logger.warning(f"No instruments found for types: {instrument_types}")
+            return []
+
+        tickers = [i.ticker for i in all_instruments]
+        snapshots_dict = self.provider.fetch_snapshots(tickers)
+
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = []
+            for inst in all_instruments:
+                snapshot = snapshots_dict.get(inst.ticker)
+                if snapshot is None:
+                    continue
+                snapshot.instrument = inst
+                futures.append(executor.submit(self._enrich_metrics, inst, snapshot, indices))
+
+            results = [f.result() for f in futures]
+
+        return [r for r in results if r is not None]
+
+    def _enrich_metrics(self, inst: Instrument, snapshot: MarketSnapshot, indices) -> InstrumentMetrics:
+        hist = self.provider.fetch_historical_prices(inst.ticker, 365)
+
+        today = date.today()
+        px_7d = hist.get(today - timedelta(days=7))
+        px_30d = hist.get(today - timedelta(days=30))
+        px_1y = hist.get(today - timedelta(days=365))
+
+        metrics = InstrumentMetrics(snapshot=snapshot)
+        metrics.tir = FinancialEngine.calculate_tir(snapshot, indices_provider=indices)
+        metrics.technical_value = FinancialEngine.calculate_technical_value(snapshot, indices_provider=indices)
+
+        if metrics.technical_value and snapshot.price:
+            metrics.parity = snapshot.price / metrics.technical_value
+
+        if metrics.tir is not None:
+            metrics.duration = FinancialEngine.calculate_duration(snapshot, metrics.tir)
+
+        metrics.variance_7d = FinancialEngine.calculate_pct_change(snapshot.price, px_7d)
+        metrics.variance_30d = FinancialEngine.calculate_pct_change(snapshot.price, px_30d)
+        metrics.variance_1y = FinancialEngine.calculate_pct_change(snapshot.price, px_1y)
+
+        return metrics

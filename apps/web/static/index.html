@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor de Bonos · Balanz</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="page-header">
+    <!-- IZQ: Logo BALANZ + MONITOR + fecha -->
+    <div class="brand-block">
+      <div class="logo-balanz">BALANZ</div>
+      <div class="brand-text">
+        <span class="brand-monitor">MONITOR</span>
+        <span class="brand-date" id="brand-date">—</span>
+      </div>
+    </div>
+
+    <!-- CENTRO: dot verde + EN VIVO + ultima actualizacion -->
+    <div class="live-block loading" id="live-block">
+      <div class="live-row">
+        <span class="live-dot"></span>
+        <span class="live-label">EN VIVO</span>
+      </div>
+      <span class="live-time">Última actualización <span id="live-time">—</span> hs</span>
+    </div>
+
+    <!-- DER: botones -->
+    <div class="actions">
+      <button class="btn" id="btn-capture"  type="button">Capturar</button>
+      <button class="btn" id="btn-whatsapp" type="button">WhatsApp</button>
+    </div>
+  </header>
+
+  <main id="monitors">
+    <!-- Fila 1: BONARES (izq) | BOPREALES (der) -->
+    <section class="panel" data-id="bonares">
+      <div class="panel-header">
+        <h2>BONARES &amp; GLOBALES</h2>
+        <span class="panel-sub" data-role="subtitle"></span>
+        <span class="panel-ts"  data-role="ts">—</span>
+      </div>
+      <div class="panel-body" data-role="body"></div>
+    </section>
+
+    <section class="panel" data-id="bopreales">
+      <div class="panel-header">
+        <h2>BOPREALES</h2>
+        <span class="panel-sub" data-role="subtitle"></span>
+        <span class="panel-ts"  data-role="ts">—</span>
+      </div>
+      <div class="panel-body" data-role="body"></div>
+    </section>
+
+    <!-- Fila 2: CURVA SOBERANA full-width -->
+    <section class="panel panel-curva" data-id="curva_soberana">
+      <div class="panel-header">
+        <h2>CURVA SOBERANA</h2>
+        <span class="panel-sub" data-role="subtitle">— · TIR vs Duration Modificada</span>
+        <span class="panel-ts"  data-role="ts">—</span>
+      </div>
+      <div class="panel-body" data-role="body">
+        <div class="chart-container">
+          <canvas data-role="canvas"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fila 3: COMPARACION (izq) | TASA FIJA (der) -->
+    <section class="panel" data-id="comparacion_tir">
+      <div class="panel-header">
+        <h2>COMPARACIÓN DE TIRs</h2>
+        <span class="panel-sub" data-role="subtitle"></span>
+        <span class="panel-ts"  data-role="ts">—</span>
+      </div>
+      <div class="panel-body" data-role="body"></div>
+    </section>
+
+    <section class="panel" data-id="tasa_fija">
+      <div class="panel-header">
+        <h2>LECAPS &amp; BONCAPS (TASA FIJA)</h2>
+        <span class="panel-sub" data-role="subtitle"></span>
+        <span class="panel-ts"  data-role="ts">—</span>
+      </div>
+      <div class="panel-body" data-role="body"></div>
+    </section>
+
+    <section class="panel" data-id="cer">
+      <div class="panel-header">
+        <h2>BONOS CER</h2>
+        <span class="panel-sub" data-role="subtitle"></span>
+        <span class="panel-ts"  data-role="ts">—</span>
+      </div>
+      <div class="panel-body" data-role="body"></div>
+    </section>
+  </main>
+
+
+  <footer class="page-footer">
+    Datos en tiempo real · Data912 Feed · refresh cada 30s
+  </footer>
+
+  <!-- Libs externas (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
