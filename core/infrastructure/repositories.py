@@ -366,6 +366,8 @@ class Data912MarketDataProvider(IMarketDataProvider):
                     last_update=date.today(),
                     bid=float(row["px_bid"]) if row.get("px_bid") else None,
                     ask=float(row["px_ask"]) if row.get("px_ask") else None,
+                    volume=float(row["v"]) if row.get("v") else None,
+                    operations=int(row["q_op"]) if row.get("q_op") else None,
                     change_pct=float(row["pct_change"]) if row.get("pct_change") else None,
                 )
             except (TypeError, ValueError) as e:

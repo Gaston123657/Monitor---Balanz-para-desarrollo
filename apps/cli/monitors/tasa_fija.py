@@ -5,6 +5,7 @@ from apps.cli.monitors._common import (
     fmt_num,
     fmt_pct,
     fmt_tir,
+    fmt_volume,
     last_future_cashflow_date,
     run_monitor,
 )
@@ -24,6 +25,7 @@ def _row(m):
         "Var 7D": fmt_pct(m.variance_7d, scale=100.0),
         "DM": fmt_num(m.duration),
         "Vto": fmt_date(vto),
+        "Vol $": fmt_volume(s.volume),
     }
 
 

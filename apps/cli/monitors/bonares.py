@@ -2,6 +2,7 @@ from apps.cli.monitors._common import (
     fmt_num,
     fmt_pct,
     fmt_tir,
+    fmt_volume,
     run_monitor,
 )
 from core.domain.instrument_groups import SOBERANOS
@@ -19,6 +20,7 @@ def _row(m):
         "Var 1Y": fmt_pct(m.variance_1y, scale=100.0),
         "Bid": fmt_num(s.bid),
         "Ask": fmt_num(s.ask),
+        "Vol $": fmt_volume(s.volume),
     }
 
 

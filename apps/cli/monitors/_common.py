@@ -58,6 +58,19 @@ def fmt_date(d, fmt: str = "%d/%m/%y") -> str:
     return d.strftime(fmt) if d else DASH
 
 
+def fmt_volume(v: Optional[float]) -> str:
+    """Compact ARS volume: 14.4B, 456.7M, 12K."""
+    if v is None or v == 0:
+        return DASH
+    if v >= 1e9:
+        return f"{v / 1e9:.2f}B"
+    if v >= 1e6:
+        return f"{v / 1e6:.1f}M"
+    if v >= 1e3:
+        return f"{v / 1e3:.0f}K"
+    return f"{v:.0f}"
+
+
 def last_future_cashflow_date(metrics: InstrumentMetrics, reference: Optional[date] = None):
     inst = metrics.snapshot.instrument
     if inst is None or not inst.cashflows:

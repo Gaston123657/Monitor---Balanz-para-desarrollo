@@ -62,6 +62,14 @@ const fmt = {
       maximumFractionDigits: dec,
     })}%`;
   },
+  volume(v) {
+    if (v === null || v === undefined || Number.isNaN(v) || Number(v) === 0) return "–";
+    const n = Number(v);
+    if (n >= 1e9) return `${(n / 1e9).toFixed(2).replace(".", ",")} B`;
+    if (n >= 1e6) return `${(n / 1e6).toFixed(1).replace(".", ",")} M`;
+    if (n >= 1e3) return `${(n / 1e3).toFixed(0)} K`;
+    return n.toFixed(0);
+  },
   text(v) {
     if (v === null || v === undefined) return "–";
     return String(v);
@@ -124,6 +132,10 @@ function renderCell(col, value, ctx) {
 
     case "number":
       td.textContent = fmt.number(value, col.decimals ?? 2);
+      return td;
+
+    case "volume":
+      td.textContent = fmt.volume(value);
       return td;
 
     case "percent":

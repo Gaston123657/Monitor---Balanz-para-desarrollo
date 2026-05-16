@@ -34,7 +34,8 @@ class MarketSnapshot:
     last_update: date
     bid: Optional[float] = None
     ask: Optional[float] = None
-    volume: Optional[float] = None
+    volume: Optional[float] = None   # ARS notional traded today (Data912 "v")
+    operations: Optional[int] = None  # number of trades today (Data912 "q_op")
     change_pct: Optional[float] = None
 
 @dataclass

@@ -3,6 +3,7 @@ from apps.cli.monitors._common import (
     fmt_num,
     fmt_pct,
     fmt_tir,
+    fmt_volume,
     last_future_cashflow_date,
     run_monitor,
 )
@@ -22,6 +23,7 @@ def _row(m):
         "Var 30D": fmt_pct(m.variance_30d, scale=100.0),
         "Dur.Mod": fmt_num(m.duration),
         "Vto": fmt_date(vto),
+        "Vol $": fmt_volume(s.volume),
     }
 
 

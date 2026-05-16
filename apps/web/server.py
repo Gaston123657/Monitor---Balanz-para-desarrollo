@@ -57,6 +57,7 @@ def _get_columns(monitor_id: str):
         {"key": "v7d", "label": "Var 7d", "kind": "percent_signed", "decimals": 2},
         {"key": "bid", "label": "Bid", "kind": "number", "decimals": 2},
         {"key": "ask", "label": "Ask", "kind": "number", "decimals": 2},
+        {"key": "volume", "label": "Vol $", "kind": "volume"},
     ]
     schemas = {
         "bonares": bonares_cols,
@@ -68,6 +69,7 @@ def _get_columns(monitor_id: str):
             {"key": "tir", "label": "TIR", "kind": "percent", "decimals": 2},
             {"key": "duration", "label": "DM", "kind": "number", "decimals": 2},
             {"key": "change_pct", "label": "Var%", "kind": "percent_signed", "decimals": 2},
+            {"key": "volume", "label": "Vol $", "kind": "volume"},
         ],
         "tasa_fija": [
             {"key": "ticker", "label": "Ticker", "kind": "text"},
@@ -75,7 +77,8 @@ def _get_columns(monitor_id: str):
             {"key": "price", "label": "Precio", "kind": "number", "decimals": 2},
             {"key": "tir", "label": "TEA %", "kind": "percent", "decimals": 2},
             {"key": "change_pct", "label": "Var %", "kind": "percent_signed", "decimals": 2},
-        ]
+            {"key": "volume", "label": "Vol $", "kind": "volume"},
+        ],
     }
     return schemas.get(monitor_id, [])
 
@@ -136,6 +139,7 @@ def _refresh_loop(snapshot: Snapshot):
                     "v7d": _scale(m.variance_7d),
                     "bid": m.snapshot.bid,
                     "ask": m.snapshot.ask,
+                    "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("bonares", rows=rows_bonares, status="ok")
 
@@ -150,6 +154,7 @@ def _refresh_loop(snapshot: Snapshot):
                     "tir": _scale(m.tir),
                     "duration": m.duration,
                     "change_pct": m.snapshot.change_pct,
+                    "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("cer", rows=rows_cer, status="ok")
 
@@ -166,6 +171,7 @@ def _refresh_loop(snapshot: Snapshot):
                     "v7d": _scale(m.variance_7d),
                     "bid": m.snapshot.bid,
                     "ask": m.snapshot.ask,
+                    "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("bopreales", rows=rows_bop, status="ok")
 
@@ -181,6 +187,7 @@ def _refresh_loop(snapshot: Snapshot):
                     "price": m.snapshot.price,
                     "tir": _scale(m.tir),
                     "change_pct": m.snapshot.change_pct,
+                    "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("tasa_fija", rows=rows_fija, status="ok")
 
