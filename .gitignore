@@ -25,3 +25,11 @@ Thumbs.db
 
 # Scratch
 scratch/
+
+# Secrets / credentials (NEVER commit)
+.env
+.env.*
+!.env.example
+secrets/
+*.secret
+

@@ -79,6 +79,17 @@ def _get_columns(monitor_id: str):
             {"key": "change_pct", "label": "Var %", "kind": "percent_signed", "decimals": 2},
             {"key": "volume", "label": "Vol $", "kind": "volume"},
         ],
+        "futuros": [
+            {"key": "ticker", "label": "Contrato", "kind": "text"},
+            {"key": "vto", "label": "Vto", "kind": "date"},
+            {"key": "bid", "label": "Compra", "kind": "number", "decimals": 2},
+            {"key": "ask", "label": "Venta", "kind": "number", "decimals": 2},
+            {"key": "last", "label": "Último", "kind": "number", "decimals": 2},
+            {"key": "settle", "label": "Ajuste", "kind": "number", "decimals": 2},
+            {"key": "tna", "label": "TNA", "kind": "percent", "decimals": 2},
+            {"key": "open_interest", "label": "Int.Abierto", "kind": "number", "decimals": 0},
+            {"key": "volume", "label": "Vol", "kind": "number", "decimals": 0},
+        ],
     }
     return schemas.get(monitor_id, [])
 
@@ -97,6 +108,7 @@ class Snapshot:
                 {"id": "cer", "title": "BONOS CER", "status": "loading", "rows": [], "columns": _get_columns("cer")},
                 {"id": "tasa_fija", "title": "TASA FIJA", "status": "loading", "rows": [], "columns": _get_columns("tasa_fija")},
                 {"id": "dolar_linked", "title": "DOLAR LINKED", "status": "loading", "rows": [], "columns": _get_columns("dolar_linked")},
+                {"id": "futuros", "title": "FUTUROS ROFEX", "status": "loading", "rows": [], "columns": _get_columns("futuros")},
             ],
         }
 
@@ -121,10 +133,15 @@ class Snapshot:
 
 def _refresh_loop(snapshot: Snapshot):
     from core.infrastructure.fx_provider import DolarAPIProvider
+    from core.infrastructure.futures_provider import (
+        RofexProvider, DEFAULT_SYMBOLS as ROFEX_SYMBOLS,
+        parse_contract_maturity, implied_tna,
+    )
     repo = ExcelInstrumentsRepository(MASTER_XLSX)
     provider = Data912MarketDataProvider()
     use_case = GenerateMonitorReport(repo, provider)
     fx = DolarAPIProvider()
+    rofex = RofexProvider()
     
     # Backend returns TIR and variance_* as decimal fractions (0.0131 = 1.31%).
     # The web JS formatter renders the raw value with a "%" suffix, so we
@@ -213,6 +230,30 @@ def _refresh_loop(snapshot: Snapshot):
                     "volume": m.snapshot.volume,
                 })
             snapshot.update_monitor("dolar_linked", rows=rows_dl, status="ok")
+
+            # Futuros Rofex (DLR curve)
+            quotes = rofex.get_quotes(ROFEX_SYMBOLS)
+            spot = fx.get_mayorista_venta()
+            rows_fut = []
+            for sym in ROFEX_SYMBOLS:
+                q = quotes.get(sym)
+                if not q:
+                    continue
+                mat = parse_contract_maturity(sym)
+                ref_price = q.get("last") or q.get("settle")
+                tna = implied_tna(ref_price, spot, mat) if (ref_price and spot and mat) else None
+                rows_fut.append({
+                    "ticker": sym,
+                    "vto": mat,
+                    "bid": q.get("bid"),
+                    "ask": q.get("ask"),
+                    "last": q.get("last"),
+                    "settle": q.get("settle"),
+                    "tna": _scale(tna),
+                    "open_interest": q.get("open_interest"),
+                    "volume": q.get("volume"),
+                })
+            snapshot.update_monitor("futuros", rows=rows_fut, status="ok")
 
         except Exception as e:
             logger.error(f"Error in web refresh loop: {e}")
