@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from apps.cli.monitors._common import (
     fmt_date,
     fmt_num,
@@ -8,32 +6,32 @@ from apps.cli.monitors._common import (
     last_future_cashflow_date,
     run_monitor,
 )
-from core.domain.instrument_groups import TASA_FIJA
+from core.domain.instrument_groups import DOLAR_LINKED
 
 
 def _row(m):
     s = m.snapshot
     vto = last_future_cashflow_date(m)
-    dias = (vto - datetime.now().date()).days if vto else 0
     return {
         "Ticker": s.instrument.ticker,
-        "Días": dias,
+        "Vto": fmt_date(vto),
         "Precio": fmt_num(s.price) if s.price else "-",
-        "TEA%": fmt_tir(m.tir),
+        "TIR": fmt_tir(m.tir),
+        "DM": fmt_num(m.duration),
         "Var 1D": fmt_pct(s.change_pct),
         "Var 7D": fmt_pct(m.variance_7d, scale=100.0),
-        "DM": fmt_num(m.duration),
-        "Vto": fmt_date(vto),
+        "Var 30D": fmt_pct(m.variance_30d, scale=100.0),
+        "Bid": fmt_num(s.bid),
+        "Ask": fmt_num(s.ask),
     }
 
 
-def generate_tasa_fija_report(output_dir: str):
+def generate_dolar_linked_report(output_dir: str):
     return run_monitor(
-        types=TASA_FIJA,
-        title="MONITOR LETRAS Y BONCAPS — TASA FIJA",
-        prefix="monitor_tasa_fija",
+        types=DOLAR_LINKED,
+        title="MONITOR DOLAR LINKED",
+        prefix="monitor_dolar_linked",
         output_dir=output_dir,
         row_builder=_row,
-        sort_by="Días",
-        log_label="TASA FIJA",
+        log_label="DOLAR LINKED",
     )

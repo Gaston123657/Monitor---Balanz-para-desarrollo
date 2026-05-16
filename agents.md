@@ -1,242 +1,164 @@
-# 🤖 AGENTS.md - Guía para IA / Desarrolladores
+# AGENTS.md — Guía para IA / Desarrolladores
 
-**Documento maestro para entender, extender y mantener el Monitor de Bonos Argentinos.**
-
----
-
-## 📋 TABLA DE CONTENIDOS
-
-1. [Visión General](#visión-general)
-2. [Pipeline Completo](#pipeline-completo)
-3. [Arquitectura](#arquitectura)
-4. [Estructura de Archivos](#estructura-de-archivos)
-5. [Guía de Código](#guía-de-código)
-6. [Configuración Crítica](#configuración-crítica)
-7. [Cómo Extender](#cómo-extender)
-8. [Troubleshooting](#troubleshooting)
-9. [Notas Técnicas](#notas-técnicas)
-10. [Roadmap](#roadmap)
+**Monitor de instrumentos de renta fija argentinos. Documento maestro de arquitectura.**
 
 ---
 
-## 🎯 VISIÓN GENERAL
+## VISIÓN GENERAL
 
-### Propósito
-Monitor automatizado de instrumentos financieros argentinos (Soberanos, LECAPs, CER, Dólar Linked, TAMAR) que obtiene datos de mercado en tiempo real desde Refinitiv, calcula métricas críticas (TIR, Duración, Tasas Implícitas) y centraliza la gestión de instrumentos en un registro maestro de Excel.
+Monitor automatizado de los principales segmentos de renta fija en Argentina (Soberanos, Bopreales, Tasa Fija, CER, Dólar Linked) que obtiene precios en tiempo real desde **Data912** (`https://data912.com/live/*`), calcula TIR / Duración / Valor Técnico / Paridad de forma centralizada, y presenta los resultados en consola, PNG y un dashboard web.
 
-### Usuarios Objetivo
-- Mesas de trading y analistas de renta fija.
-- Risk officers y control de gestión.
-
-### Stack Técnico
-- **Lenguaje**: Python 3.12+
-- **API Principal**: Refinitiv (Eikon Data API)
-- **Registro Maestro**: Excel (`data/instruments_master.xlsx`)
-- **Backend Loader**: `config/instruments_db.py` (Singleton + Cache)
-- **Cálculos**: SciPy (Newton para TIR), NumPy, Pandas
-- **Presentación**: Consola (Tabulate), PNG (Matplotlib), Web (Bottle.py)
+### Stack técnico
+- Python 3.12+
+- **Precios de mercado**: Data912 (`arg_notes`, `arg_bonds`, `arg_corp`)
+- **Índice CER**: BCRA API v4.0 — única excepción a la regla "todo desde Data912" (es dato de referencia, no de mercado)
+- **Histórico de precios**: `data/history/precio_historico.csv` (TSV, columnas = RICs)
+- **Master de instrumentos**: `data/instruments_master.xlsx`
+- Matemática: SciPy (Newton + Brentq para XIRR), NumPy, Pandas
+- Salida: Tabulate (consola), Matplotlib (PNG), `http.server` (web)
 
 ---
 
-## 🔄 PIPELINE COMPLETO
+## LOS 4 PILARES ARQUITECTÓNICOS
 
-### Flujo de Datos de Extremo a Extremo
+| Pilar | Implementación | Regla |
+|---|---|---|
+| **1. Un script por curva** | `apps/cli/monitors/*.py` | Cada curva (Soberanos, Bopreales, CER, etc.) tiene exactamente un script CLI. |
+| **2. Excel central como única fuente de instrumentos** | `core/infrastructure/repositories.py::ExcelInstrumentsRepository` | Nadie más lee `instruments_master.xlsx`. Sin listas hardcodeadas de tickers. |
+| **3. IRR/TIR centralizado** | `core/domain/services.py::FinancialEngine` | Única implementación de `xirr` y `calculate_tir`. Nadie reimplementa fórmulas financieras. |
+| **4. Datos puramente Data912** | `core/infrastructure/repositories.py::Data912MarketDataProvider` | Único provider de precios. BCRA queda permitido solo para CER (índice de referencia). |
+
+---
+
+## PIPELINE
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. CONFIGURACIÓN - instruments_master.xlsx                      │
-│    Única fuente de verdad para Tickers, RICs y Cashflows.       │
-└─────────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. CARGA DINÁMICA - instruments_db.py                           │
-│    Lee el Excel maestro y provee mappings tipados a todo el     │
-│    proyecto. Evita hardcodeo de especies.                       │
-└─────────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. OBTENCIÓN DE DATOS - core/data_fetcher.py                    │
-│    Batch fetching desde Refinitiv usando los RICs de la BD.     │
-└─────────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 4. MOTOR DE CÁLCULO - core/financial_math.py                    │
-│    - TIR (Newton solver)                                        │
-│    - Macaulay & Modified Duration                               │
-│    - Tasas (TNA, TEA, TEM)                                      │
-└─────────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 5. MONITORES ESPECÍFICOS - apps/cli/monitors/                   │
-│    Cada monitor (CER, Soberanos, Fija) consume el Loader y el   │
-│    Motor de Cálculo para generar su panel de datos.             │
-└─────────────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ 6. SALIDA MULTIMODAL                                            │
-│    - Consola: Visualización tabular rápida.                     │
-│    - PNG: Exportación profesional para reportes.                │
-│    - Web: Dashboard interactivo (Bottle + JS).                  │
-└─────────────────────────────────────────────────────────────────┘
+instruments_master.xlsx ──► ExcelInstrumentsRepository ──┐
+                                                          │
+Data912 (live) ─────────► Data912MarketDataProvider ──┐  │
+                                                       ▼  ▼
+                                      GenerateMonitorReport.execute(types)
+                                                       │
+                                                       ▼
+                                        FinancialEngine.calculate_tir / duration / theoretical_price
+                                                       │
+                                                       ▼
+                            apps/cli/monitors/<curva>.py ──► consola + PNG
+                            apps/web/server.py ──► dashboard JSON
 ```
 
 ---
 
-## 🏗️ ARQUITECTURA
-
-### Capas del Sistema
-
-```
-┌──────────────────────────────────────────┐
-│ CAPA DE APLICACIÓN (apps/)                │
-│ - CLI: Monitores de mercado en tiempo real│
-│ - WEB: Servidor de visualización y API    │
-└──────────────────────────────────────────┘
-                    ↑
-┌──────────────────────────────────────────┐
-│ CAPA DE PRESENTACIÓN (presentation/)      │
-│ - Exportadores PNG y formateadores CLI    │
-└──────────────────────────────────────────┘
-                    ↑
-┌──────────────────────────────────────────┐
-│ CAPA DE LÓGICA CORE (core/)               │
-│ - Data Fetchers (API Refinitiv)           │
-│ - Motores de Cálculo Financiero           │
-│ - Cache Manager (History & Caches)        │
-└──────────────────────────────────────────┘
-                    ↑
-┌──────────────────────────────────────────┐
-│ CAPA DE DATOS Y CONFIG (data/ & config/)  │
-│ - instruments_master.xlsx (BASE MAESTRA)  │
-│ - instruments_db.py (Loader Singleton)    │
-│ - settings.py (Timeouts, API Keys)        │
-└──────────────────────────────────────────┘
-```
-
----
-
-## 📁 ESTRUCTURA DE ARCHIVOS
+## ESTRUCTURA DE ARCHIVOS
 
 ```
 Monitores - Data912/
-├── run.py                       # [ENTRY POINT] Menú principal interactivo
-├── agents.md                    # [DOCS] Guía para IA y Developers
+├── run.py                              # Menú interactivo CLI
+├── agents.md                           # Este documento
 │
-├── apps/                        # Aplicaciones finales
-│   ├── cli/                     # Monitores de consola (Bonares, CER, etc.)
-│   └── web/                     # Servidor Dashboard Web
+├── apps/
+│   ├── cli/monitors/
+│   │   ├── _common.py                  # bootstrap singleton + formatters + run_monitor()
+│   │   ├── bonares.py                  # SOBERANOS (BONAR + GLOBAL)
+│   │   ├── bopreales.py                # BOPREALES
+│   │   ├── cer.py                      # Bonos CER
+│   │   ├── dolar_linked.py             # Bonos Dólar Linked
+│   │   ├── tasa_fija.py                # LECAP / BONCAP / DUAL / BONOFIJA / PURO
+│   │   └── comparacion_tirs.py         # Escenarios de sensibilidad
+│   └── web/
+│       └── server.py                   # Dashboard interactivo + API JSON
 │
-├── config/                      # Configuración y Bases de Datos
-│   ├── instruments_db.py        # LOADER del Excel Maestro
-│   └── settings.py              # Parámetros de conexión y visualización
+├── config/
+│   ├── settings.py                     # Paths, setup_logging(), constantes
+│   └── theme.py                        # Paleta y geometría de los PNG
 │
-├── core/                        # El "motor" del sistema
-│   ├── data_fetcher.py          # Comunicación batch con Refinitiv
-│   └── financial_math.py        # Fórmulas de TIR, Duración y Tasas
+├── core/
+│   ├── domain/
+│   │   ├── models.py                   # Instrument, Cashflow, MarketSnapshot, InstrumentMetrics
+│   │   ├── interfaces.py               # IInstrumentsRepository, IMarketDataProvider, IMetricsCalculator
+│   │   ├── services.py                 # FinancialEngine (xirr, tir, duration, theoretical_price)
+│   │   └── instrument_groups.py        # SOBERANOS, BOPREALES, TASA_FIJA, CER, DOLAR_LINKED
+│   ├── infrastructure/
+│   │   ├── repositories.py             # ExcelInstrumentsRepository + Data912MarketDataProvider
+│   │   └── indices_provider.py         # BCRAIndicesProvider (excepción CER)
+│   ├── use_cases/
+│   │   └── generate_report.py          # GenerateMonitorReport.execute(types) -> [InstrumentMetrics]
+│   └── holiday_engine.py               # Calendario BYMA + feriados AR (settlement T+0/T+1)
 │
-├── data/                        # Datos estáticos y dinámicos
-│   ├── instruments_master.xlsx  # [BASE MAESTRA] Tickers y mappings
-│   ├── feriados_ar.xlsx         # Calendario de feriados local
-│   └── history/                 # Series históricas para variaciones
+├── data/
+│   ├── instruments_master.xlsx         # FUENTE DE VERDAD: hojas por tipo + Cashflows + Cashflows_Fija
+│   ├── feriados_ar.xlsx                # Feriados argentinos cacheados
+│   └── history/precio_historico.csv    # Histórico TSV para variaciones 7D/30D/1Y
 │
-└── presentation/                # Formateo de salida (Tablas, PNG)
+└── presentation/
+    ├── console_printer.py              # print_monitor(title, df)
+    └── png_exporter.py                 # draw_monitor_png(df, path, title)
 ```
 
 ---
 
-## 💻 GUÍA DE CÓDIGO
+## CÓMO AGREGAR UNA NUEVA CURVA
 
-### Entrada Principal: main.py
+1. **Agregar el tipo** al `instrument_type` correspondiente en `instruments_master.xlsx`.
+2. **Agregar el tipo** a la constante adecuada en [`core/domain/instrument_groups.py`](core/domain/instrument_groups.py) (o crear una nueva constante si es una curva nueva).
+3. **Crear el script** en `apps/cli/monitors/<curva>.py` usando `run_monitor(...)` del módulo `_common.py`. Mirá `dolar_linked.py` como referencia: ~30 líneas.
+4. **Registrar** la función en `run.py` (lista `monitors`).
+5. **Opcional**: agregar columnas en `apps/web/server.py::_get_columns` si querés exponerla en el dashboard.
 
-```python
-if __name__ == "__main__":
-    # 1. Cargar API key de variable de entorno
-    api_key = os.getenv("EIKON_APP_KEY")  # ← CRÍTICO: debe estar definida
-    
-    # 2. Abrir sesión Refinitiv
-    rd.open_session(app_key=api_key)
-    
-    # 3. Loop principal
-    while True:
-        # Iterar sobre TICKERS (desde config.py)
-        for ticker in TICKERS:
-            df = get_dynamic_data(ticker)  # ← Llamada clave
-            
-        # Mostrar tabla en consola + CSV
-        display_monitor(data_list, TICKERS)
-        
-        # Esperar
-        time.sleep(REFRESH_INTERVAL_SEC)  # 30 segundos (configurable)
-```
-
-**Puntos clave:**
-- `TICKERS` viene de `config.py` (lista completa de tickers)
-- `get_dynamic_data()` es el corazón: obtiene todos los datos para 1 ticker
-- `display_monitor()` consolida todos los tickers en tabla CSV
-- Loop corre indefinidamente (Ctrl+C para detener)
+**Nunca**:
+- Hardcodear listas de tickers en un monitor (usar `instrument_groups.py`).
+- Crear un cliente HTTP nuevo para precios (usar `Data912MarketDataProvider`).
+- Reimplementar TIR / duration / NPV (usar `FinancialEngine`).
+- Leer el Excel maestro fuera de `ExcelInstrumentsRepository`.
 
 ---
 
-## 💻 GUÍA DE CÓDIGO
+## CÓMO EXTENDER LA MATEMÁTICA FINANCIERA
 
-### El Cargador Central: config/instruments_db.py
+Todo va en [`core/domain/services.py::FinancialEngine`](core/domain/services.py) como `@staticmethod`. Métodos existentes:
 
-Este es el archivo más importante para el mantenimiento. Utiliza `pandas` para leer el Excel maestro y provee funciones como:
-- `get_soberano_rics()`: Devuelve lista de RICs para la API.
-- `load_cashflows()`: Carga la tabla de flujos futuros.
-- `get_tasa_fija_lecap_boncap()`: Configuración para el monitor de Lecaps.
-
-**Regla de Oro:** Si un monitor necesita datos de un instrumento, debe pedírselos a este módulo. No se permiten listas `[]` de tickers en los scripts de `apps/`.
-
----
-
-### Cálculo de TIR: core/financial_math.py
-
-La TIR se calcula resolviendo el NPV (Net Present Value):
-```python
-def xirr(flows, dates):
-    # Usa scipy.optimize.newton para encontrar la raíz
-    # NPV = Σ [CF_i / (1 + TIR)^(t_i)] = 0
-```
-
-**Punto clave:** Los flujos de caja se obtienen filtrando la hoja `Cashflows` del Excel maestro por el `short_name` del instrumento y la fecha actual.
+| Método | Devuelve |
+|---|---|
+| `xirr(flows, dates)` | TIR de un flujo de caja (decimal fraction; 0.30 = 30%) |
+| `calculate_tir(snapshot, indices_provider=None)` | TIR del instrumento; ajusta por CER si corresponde |
+| `calculate_duration(snapshot, tir)` | Modified Duration |
+| `calculate_technical_value(snapshot, indices_provider)` | Valor Técnico (Valor Par) — 100 si no es CER |
+| `calculate_theoretical_price(instrument, tir, ref_date)` | Precio implícito al descontar al TIR dado |
+| `calculate_pct_change(current, previous)` | Variación porcentual (None-safe) |
 
 ---
 
-### Caché de Datos
+## CACHE Y PERFORMANCE
 
-Para optimizar el rendimiento y no saturar la API ni el disco:
-1. **Instrumentos**: `instruments_db.py` cachea las hojas del Excel en el diccionario `_CACHE`.
-2. **Feriados**: `core/holiday_engine.py` utiliza un archivo JSON local para evitar recalcular feriados de BYMA en cada ciclo.
-3. **Precios Históricos**: `core/cache_manager.py` gestiona el acceso a `data/history/precio_historico.csv` para las variaciones de 7D/30D.
-
----
-
-## 🚨 TROUBLESHOOTING
-
-### Error: "No se encontró instruments_master.xlsx"
-**Causa:** El archivo Excel fue movido o renombrado.
-**Solución:** Asegurarse que el archivo esté en `data/instruments_master.xlsx`.
-
-### Error: "Invalid API key"
-**Causa:** La variable de entorno `EIKON_APP_KEY` no está configurada.
-**Solución:** `$env:EIKON_APP_KEY = "tu_key"` en PowerShell antes de correr `run.py`.
-
-### TIR reporta valores incoherentes
-**Causa:** Los flujos de caja en el Excel maestro para esa especie están desactualizados o la fecha de vencimiento es pasada.
-**Solución:** Revisar las hojas `Cashflows` y `Soberanos` en el Excel.
+- **Repositorio Excel**: singleton vía [`apps/cli/monitors/_common.py::get_repository`](apps/cli/monitors/_common.py). El Excel se carga **una sola vez** por sesión, no por monitor.
+- **Snapshots Data912**: `Data912MarketDataProvider._cache` se rellena en cada `fetch_snapshots`. No es cross-call; cada llamada refetchea (porque son precios live).
+- **Histórico**: el CSV se lee una vez por instancia de `Data912MarketDataProvider`.
+- **Índice CER**: `BCRAIndicesProvider._instance_cache` es class-level + thread-safe; persiste durante el día.
+- **Feriados**: `core/holiday_engine.py` cachea en `data/feriados_ar_cache.json`.
 
 ---
 
-## ✅ CHECKLIST PARA DESARROLLADORES
+## TROUBLESHOOTING
 
-- [ ] ¿Agregaste una especie? Hazlo en `data/instruments_master.xlsx`.
-- [ ] ¿Cambió un flujo de caja? Actualiza la hoja `Cashflows` del Excel.
-- [ ] ¿Nuevo cálculo financiero? Agrégalo a `core/financial_math.py`.
-- [ ] ¿Nueva vista en el dashboard? Crea el monitor en `apps/cli/monitors/` y regístralo en `run.py`.
+| Error | Causa probable | Solución |
+|---|---|---|
+| `No se encontró instruments_master.xlsx` | El Excel se movió | Restaurarlo en `data/instruments_master.xlsx` |
+| Variaciones 7D/30D/1Y todas `-` | El CSV histórico no tiene el RIC del instrumento | Refrescar `data/history/precio_historico.csv` |
+| TIR muestra `nan` o números absurdos | Cashflows del Excel desactualizados o vencidos | Revisar hoja `Cashflows` / `Cashflows_Fija` |
+| CER no funciona | BCRA API caída o sin conectividad | Verificar `https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/30` |
+| Aparece menos instrumentos de los esperados | Filtro de tipos en `instrument_groups.py` no incluye el tipo del Excel | Agregar el `instrument_type` al grupo correspondiente |
 
 ---
 
-**Última actualización:** 2026-05-13
-**Versión:** 3.0 (Arquitectura Centralizada)
-**Mantenedor:** Antigravity AI
+## CHECKLIST PARA DESARROLLADORES
+
+- [ ] ¿Agregaste un instrumento? Solo en `data/instruments_master.xlsx`.
+- [ ] ¿Cambió un flujo? Hoja `Cashflows` (o `Cashflows_Fija`).
+- [ ] ¿Nuevo cálculo financiero? `FinancialEngine` en `core/domain/services.py`.
+- [ ] ¿Nuevo monitor? Script en `apps/cli/monitors/`, tipo en `instrument_groups.py`, registro en `run.py`.
+- [ ] ¿Nueva fuente de datos? Justificar por qué no se puede hacer con Data912; si es índice/referencia, modelo análogo a `BCRAIndicesProvider`.
+
+---
+
+**Última actualización:** 2026-05-16
+**Versión:** 4.0 (Post-audit arquitectónico, Data912-pure + Excel-pure)

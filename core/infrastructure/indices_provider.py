@@ -9,7 +9,14 @@ from typing import Dict, Optional
 logger = logging.getLogger(__name__)
 
 class BCRAIndicesProvider:
-    """Provides CER and other indices from official BCRA API v4.0 with thread-safe caching."""
+    """CER reference index from BCRA (api.bcra.gob.ar).
+
+    Architectural exception: market data must come from Data912, but the CER
+    coefficient is published only by the BCRA (Argentine Central Bank). It is
+    reference data, not price data — used to compute real TIR and technical
+    value for CER-indexed bonds. This is the ONLY allowed external source
+    outside Data912 in the system.
+    """
     BCRA_URL = "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/30"
     
     _lock = threading.Lock()

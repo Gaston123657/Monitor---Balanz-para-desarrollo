@@ -6,8 +6,9 @@ from config.settings import setup_logging
 
 from apps.cli.monitors.bonares import generate_bonares_report
 from apps.cli.monitors.bopreales import generate_bopreales_report
-from apps.cli.monitors.comparacion_tirs import generate_comparacion_report
 from apps.cli.monitors.cer import generate_cer_report
+from apps.cli.monitors.comparacion_tirs import generate_comparacion_report
+from apps.cli.monitors.dolar_linked import generate_dolar_linked_report
 from apps.cli.monitors.tasa_fija import generate_tasa_fija_report
 from apps.web.server import main as web_server_main
 
@@ -21,10 +22,11 @@ def main():
     monitors = [
         {"name": "BONARES Y GLOBALES", "func": generate_bonares_report},
         {"name": "BOPREALES", "func": generate_bopreales_report},
-        {"name": "TASA FIJA (LECAPS / BONCAPS)", "func": generate_tasa_fija_report},
+        {"name": "TASA FIJA (LECAPS / BONCAPS / DUAL / BONOFIJA / PURO)", "func": generate_tasa_fija_report},
         {"name": "BONOS CER", "func": generate_cer_report},
+        {"name": "DOLAR LINKED", "func": generate_dolar_linked_report},
         {"name": "COMPARACION DE TIR'S", "func": generate_comparacion_report},
-        {"name": "INICIAR MONITOR WEB (Dashboard Interactivo)", "func": lambda _: web_server_main()}
+        {"name": "INICIAR MONITOR WEB (Dashboard Interactivo)", "func": lambda _: web_server_main()},
     ]
 
     print("="*60)

@@ -6,6 +6,7 @@ from apps.cli.monitors._common import (
     last_future_cashflow_date,
     run_monitor,
 )
+from core.domain.instrument_groups import CER
 
 
 def _row(m):
@@ -26,7 +27,7 @@ def _row(m):
 
 def generate_cer_report(output_dir: str):
     return run_monitor(
-        types=["CER", "LECER", "BONCER"],
+        types=CER,
         title="MONITOR BONOS CER - INFLACIÓN",
         prefix="monitor_cer",
         output_dir=output_dir,

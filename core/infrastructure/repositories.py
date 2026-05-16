@@ -1,9 +1,11 @@
-import pandas as pd
-import logging
 import json
-import urllib.request
+import logging
+import os
 import ssl
+import urllib.request
 import warnings
+
+import pandas as pd
 from typing import List, Dict, Optional
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -15,6 +17,23 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 
 logger = logging.getLogger(__name__)
 
+
+def normalize_symbol(ticker: str, ric: str) -> str:
+    """Reduce a Refinitiv RIC (e.g. 'ARAL29D1=BA') to the canonical clean ticker
+    used throughout the system ('AL29D'). Falls back to `ticker` if no RIC.
+    """
+    if not ric or pd.isna(ric):
+        return ticker
+    norm = str(ric).upper().strip()
+    if norm.startswith("AR"):
+        norm = norm[2:]
+    if "=" in norm:
+        norm = norm.split("=")[0]
+    if len(norm) > 1 and norm[-2] == "D" and norm[-1].isdigit():
+        norm = norm[:-1]
+    return norm
+
+
 class ExcelInstrumentsRepository(IInstrumentsRepository):
     NON_INSTRUMENT_SHEETS = frozenset({"Cashflows", "Cashflows_Fija", "Metadata", "Cotizaciones"})
 
@@ -25,13 +44,7 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
         self._load_all()
 
     def _normalize_symbol(self, ticker: str, ric: str) -> str:
-        if not ric or pd.isna(ric): return ticker
-        norm = str(ric).upper().strip()
-        if norm.startswith("AR"): norm = norm[2:]
-        if "=" in norm: norm = norm.split("=")[0]
-        if len(norm) > 1 and norm[-2] == "D" and norm[-1].isdigit():
-            norm = norm[:-1]
-        return norm
+        return normalize_symbol(ticker, ric)
 
     def _parse_date(self, val) -> Optional[date]:
         """Safely parse date from various formats without warnings."""
@@ -98,32 +111,45 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
 
     def _load_all(self):
         try:
-            # 1. Load Cashflows (Master lists)
+            # 1. Load Cashflows (Master lists). Rows with no parseable date are
+            #    skipped to avoid TypeError when comparing cf.date >= reference downstream.
             df_cf = pd.read_excel(self.excel_path, sheet_name="Cashflows")
-            cf_map = {}
+            cf_map: Dict[str, List[Cashflow]] = {}
+            skipped = 0
             for _, row in df_cf.iterrows():
                 t = str(row.get("ticker", "")).upper().strip()
-                if not t: continue
-                if t not in cf_map: cf_map[t] = []
-                cf_map[t].append(Cashflow(
-                    date=self._parse_date(row.get("fecha_pago")),
+                if not t:
+                    continue
+                cf_date = self._parse_date(row.get("fecha_pago"))
+                if cf_date is None:
+                    skipped += 1
+                    continue
+                cf_map.setdefault(t, []).append(Cashflow(
+                    date=cf_date,
                     amortization=float(row.get("amortizacion", 0)),
-                    interest=float(row.get("cupon_interes", 0))
+                    interest=float(row.get("cupon_interes", 0)),
                 ))
-            
+
             try:
                 df_cf_fija = pd.read_excel(self.excel_path, sheet_name="Cashflows_Fija")
                 for _, row in df_cf_fija.iterrows():
                     t = str(row.get("ticker", "")).upper().strip()
-                    if not t: continue
-                    if t not in cf_map: cf_map[t] = []
-                    cf_map[t].append(Cashflow(
-                        date=self._parse_date(row.get("fecha_pago")),
+                    if not t:
+                        continue
+                    cf_date = self._parse_date(row.get("fecha_pago"))
+                    if cf_date is None:
+                        skipped += 1
+                        continue
+                    cf_map.setdefault(t, []).append(Cashflow(
+                        date=cf_date,
                         amortization=float(row.get("monto", 0)),
-                        interest=0.0
+                        interest=0.0,
                     ))
             except (FileNotFoundError, ValueError, KeyError) as e:
                 logger.debug(f"Cashflows_Fija sheet not loaded: {e}")
+
+            if skipped:
+                logger.warning(f"Skipped {skipped} cashflow rows with invalid fecha_pago.")
 
             self._cache_instruments = []
             xl = pd.ExcelFile(self.excel_path)
@@ -198,7 +224,17 @@ class Data912MarketDataProvider(IMarketDataProvider):
         "corp":  "https://data912.com/live/arg_corp",
     }
     UA = "balanz-monitor/1.0"
-    def __init__(self): self._cache = {}
+
+    # Historical prices live on disk (CSV). Data912 has no historical endpoint;
+    # the CSV is refreshed out-of-band. Kept tab-separated with RIC headers.
+    _HISTORY_CSV = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "history", "precio_historico.csv",
+    )
+
+    def __init__(self):
+        self._cache: Dict[str, dict] = {}
+        self._history: Optional[Dict[str, Dict[date, float]]] = None
 
     def _fetch_all_endpoints(self):
         all_data = {}
@@ -235,4 +271,43 @@ class Data912MarketDataProvider(IMarketDataProvider):
                 logger.warning(f"Error parsing row for {ticker}: {e}")
         return snapshots
 
-    def fetch_historical_prices(self, ticker: str, days: int) -> Dict[date, float]: return {}
+    def _load_history(self) -> Dict[str, Dict[date, float]]:
+        if self._history is not None:
+            return self._history
+        history: Dict[str, Dict[date, float]] = {}
+        if not os.path.isfile(self._HISTORY_CSV):
+            logger.info(f"No historical CSV at {self._HISTORY_CSV}; variances unavailable.")
+            self._history = history
+            return history
+        try:
+            df = pd.read_csv(self._HISTORY_CSV, sep="\t")
+            ts_col = df.columns[0]
+            df[ts_col] = pd.to_datetime(df[ts_col], format="%m/%d/%Y", errors="coerce")
+            for col in df.columns[1:]:
+                # Column header is a RIC (e.g. 'ARAL29D1=BA'); normalise to the
+                # repo's canonical ticker so callers can use either form.
+                clean = normalize_symbol(col, col)
+                series: Dict[date, float] = {}
+                for ts, val in zip(df[ts_col], df[col]):
+                    if pd.isna(ts) or pd.isna(val):
+                        continue
+                    try:
+                        series[ts.date()] = float(val)
+                    except (TypeError, ValueError):
+                        continue
+                if series:
+                    history[clean] = series
+                    history[col.upper()] = series  # also indexable by raw RIC
+            logger.info(f"Loaded historical prices for {len({id(v) for v in history.values()})} tickers.")
+        except Exception as e:
+            logger.warning(f"Could not load historical CSV: {e}")
+        self._history = history
+        return history
+
+    def fetch_historical_prices(self, ticker: str, days: int) -> Dict[date, float]:
+        history = self._load_history()
+        series = history.get(str(ticker).upper())
+        if not series or days <= 0:
+            return series or {}
+        cutoff = date.today() - timedelta(days=days)
+        return {d: p for d, p in series.items() if d >= cutoff}

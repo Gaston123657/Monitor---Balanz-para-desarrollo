@@ -4,6 +4,7 @@ from apps.cli.monitors._common import (
     fmt_tir,
     run_monitor,
 )
+from core.domain.instrument_groups import SOBERANOS
 
 
 def _row(m):
@@ -23,7 +24,7 @@ def _row(m):
 
 def generate_bonares_report(output_dir: str):
     return run_monitor(
-        types=["BONAR", "GLOBAL"],
+        types=SOBERANOS,
         title="MONITOR BONOS SOBERANOS ARGENTINA - AL / GD",
         prefix="monitor_bonos",
         output_dir=output_dir,

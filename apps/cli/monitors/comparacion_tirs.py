@@ -10,6 +10,7 @@ from apps.cli.monitors._common import (
     fmt_tir,
     save_report,
 )
+from core.domain.instrument_groups import SOBERANOS
 from core.domain.services import FinancialEngine
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 def generate_comparacion_report(output_dir: str):
     logger.info("Generando reporte de COMPARACIÓN DE TIRs...")
     use_case = build_use_case()
-    metrics_list = use_case.execute(["BONAR", "GLOBAL"])
+    metrics_list = use_case.execute(SOBERANOS)
     if not metrics_list:
         return None
 

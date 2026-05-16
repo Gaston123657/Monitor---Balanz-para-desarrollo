@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from config.settings import MASTER_XLSX, setup_logging
+from core.domain.instrument_groups import BOPREALES, CER, SOBERANOS, TASA_FIJA
 from core.infrastructure.repositories import ExcelInstrumentsRepository, Data912MarketDataProvider
 from core.use_cases.generate_report import GenerateMonitorReport
 
@@ -116,7 +117,7 @@ def _refresh_loop(snapshot: Snapshot):
     while True:
         try:
             # Bonares
-            m_bonares = use_case.execute(["BONAR", "GLOBAL"])
+            m_bonares = use_case.execute(SOBERANOS)
             rows_bonares = []
             for m in m_bonares:
                 rows_bonares.append({
@@ -132,7 +133,7 @@ def _refresh_loop(snapshot: Snapshot):
             snapshot.update_monitor("bonares", rows=rows_bonares, status="ok")
 
             # CER
-            m_cer = use_case.execute(["CER", "LECER", "BONCER", "BONCER ZC", "CON CUPON", "STEP-UP"])
+            m_cer = use_case.execute(CER)
             rows_cer = []
             for m in m_cer:
                 rows_cer.append({
@@ -146,7 +147,7 @@ def _refresh_loop(snapshot: Snapshot):
             snapshot.update_monitor("cer", rows=rows_cer, status="ok")
 
             # Bopreales
-            m_bop = use_case.execute(["BOPREAL"])
+            m_bop = use_case.execute(BOPREALES)
             rows_bop = []
             for m in m_bop:
                 rows_bop.append({
@@ -162,7 +163,7 @@ def _refresh_loop(snapshot: Snapshot):
             snapshot.update_monitor("bopreales", rows=rows_bop, status="ok")
 
             # Tasa Fija
-            m_fija = use_case.execute(["LECAP", "BONCAP"])
+            m_fija = use_case.execute(TASA_FIJA)
             rows_fija = []
             for m in m_fija:
                 vto = m.snapshot.instrument.maturity_date

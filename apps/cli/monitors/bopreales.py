@@ -6,6 +6,7 @@ from apps.cli.monitors._common import (
     last_future_cashflow_date,
     run_monitor,
 )
+from core.domain.instrument_groups import BOPREALES
 
 
 def _row(m):
@@ -27,7 +28,7 @@ def _row(m):
 
 def generate_bopreales_report(output_dir: str):
     return run_monitor(
-        types=["BOPREAL"],
+        types=BOPREALES,
         title="MONITOR BONOS BOPREALES",
         prefix="monitor_bopreales",
         output_dir=output_dir,
