@@ -510,18 +510,23 @@ function renderFxStrip(fx) {
     el.innerHTML = '<span class="fx-empty">Cargando cotizaciones USD…</span>';
     return;
   }
-  // Stable display order
   const ORDER = ["oficial", "mayorista", "blue", "bolsa", "contadoconliqui", "cripto", "tarjeta"];
+  const num = (v) => v != null
+    ? Number(v).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : "—";
   const parts = [];
   for (const casa of ORDER) {
     const q = fx[casa];
     if (!q) continue;
     const nombre = q.nombre || casa;
-    const venta = q.venta != null
-      ? Number(q.venta).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : "—";
     parts.push(
-      `<div class="fx-quote"><span class="fx-name">${nombre}</span><span class="fx-val">$${venta}</span></div>`
+      `<div class="fx-quote">
+         <span class="fx-name">${nombre}</span>
+         <div class="fx-prices">
+           <span class="fx-side"><span class="fx-side-label">Compra</span><span class="fx-val">$${num(q.compra)}</span></span>
+           <span class="fx-side"><span class="fx-side-label">Venta</span><span class="fx-val">$${num(q.venta)}</span></span>
+         </div>
+       </div>`
     );
   }
   el.innerHTML = parts.join("");
