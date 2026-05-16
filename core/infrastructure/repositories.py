@@ -129,6 +129,8 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
           - Bullet with coupon -> coupons every (12/freq) months + 100 at vto
           - Amortizing with coupon -> coupons on outstanding + equal amort
             installments of `amort cantidad`% starting at `amort inicio`
+          - Capitalizing bonds (DICP, CUAP) -> base nominal scaled by
+            `capital factor` (accumulated capitalization from inception)
           - Step-up coupons (PARP) -> uses currently-applicable rate (approximation)
         """
         vto = self._get_date(row, (
@@ -156,6 +158,12 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
         emision = self._get_date(row, ("fecha_emision", "fecha emision")) \
             or (vto - relativedelta(years=2))
 
+        # capital_factor = accumulated capitalization from inception (e.g. DICP=1.27)
+        capital_factor = self._safe_float(row.get("capital factor"), default=1.0)
+        if capital_factor <= 0:
+            capital_factor = 1.0
+        nominal_initial = 100.0 * capital_factor
+
         coupon_dates = []
         cd = emision
         while True:
@@ -176,9 +184,9 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
 
         amort_map = {}
         if is_amortizing:
-            per_installment = 100.0 / amort_count
+            per_installment = nominal_initial / amort_count
             ad = amort_inicio
-            remaining = 100.0
+            remaining = nominal_initial
             placed = 0
             while placed < amort_count and ad <= vto and remaining > 1e-9:
                 amount = min(per_installment, remaining)
@@ -189,10 +197,10 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
             if remaining > 1e-9:
                 amort_map[vto] = amort_map.get(vto, 0.0) + remaining
         else:
-            amort_map[vto] = 100.0
+            amort_map[vto] = nominal_initial
 
         cfs = []
-        outstanding = 100.0
+        outstanding = nominal_initial
         all_dates = sorted(set(coupon_dates) | set(amort_map.keys()))
         for d in all_dates:
             interest = outstanding * coupon_rate / freq if d in coupon_dates else 0.0

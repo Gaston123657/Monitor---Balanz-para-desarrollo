@@ -12,8 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 def _is_cer_type(instrument_type: str) -> bool:
-    # "LECER" already contains "CER", so a single substring check is enough.
-    return "CER" in instrument_type
+    # CER-adjusted bonds in the master Excel use several `tipo` values that
+    # don't all contain the substring "CER" (DICP/CUAP are "CON CUPON";
+    # PARP is "STEP-UP"). All belong to the CER sheet — match the union.
+    return any(token in instrument_type for token in ("CER", "CON CUPON", "STEP-UP"))
 
 
 def _settlement_for(instrument_type: str) -> date:
