@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import ssl
+import threading
 import urllib.request
 import warnings
 
@@ -235,6 +236,7 @@ class Data912MarketDataProvider(IMarketDataProvider):
     def __init__(self):
         self._cache: Dict[str, dict] = {}
         self._history: Optional[Dict[str, Dict[date, float]]] = None
+        self._history_lock = threading.Lock()
 
     def _fetch_all_endpoints(self):
         all_data = {}
@@ -272,8 +274,16 @@ class Data912MarketDataProvider(IMarketDataProvider):
         return snapshots
 
     def _load_history(self) -> Dict[str, Dict[date, float]]:
+        # Double-checked locking: cheap read first, then lock only on miss.
         if self._history is not None:
             return self._history
+        with self._history_lock:
+            if self._history is not None:
+                return self._history
+            self._history = self._read_history_csv()
+            return self._history
+
+    def _read_history_csv(self) -> Dict[str, Dict[date, float]]:
         history: Dict[str, Dict[date, float]] = {}
         if not os.path.isfile(self._HISTORY_CSV):
             logger.info(f"No historical CSV at {self._HISTORY_CSV}; variances unavailable.")
@@ -301,7 +311,6 @@ class Data912MarketDataProvider(IMarketDataProvider):
             logger.info(f"Loaded historical prices for {len({id(v) for v in history.values()})} tickers.")
         except Exception as e:
             logger.warning(f"Could not load historical CSV: {e}")
-        self._history = history
         return history
 
     def fetch_historical_prices(self, ticker: str, days: int) -> Dict[date, float]:

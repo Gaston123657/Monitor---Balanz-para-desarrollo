@@ -100,11 +100,11 @@ def generate_bei_report(output_dir: str):
         bei_fwd = forward_bei(i_nom, r_real, gamma=gamma) if gamma else None
         rows.append({
             "Plazo": label,
-            "Días": int(round(years * 365)),
+            "Dias": int(round(years * 365)),
             "TEA Nominal": fmt_pct(i_nom, scale=100.0),
             "TEA Real": fmt_pct(r_real, scale=100.0),
             "BEI spot": fmt_pct(bei_spot, scale=100.0),
-            "BEI fwd (γ-adj)": fmt_pct(bei_fwd, scale=100.0) if bei_fwd is not None else "-",
+            "BEI fwd (gamma-adj)": fmt_pct(bei_fwd, scale=100.0) if bei_fwd is not None else "-",
         })
 
     df = pd.DataFrame(rows)
@@ -112,7 +112,7 @@ def generate_bei_report(output_dir: str):
     real_n = len(real_points)
     gamma_s = f"{gamma:.4f}" if gamma else "n/d"
     title = (
-        f"BREAK-EVEN INFLATION — Fisher + Nelson-Siegel  "
-        f"[LECAP n={nom_n} · CER n={real_n} · γ={gamma_s}]"
+        f"BREAK-EVEN INFLATION - Fisher + Nelson-Siegel  "
+        f"[LECAP n={nom_n} | CER n={real_n} | gamma={gamma_s}]"
     )
     return save_report(df, output_dir, "monitor_bei", title)
