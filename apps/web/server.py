@@ -336,9 +336,14 @@ def _refresh_loop(snapshot: Snapshot):
                 })
             snapshot.update_monitor("futuros", rows=rows_fut, status="ok")
 
+            logger.info(
+                "Heartbeat OK at %s — next refresh in %ds",
+                datetime.now().strftime("%H:%M:%S"), REFRESH_SEC,
+            )
+
         except Exception as e:
-            logger.error(f"Error in web refresh loop: {e}")
-            
+            logger.exception(f"Error in web refresh loop (will retry in {REFRESH_SEC}s): {e}")
+
         time.sleep(REFRESH_SEC)
 
 # --------------------------------------------------------------------------- #
@@ -376,14 +381,17 @@ def main():
     snapshot = Snapshot()
     Handler.snapshot = snapshot
     threading.Thread(target=_refresh_loop, args=(snapshot,), daemon=True).start()
-    
+
     server = ThreadingHTTPServer((HOST, PORT), Handler)
-    logger.info(f"Web Server running at http://{HOST}:{PORT}")
+    logger.info(f"Web Server running at http://{HOST}:{PORT}  (Ctrl+C to stop)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        pass
+        logger.info("Shutdown requested by user (Ctrl+C).")
+    except Exception:
+        logger.exception("Web server crashed with unhandled exception.")
     finally:
+        logger.info("Closing server socket.")
         server.server_close()
 
 if __name__ == "__main__":

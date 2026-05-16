@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import logging
 
 from config.settings import setup_logging
@@ -15,6 +16,25 @@ from apps.web.server import main as web_server_main
 
 setup_logging()
 logger = logging.getLogger(__name__)
+
+
+def run_web_supervised():
+    """Auto-restart the web server if it exits unexpectedly. Ctrl+C exits cleanly."""
+    attempt = 0
+    while True:
+        attempt += 1
+        try:
+            web_server_main()
+            # Clean exit (Ctrl+C inside web_server_main) -> bubble back to menu.
+            logger.info("Web server stopped cleanly.")
+            return
+        except KeyboardInterrupt:
+            logger.info("Ctrl+C received — exiting web supervisor.")
+            return
+        except Exception:
+            logger.exception(f"Web server crashed (attempt {attempt}). Restarting in 5s...")
+            time.sleep(5)
+
 
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +78,8 @@ def main():
                 # Ejecutar
                 if "WEB" in selected["name"]:
                     print("\nAbriendo el servidor web en http://localhost:8000 ...")
-                    selected["func"](None)
+                    print("(Auto-restart si crashea. Ctrl+C para detener.)\n")
+                    run_web_supervised()
                 else:
                     png_path = selected["func"](output_dir)
                     
