@@ -19,29 +19,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pandas")
 logger = logging.getLogger(__name__)
 
 
-def normalize_symbol(ticker: str, ric: str) -> str:
-    """Reduce a Refinitiv RIC (e.g. 'ARAL29D1=BA') to the canonical clean ticker
-    used throughout the system ('AL29D'). Falls back to `ticker` if no RIC.
-
-    Strips the trailing serie digit in two cases:
-      - Soberanos / BOPREALES style: D-then-digit ending (AL29D1 -> AL29D)
-      - Dolar Linked style: 6+ chars ending in two digits (D30A61 -> D30A6,
-        TZV261 -> TZV26)
-    """
-    if not ric or pd.isna(ric):
-        return ticker
-    norm = str(ric).upper().strip()
-    if norm.startswith("AR"):
-        norm = norm[2:]
-    if "=" in norm:
-        norm = norm.split("=")[0]
-    if len(norm) > 1 and norm[-2] == "D" and norm[-1].isdigit():
-        norm = norm[:-1]
-    elif len(norm) >= 6 and norm[-1].isdigit() and norm[-2].isdigit():
-        norm = norm[:-1]
-    return norm
-
-
 class ExcelInstrumentsRepository(IInstrumentsRepository):
     NON_INSTRUMENT_SHEETS = frozenset({"Cashflows", "Cashflows_Fija", "Metadata", "Cotizaciones"})
 
@@ -50,9 +27,6 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
         self._cache_instruments: List[Instrument] = []
         self._by_ticker: Dict[str, Instrument] = {}
         self._load_all()
-
-    def _normalize_symbol(self, ticker: str, ric: str) -> str:
-        return normalize_symbol(ticker, ric)
 
     def _parse_date(self, val) -> Optional[date]:
         """Safely parse date from various formats without warnings."""
@@ -276,7 +250,9 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                         if not raw_ticker or raw_ticker == "NAN": continue
                         
                         ric = str(row.get("ric", raw_ticker)).upper().strip()
-                        clean_ticker = self._normalize_symbol(raw_ticker, ric)
+                        # Excel `ticker` column is the source of truth — it must match what
+                        # Data912 returns. No RIC-based normalization.
+                        clean_ticker = raw_ticker
                         short = str(row.get("short_name", row.get("short name", raw_ticker)))
                         itype = str(row.get("tipo", row.get("clase", sheet))).upper().strip()
                         
@@ -406,9 +382,9 @@ class Data912MarketDataProvider(IMarketDataProvider):
             ts_col = df.columns[0]
             df[ts_col] = pd.to_datetime(df[ts_col], format="%m/%d/%Y", errors="coerce")
             for col in df.columns[1:]:
-                # Column header is a RIC (e.g. 'ARAL29D1=BA'); normalise to the
-                # repo's canonical ticker so callers can use either form.
-                clean = normalize_symbol(col, col)
+                # CSV column headers are raw RICs (e.g. 'ARAL29D1=BA');
+                # index by RIC. Callers pass `inst.ric` to look up.
+                key = str(col).upper().strip()
                 series: Dict[date, float] = {}
                 for ts, val in zip(df[ts_col], df[col]):
                     if pd.isna(ts) or pd.isna(val):
@@ -418,9 +394,8 @@ class Data912MarketDataProvider(IMarketDataProvider):
                     except (TypeError, ValueError):
                         continue
                 if series:
-                    history[clean] = series
-                    history[col.upper()] = series  # also indexable by raw RIC
-            logger.info(f"Loaded historical prices for {len({id(v) for v in history.values()})} tickers.")
+                    history[key] = series
+            logger.info(f"Loaded historical prices for {len(history)} RICs.")
         except Exception as e:
             logger.warning(f"Could not load historical CSV: {e}")
         return history

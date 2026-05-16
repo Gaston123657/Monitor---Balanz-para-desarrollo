@@ -46,7 +46,7 @@ class GenerateMonitorReport:
         return [r for r in results if r is not None]
 
     def _enrich_metrics(self, inst: Instrument, snapshot: MarketSnapshot, indices) -> InstrumentMetrics:
-        hist = self.provider.fetch_historical_prices(inst.ticker, 365)
+        hist = self.provider.fetch_historical_prices(inst.ric, 365)
 
         today = date.today()
         px_7d = hist.get(today - timedelta(days=7))
