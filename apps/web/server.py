@@ -1333,6 +1333,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._serve_rem_bei_path()
         if path == "/api/all_cashflows":
             return self._serve_all_cashflows()
+        if path == "/api/ons_cashflows":
+            return self._serve_ons_cashflows()
         if path == "/api/bcra_data":
             return self._serve_bcra_data()
         if path == "/api/merval":
@@ -1346,6 +1348,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._serve_fci_detail(tail)
         if path in ("/", "/index.html"): return self._serve_static("index.html")
         if path in ("/cashflows", "/cashflows.html"): return self._serve_static("cashflows.html")
+        if path in ("/ons-calendar", "/ons_calendar.html"): return self._serve_static("ons_calendar.html")
         if path in ("/bcra", "/bcra.html"): return self._serve_static("bcra.html")
         if path in ("/cierre", "/cierre.html"): return self._serve_static("cierre.html")
         if path.startswith("/static/"): return self._serve_static(path[len("/static/"):])
@@ -1725,6 +1728,120 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
         except Exception as e:
             logger.exception("all_cashflows failed")
+            return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
+                              json.dumps({"error": str(e)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+
+    def _serve_ons_cashflows(self):
+        """Calendario de pagos de ONs.
+
+        Sintetiza (vía repo) los cashflows de cada ON y los ajusta al siguiente
+        día hábil BYMA si caen en fin de semana o feriado. Solo se estiman las
+        ONs con datos suficientes (vto + cupón + frecuencia); las demás se
+        devuelven en `sin_datos` con el detalle de qué falta.
+        """
+        try:
+            from core.holiday_engine import date_range_habil
+            repo = self.__class__.bond_repo
+            today = date.today()
+
+            ons = [i for i in repo.get_all_instruments()
+                   if (i.instrument_type or "").upper() == "ON"]
+
+            def _clean(s):
+                # short_name viene como str(NaN) == "nan" para filas sin nombre.
+                if s is None:
+                    return ""
+                s = str(s).strip()
+                return "" if s.lower() in ("nan", "none") else s
+
+            # Set de días hábiles que cubre todo el horizonte (un solo llamado a
+            # pandas_market_calendars en vez de uno por cashflow).
+            max_date = today
+            for inst in ons:
+                for cf in inst.cashflows:
+                    if cf.date > max_date:
+                        max_date = cf.date
+            habiles: set = set()
+            try:
+                idx = date_range_habil(today.isoformat(),
+                                       (max_date + timedelta(days=10)).isoformat())
+                habiles = {ts.date() for ts in idx}
+            except Exception:
+                logger.warning("ons_cashflows: calendario hábil no disponible — "
+                               "ajuste limitado a fines de semana")
+
+            def to_business_day(d: date) -> date:
+                if habiles:
+                    adj = d
+                    for _ in range(15):
+                        if adj in habiles:
+                            return adj
+                        adj = adj + timedelta(days=1)
+                    return adj
+                # Fallback sin calendario: solo corre sábados/domingos.
+                adj = d
+                while adj.weekday() >= 5:
+                    adj = adj + timedelta(days=1)
+                return adj
+
+            instruments = []
+            sin_datos = []
+            for inst in ons:
+                ticker = (inst.ticker or "").upper()
+                missing = []
+                if inst.maturity_date is None:
+                    missing.append("vto")
+                if inst.coupon_rate is None:
+                    missing.append("cupon")
+                if not inst.payment_frequency or inst.payment_frequency <= 0:
+                    missing.append("frecuencia")
+
+                if missing:
+                    sin_datos.append({
+                        "ticker": inst.ticker,
+                        "short_name": _clean(inst.short_name),
+                        "sector": inst.sector,
+                        "missing": missing,
+                    })
+                    continue
+
+                future_cfs = inst.get_future_cashflows(today)
+                if not future_cfs:
+                    # Datos completos pero sin pagos futuros (ON ya vencida) — se omite.
+                    continue
+
+                currency = "USD" if ticker.endswith(("D", "C")) else "ARS"
+                cfs = []
+                for cf in future_cfs:
+                    adj = to_business_day(cf.date)
+                    cfs.append({
+                        "date": adj.isoformat(),
+                        "nominal_date": cf.date.isoformat(),
+                        "adjusted": adj != cf.date,
+                        "amortization": _safe_num(cf.amortization),
+                        "interest": _safe_num(cf.interest),
+                        "total": _safe_num(cf.total),
+                    })
+
+                instruments.append({
+                    "ticker": inst.ticker,
+                    "short_name": _clean(inst.short_name),
+                    "type": inst.instrument_type,
+                    "sector": inst.sector,
+                    "legislacion": inst.legislacion,
+                    "currency": currency,
+                    "cashflows": cfs,
+                })
+
+            body = json.dumps({
+                "instruments": instruments,
+                "sin_datos": sin_datos,
+                "as_of": today.isoformat(),
+            }, default=_json_default).encode("utf-8")
+            return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+        except Exception as e:
+            logger.exception("ons_cashflows failed")
             return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
                               json.dumps({"error": str(e)}).encode("utf-8"),
                               "application/json; charset=utf-8")

@@ -9,6 +9,7 @@ from typing import List, Dict, Optional
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from core.domain.models import Instrument, Cashflow, MarketSnapshot
+from core.domain.cashflow_synth import _parse_coupon_rate
 from core.domain.interfaces import IInstrumentsRepository, IMarketDataProvider
 from core.infrastructure._http import http_get_json
 
@@ -305,6 +306,16 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                         sec_raw = row.get("sector")
                         sector = str(sec_raw).strip() if sec_raw is not None and not pd.isna(sec_raw) else None
 
+                        # Tasa de cupón anual como decimal (0.05 = 5%). Soporta step-up.
+                        # Usado por el calendario de ONs para decidir estimabilidad.
+                        # Nota: celdas vacías llegan como NaN (float) y _parse_coupon_rate
+                        # las propaga como nan — lo normalizamos a None.
+                        coupon_rate = _parse_coupon_rate(
+                            row.get("cupon anual %", row.get("cupon")), asof=date.today()
+                        )
+                        if coupon_rate is not None and coupon_rate != coupon_rate:  # NaN
+                            coupon_rate = None
+
                         self._cache_instruments.append(Instrument(
                             ticker=clean_ticker,
                             short_name=short,
@@ -322,6 +333,7 @@ class ExcelInstrumentsRepository(IInstrumentsRepository):
                             day_count=day_count,
                             legislacion=legislacion,
                             sector=sector,
+                            coupon_rate=coupon_rate,
                         ))
                 except Exception as e:
                     logger.warning(f"Could not load sheet {sheet}: {e}")

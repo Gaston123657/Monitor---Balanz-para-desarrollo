@@ -30,6 +30,7 @@ class Instrument:
     day_count: str = "ACT/365.25"  # Day-count convention: "30/360", "ACT/365", "ACT/365.25", "ACT/ACT".
     legislacion: Optional[str] = None  # ONs: "NY" o "AR" — usado por server.py para filtrar ons_ny / ons_ar.
     sector: Optional[str] = None       # ONs: sector económico (Petróleo y Gas, Energía, etc.) — columna de panel.
+    coupon_rate: Optional[float] = None  # Tasa de cupón anual como decimal (0.05 = 5%). None si no hay dato.
     # Used by Modified Duration: MD = Macaulay / (1+TEA)^(1/freq). Default 2 matches
     # the IAMC/BYMA convention for coupon bonds; single-flow bonds (LECAP, DL, PURO,
     # DUAL) fall back to bullet formula and the value is irrelevant.

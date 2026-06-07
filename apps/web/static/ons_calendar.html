@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendario ONs · Monitor Balanz</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("monitor-theme");
+        if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="/static/style.css?v=29" />
+  <style>
+    body { background: var(--page-bg); color: var(--text); font-family: "Inter Tight", sans-serif; margin: 0; }
+
+    /* ---- header ---- */
+    .cf-header {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--navy); padding: 10px 16px;
+      border-bottom: 1px solid var(--panel-border); position: sticky; top: 0; z-index: 30;
+    }
+    .cf-header-back {
+      background: var(--navy-light); border: 1px solid var(--accent-blue);
+      color: var(--text-white); border-radius: 4px; padding: 5px 12px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.8px; cursor: pointer;
+      text-decoration: none; white-space: nowrap;
+    }
+    .cf-header-title { font-size: 15px; font-weight: 800; letter-spacing: 1px; color: var(--text-white); }
+    .cf-header-sub   { font-size: 11px; color: var(--text-dim); }
+    .cf-header-spacer { flex: 1; }
+
+    .cf-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ---- toolbar ---- */
+    .cf-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .cf-btn-group { display: flex; border: 1px solid var(--panel-border); border-radius: 4px; overflow: hidden; }
+    .cf-btn-group button {
+      background: var(--panel-bg); color: var(--text-dim);
+      border: none; border-right: 1px solid var(--panel-border); padding: 5px 12px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.6px; cursor: pointer;
+    }
+    .cf-btn-group button:last-child { border-right: none; }
+    .cf-btn-group button.active { background: var(--accent-blue); color: var(--text-white); }
+    .cf-toolbar-label { font-size: 10px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+
+    select.cf-select {
+      background: var(--panel-bg); color: var(--text); border: 1px solid var(--panel-border);
+      border-radius: 4px; padding: 5px 10px; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.5px; cursor: pointer; font-family: "Inter Tight", sans-serif;
+    }
+    select.cf-select:focus { outline: none; border-color: var(--accent-blue); }
+
+    /* ---- name filter dropdown ---- */
+    .name-filter { position: relative; }
+    .name-filter-btn {
+      background: var(--panel-bg); color: var(--text-dim); border: 1px solid var(--panel-border);
+      border-radius: 4px; padding: 5px 12px; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.6px; cursor: pointer; white-space: nowrap;
+    }
+    .name-filter-btn.has-sel { background: var(--accent-blue); color: var(--text-white); border-color: var(--accent-blue); }
+    .name-filter-panel {
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 40;
+      background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px;
+      width: 280px; max-height: 360px; display: none; flex-direction: column;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .name-filter-panel.open { display: flex; }
+    .name-filter-head { display: flex; gap: 6px; padding: 8px; border-bottom: 1px solid var(--panel-border); }
+    .name-filter-search {
+      flex: 1; background: var(--page-bg); border: 1px solid var(--panel-border); color: var(--text);
+      border-radius: 3px; padding: 4px 8px; font-size: 11px; font-family: "Inter Tight", sans-serif;
+    }
+    .name-filter-search:focus { outline: none; border-color: var(--accent-blue); }
+    .name-filter-action {
+      background: var(--navy-light); color: var(--text-white); border: 1px solid var(--panel-border);
+      border-radius: 3px; padding: 3px 8px; font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .name-filter-list { overflow-y: auto; padding: 4px 0; }
+    .name-filter-item {
+      display: flex; align-items: center; gap: 8px; padding: 4px 10px; cursor: pointer; font-size: 11px;
+    }
+    .name-filter-item:hover { background: var(--row-hover); }
+    .name-filter-item input { cursor: pointer; }
+    .name-filter-item .nf-ticker { font-weight: 700; min-width: 56px; }
+    .name-filter-item .nf-name { color: var(--text-dim); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ---- section title ---- */
+    .cf-section-title {
+      font-size: 11px; font-weight: 800; letter-spacing: 1px;
+      color: var(--text-dim); text-transform: uppercase;
+      border-bottom: 1px solid var(--panel-border); padding-bottom: 6px;
+    }
+
+    /* ---- totals bar ---- */
+    .cf-totals-bar {
+      display: flex; gap: 24px; padding: 10px 16px;
+      background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px;
+      flex-wrap: wrap; align-items: center;
+    }
+    .cf-total-item { display: flex; flex-direction: column; gap: 2px; }
+    .cf-total-label { font-size: 9px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; }
+    .cf-total-val   { font-size: 13px; font-weight: 800; font-family: "JetBrains Mono", monospace; color: var(--text); }
+    .cf-total-val.usd { color: #60c8ff; }
+    .cf-total-sep { width: 1px; background: var(--panel-border); height: 32px; }
+
+    /* ---- calendar grid ---- */
+    .cal-wrap { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; }
+    .cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .cal-nav-btn {
+      background: var(--navy-light); color: var(--text-white); border: 1px solid var(--panel-border);
+      border-radius: 4px; padding: 4px 12px; font-size: 12px; font-weight: 700; cursor: pointer; line-height: 1;
+    }
+    .cal-nav-btn.today { font-size: 10px; letter-spacing: 0.5px; }
+    .cal-title { font-size: 15px; font-weight: 800; text-transform: capitalize; flex: 1; text-align: center; }
+    .cal-count { font-size: 10px; color: var(--text-faint); font-weight: 700; }
+
+    table.cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    table.cal-grid th {
+      font-size: 9px; font-weight: 700; color: var(--text-faint); text-transform: uppercase;
+      letter-spacing: 0.6px; padding: 4px; text-align: center; border-bottom: 1px solid var(--panel-border);
+    }
+    table.cal-grid td {
+      border: 1px solid var(--panel-border); vertical-align: top; height: 88px; width: 14.28%;
+      padding: 3px; overflow: hidden;
+    }
+    td.cal-cell.other-month { background: var(--row-alt); opacity: 0.55; }
+    td.cal-cell.is-today { outline: 2px solid var(--accent-blue); outline-offset: -2px; }
+    td.cal-cell.is-weekend { background: color-mix(in srgb, var(--row-alt) 70%, transparent); }
+    .cal-daynum { font-size: 10px; font-weight: 700; color: var(--text-dim); text-align: right; padding: 1px 3px; }
+    .cal-chips { display: flex; flex-direction: column; gap: 2px; }
+    .cal-chip {
+      font-size: 9px; font-weight: 700; color: #fff; border-radius: 3px; padding: 1px 5px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; letter-spacing: 0.3px;
+    }
+    .cal-chip .adj-dot { opacity: 0.85; }
+
+    /* ---- flows table ---- */
+    .cf-flows-section { display: flex; flex-direction: column; gap: 8px; }
+    table.cf-flows { width: 100%; border-collapse: collapse; font-size: 11px; }
+    table.cf-flows thead th {
+      text-align: right; padding: 6px 10px; font-size: 10px; font-weight: 700;
+      color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--panel-border); white-space: nowrap; cursor: default;
+    }
+    table.cf-flows thead th.lft { text-align: left; }
+    table.cf-flows tbody tr:hover { background: var(--row-hover); }
+    table.cf-flows tbody td {
+      padding: 4px 10px; border-bottom: 1px solid var(--row-alt);
+      font-family: "JetBrains Mono", monospace; text-align: right; white-space: nowrap; color: var(--text);
+    }
+    table.cf-flows tbody td.col-date,
+    table.cf-flows tbody td.col-ticker,
+    table.cf-flows tbody td.col-name { text-align: left; font-family: "Inter Tight", sans-serif; }
+    table.cf-flows tbody td.col-ticker { font-weight: 700; }
+    table.cf-flows tbody td.col-name { color: var(--text-dim); font-size: 10px; }
+    table.cf-flows tbody td.col-date   { color: var(--text-faint); font-size: 10px; }
+    table.cf-flows tbody td.usd { color: #60c8ff; }
+    .adj-flag { color: #f5c451; font-weight: 800; cursor: help; }
+    table.cf-flows tfoot td {
+      padding: 6px 10px; border-top: 2px solid var(--panel-border); text-align: right;
+      font-size: 11px; color: var(--text); font-weight: 800;
+    }
+    table.cf-flows tfoot td.lft { text-align: left; }
+
+    /* ---- sin datos ---- */
+    table.cf-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    table.cf-table thead th {
+      text-align: left; padding: 6px 10px; font-size: 10px; font-weight: 700;
+      color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--panel-border); white-space: nowrap;
+    }
+    table.cf-table tbody tr:hover { background: var(--row-hover); }
+    table.cf-table tbody td { padding: 5px 10px; border-bottom: 1px solid var(--row-alt); color: var(--text); }
+    .miss-tag {
+      display: inline-block; background: var(--navy-light); color: #f5c451; border-radius: 3px;
+      padding: 1px 6px; font-size: 9px; font-weight: 700; margin-right: 4px; letter-spacing: 0.3px;
+    }
+
+    .cf-no-data { padding: 20px; color: var(--text-faint); font-style: italic; font-size: 12px; }
+    .loading-msg { padding: 30px; color: var(--text-faint); font-size: 13px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<header class="cf-header">
+  <a class="cf-header-back" href="/" title="Volver al monitor principal">← Monitor</a>
+  <div>
+    <div class="cf-header-title">Calendario de Pagos · ONs</div>
+    <div class="cf-header-sub" id="cf-asof">Cargando…</div>
+  </div>
+  <div class="cf-header-spacer"></div>
+
+  <span class="cf-toolbar-label">Vista</span>
+  <div class="cf-btn-group" id="view-group">
+    <button type="button" data-view="calendar" class="active">Calendario</button>
+    <button type="button" data-view="table">Tabla</button>
+  </div>
+
+  <span class="cf-toolbar-label">Moneda</span>
+  <div class="cf-btn-group" id="currency-group">
+    <button type="button" data-cur="all" class="active">Todos</button>
+    <button type="button" data-cur="ARS">ARS</button>
+    <button type="button" data-cur="USD">USD</button>
+  </div>
+
+  <div class="name-filter" id="name-filter">
+    <button type="button" class="name-filter-btn" id="name-filter-btn">Nombre ▾</button>
+    <div class="name-filter-panel" id="name-filter-panel">
+      <div class="name-filter-head">
+        <input type="text" class="name-filter-search" id="name-filter-search" placeholder="Buscar ON…" />
+        <button type="button" class="name-filter-action" data-act="all">Todas</button>
+        <button type="button" class="name-filter-action" data-act="clear">Limpiar</button>
+      </div>
+      <div class="name-filter-list" id="name-filter-list"></div>
+    </div>
+  </div>
+
+  <span class="cf-toolbar-label" id="month-filter-label" style="display:none">Mes</span>
+  <select class="cf-select" id="month-filter" style="display:none"></select>
+</header>
+
+<div class="cf-body">
+  <div id="cf-loading" class="loading-msg">Cargando instrumentos…</div>
+
+  <!-- Totals bar -->
+  <div id="cf-totals-bar" class="cf-totals-bar" style="display:none">
+    <div class="cf-total-item">
+      <span class="cf-total-label">Total USD (visible)</span>
+      <span class="cf-total-val usd" id="total-usd">—</span>
+    </div>
+    <div class="cf-total-sep"></div>
+    <div class="cf-total-item">
+      <span class="cf-total-label">Total ARS (visible)</span>
+      <span class="cf-total-val" id="total-ars">—</span>
+    </div>
+    <div class="cf-total-sep"></div>
+    <div class="cf-total-item">
+      <span class="cf-total-label">Pagos visibles</span>
+      <span class="cf-total-val" id="total-count" style="color:var(--text-dim)">—</span>
+    </div>
+    <div class="cf-total-sep"></div>
+    <div class="cf-total-item">
+      <span class="cf-total-label">ONs estimadas</span>
+      <span class="cf-total-val" id="total-ons" style="color:var(--text-dim)">—</span>
+    </div>
+  </div>
+
+  <!-- Calendar view -->
+  <div id="calendar-section" style="display:none">
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button type="button" class="cal-nav-btn" id="cal-prev">‹</button>
+        <button type="button" class="cal-nav-btn" id="cal-next">›</button>
+        <button type="button" class="cal-nav-btn today" id="cal-today">Hoy</button>
+        <div class="cal-title" id="cal-title">—</div>
+        <div class="cal-count" id="cal-count"></div>
+      </div>
+      <table class="cal-grid">
+        <thead>
+          <tr><th>dom</th><th>lun</th><th>mar</th><th>mié</th><th>jue</th><th>vie</th><th>sáb</th></tr>
+        </thead>
+        <tbody id="cal-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Table view -->
+  <div class="cf-flows-section" id="cf-flows-section" style="display:none">
+    <div class="cf-section-title" id="flows-title">Flujo de cupones</div>
+    <table class="cf-flows">
+      <thead>
+        <tr>
+          <th class="lft">Fecha</th>
+          <th class="lft">Ticker</th>
+          <th class="lft">Nombre</th>
+          <th>Moneda</th>
+          <th>Renta</th>
+          <th>Amort.</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="flows-tbody"></tbody>
+      <tfoot id="flows-tfoot"></tfoot>
+    </table>
+    <div id="flows-empty" class="cf-no-data" style="display:none">No hay pagos para los filtros seleccionados.</div>
+  </div>
+
+  <!-- Sin datos -->
+  <div id="sin-datos-section" style="display:none">
+    <div class="cf-section-title" id="sin-datos-title">ONs sin datos suficientes para estimar</div>
+    <table class="cf-table">
+      <thead>
+        <tr><th>Ticker</th><th>Nombre</th><th>Sector</th><th>Faltan datos</th></tr>
+      </thead>
+      <tbody id="sin-datos-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// State
+// =====================================================================
+let _data       = null;
+let _view       = "calendar";
+let _currency   = "all";
+let _nameFilter = new Set();   // tickers seleccionados; vacío = todos
+let _calMonth   = new Date();  // mes mostrado en la vista calendario
+let _monthFilter = "all";      // "all" | "YYYY-MM" (vista tabla)
+let _allFlows   = [];          // todos los flujos aplanados
+
+const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio",
+                     "julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+// =====================================================================
+// Helpers
+// =====================================================================
+function fmtNum(v, decimals = 2) {
+  if (v == null || isNaN(v)) return "—";
+  return Number(v).toLocaleString("es-AR", {
+    minimumFractionDigits: decimals, maximumFractionDigits: decimals,
+  });
+}
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y.slice(2)}`;
+}
+function pad2(n) { return String(n).padStart(2, "0"); }
+function dateKey(dt) { return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`; }
+
+// Color determinístico por ticker (hue estable, buen contraste sobre blanco).
+function tickerColor(t) {
+  let h = 0;
+  for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return `hsl(${h % 360} 52% 42%)`;
+}
+
+// =====================================================================
+// Load
+// =====================================================================
+async function loadData() {
+  try {
+    const r = await fetch("/api/ons_cashflows");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    _data = await r.json();
+    flattenFlows();
+    document.getElementById("cf-asof").textContent =
+      `Al ${fmtDate(_data.as_of)} · ${_data.instruments.length} ONs estimadas · ` +
+      `${_data.sin_datos.length} sin datos`;
+    document.getElementById("cf-loading").style.display = "none";
+    buildNameFilter();
+    buildMonthFilter();
+    renderSinDatos();
+    render();
+  } catch (e) {
+    document.getElementById("cf-loading").textContent = `Error cargando datos: ${e.message}`;
+  }
+}
+
+function flattenFlows() {
+  _allFlows = [];
+  for (const inst of _data.instruments) {
+    for (const cf of inst.cashflows) {
+      _allFlows.push({
+        date:         cf.date,
+        nominalDate:  cf.nominal_date,
+        adjusted:     !!cf.adjusted,
+        ticker:       inst.ticker,
+        shortName:    inst.short_name || "",
+        currency:     inst.currency,
+        interest:     cf.interest || 0,
+        amortization: cf.amortization || 0,
+        total:        cf.total || 0,
+      });
+    }
+  }
+  _allFlows.sort((a, b) => a.date.localeCompare(b.date) || a.ticker.localeCompare(b.ticker));
+}
+
+// =====================================================================
+// Filtering (moneda + nombre). El filtro de mes se aplica aparte por vista.
+// =====================================================================
+function baseFiltered() {
+  return _allFlows.filter(f => {
+    if (_currency !== "all" && f.currency !== _currency) return false;
+    if (_nameFilter.size > 0 && !_nameFilter.has(f.ticker)) return false;
+    return true;
+  });
+}
+
+// =====================================================================
+// Render dispatch
+// =====================================================================
+function render() {
+  const calSec = document.getElementById("calendar-section");
+  const tblSec = document.getElementById("cf-flows-section");
+  const monthLbl = document.getElementById("month-filter-label");
+  const monthSel = document.getElementById("month-filter");
+
+  if (_view === "calendar") {
+    calSec.style.display = "";
+    tblSec.style.display = "none";
+    monthLbl.style.display = "none";
+    monthSel.style.display = "none";
+    renderCalendar();
+  } else {
+    calSec.style.display = "none";
+    tblSec.style.display = "";
+    monthLbl.style.display = "";
+    monthSel.style.display = "";
+    renderTable();
+  }
+}
+
+function renderTotals(rows) {
+  let totUSD = 0, totARS = 0;
+  rows.forEach(r => { if (r.currency === "USD") totUSD += r.total; else totARS += r.total; });
+  const tickers = new Set(rows.map(r => r.ticker));
+  document.getElementById("total-usd").textContent   = fmtNum(totUSD);
+  document.getElementById("total-ars").textContent   = fmtNum(totARS);
+  document.getElementById("total-count").textContent = `${rows.length} pagos`;
+  document.getElementById("total-ons").textContent   = `${tickers.size}`;
+  document.getElementById("cf-totals-bar").style.display = "";
+}
+
+// =====================================================================
+// Calendar view
+// =====================================================================
+function renderCalendar() {
+  const flows = baseFiltered();
+  const byDate = {};
+  for (const f of flows) (byDate[f.date] ||= []).push(f);
+
+  const year = _calMonth.getFullYear(), month = _calMonth.getMonth();
+  document.getElementById("cal-title").textContent = `${MONTH_NAMES[month]} de ${year}`;
+
+  // Totales del mes mostrado.
+  const monthKey = `${year}-${pad2(month + 1)}`;
+  const monthRows = flows.filter(f => f.date.startsWith(monthKey));
+  renderTotals(monthRows);
+  document.getElementById("cal-count").textContent =
+    `${monthRows.length} pagos en el mes`;
+
+  const first = new Date(year, month, 1);
+  const gridStart = new Date(year, month, 1 - first.getDay()); // retrocede al domingo
+  const todayKey = dateKey(new Date());
+
+  const body = document.getElementById("cal-body");
+  body.innerHTML = "";
+  let cursor = new Date(gridStart);
+  for (let w = 0; w < 6; w++) {
+    const tr = document.createElement("tr");
+    for (let d = 0; d < 7; d++) {
+      const key = dateKey(cursor);
+      const inMonth = cursor.getMonth() === month;
+      const isWeekend = cursor.getDay() === 0 || cursor.getDay() === 6;
+      const td = document.createElement("td");
+      td.className = "cal-cell"
+        + (inMonth ? "" : " other-month")
+        + (key === todayKey ? " is-today" : "")
+        + (isWeekend ? " is-weekend" : "");
+
+      const chips = (byDate[key] || []);
+      const chipsHtml = chips.map(c => {
+        const amt = c.currency === "USD" ? `USD ${fmtNum(c.total)}` : `ARS ${fmtNum(c.total)}`;
+        const tip = `${c.ticker} — ${c.shortName}\n${amt}` +
+          (c.adjusted ? `\n(movido de ${fmtDate(c.nominalDate)} por día hábil)` : "");
+        const dot = c.adjusted ? '<span class="adj-dot">·</span> ' : "";
+        return `<div class="cal-chip" style="background:${tickerColor(c.ticker)}" title="${tip.replace(/"/g, "&quot;")}">${dot}${c.ticker}</div>`;
+      }).join("");
+
+      td.innerHTML = `<div class="cal-daynum">${cursor.getDate()}</div>` +
+                     `<div class="cal-chips">${chipsHtml}</div>`;
+      tr.appendChild(td);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    body.appendChild(tr);
+  }
+}
+
+// =====================================================================
+// Table view
+// =====================================================================
+function renderTable() {
+  let rows = baseFiltered();
+  if (_monthFilter !== "all") rows = rows.filter(r => r.date.startsWith(_monthFilter));
+
+  renderTotals(rows);
+
+  const hLabel = _monthFilter === "all"
+    ? "todos los meses"
+    : (() => { const [y, m] = _monthFilter.split("-"); return `${MONTH_NAMES[+m - 1]} ${y}`; })();
+  document.getElementById("flows-title").textContent =
+    `Flujo de cupones — ${hLabel} · ${rows.length} pagos`;
+
+  const tbody = document.getElementById("flows-tbody");
+  const tfoot = document.getElementById("flows-tfoot");
+  const empty = document.getElementById("flows-empty");
+  tbody.innerHTML = "";
+  tfoot.innerHTML = "";
+
+  if (rows.length === 0) { empty.style.display = ""; return; }
+  empty.style.display = "none";
+
+  let totUSD = 0, totARS = 0;
+  for (const r of rows) {
+    if (r.currency === "USD") totUSD += r.total; else totARS += r.total;
+    const cur = r.currency === "USD" ? "usd" : "";
+    const adj = r.adjusted
+      ? ` <span class="adj-flag" title="Movido de ${fmtDate(r.nominalDate)} por día hábil">*</span>`
+      : "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="col-date">${fmtDate(r.date)}${adj}</td>
+      <td class="col-ticker">${r.ticker}</td>
+      <td class="col-name">${r.shortName}</td>
+      <td class="${cur}">${r.currency}</td>
+      <td class="${cur}">${fmtNum(r.interest)}</td>
+      <td class="${cur}">${fmtNum(r.amortization)}</td>
+      <td class="${cur}">${fmtNum(r.total)}</td>`;
+    tbody.appendChild(tr);
+  }
+  tfoot.innerHTML = `
+    <tr><td class="lft" colspan="6" style="color:#60c8ff">Total USD</td><td style="color:#60c8ff">${fmtNum(totUSD)}</td></tr>
+    <tr><td class="lft" colspan="6">Total ARS</td><td>${fmtNum(totARS)}</td></tr>`;
+}
+
+// =====================================================================
+// Sin datos
+// =====================================================================
+function renderSinDatos() {
+  const sec = document.getElementById("sin-datos-section");
+  const tbody = document.getElementById("sin-datos-tbody");
+  const list = _data.sin_datos || [];
+  if (list.length === 0) { sec.style.display = "none"; return; }
+  sec.style.display = "";
+  document.getElementById("sin-datos-title").textContent =
+    `ONs sin datos suficientes para estimar (${list.length})`;
+  tbody.innerHTML = "";
+  const MISS = { vto: "Vencimiento", cupon: "Cupón", frecuencia: "Frecuencia" };
+  for (const s of list.sort((a, b) => (a.ticker || "").localeCompare(b.ticker || ""))) {
+    const tags = (s.missing || []).map(m => `<span class="miss-tag">${MISS[m] || m}</span>`).join("");
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-weight:700">${s.ticker || "—"}</td>
+      <td style="color:var(--text-dim)">${s.short_name || ""}</td>
+      <td style="color:var(--text-faint);font-size:10px">${s.sector || ""}</td>
+      <td>${tags}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+// =====================================================================
+// Filtros: nombre (dropdown) + mes (select)
+// =====================================================================
+function buildNameFilter() {
+  const list = document.getElementById("name-filter-list");
+  list.innerHTML = "";
+  const insts = [..._data.instruments].sort((a, b) => a.ticker.localeCompare(b.ticker));
+  for (const inst of insts) {
+    const item = document.createElement("label");
+    item.className = "name-filter-item";
+    item.dataset.search = `${inst.ticker} ${inst.short_name || ""}`.toLowerCase();
+    item.innerHTML = `
+      <input type="checkbox" value="${inst.ticker}" ${_nameFilter.has(inst.ticker) ? "checked" : ""} />
+      <span class="nf-ticker">${inst.ticker}</span>
+      <span class="nf-name">${inst.short_name || ""}</span>`;
+    item.querySelector("input").addEventListener("change", e => {
+      if (e.target.checked) _nameFilter.add(inst.ticker);
+      else _nameFilter.delete(inst.ticker);
+      updateNameBtn();
+      render();
+    });
+    list.appendChild(item);
+  }
+  updateNameBtn();
+}
+
+function updateNameBtn() {
+  const btn = document.getElementById("name-filter-btn");
+  const n = _nameFilter.size;
+  btn.textContent = n > 0 ? `Nombre (${n}) ▾` : "Nombre ▾";
+  btn.classList.toggle("has-sel", n > 0);
+}
+
+function buildMonthFilter() {
+  const sel = document.getElementById("month-filter");
+  const months = [...new Set(_allFlows.map(f => f.date.slice(0, 7)))].sort();
+  sel.innerHTML = `<option value="all">Todos</option>` + months.map(m => {
+    const [y, mm] = m.split("-");
+    return `<option value="${m}">${MONTH_NAMES[+mm - 1]} ${y}</option>`;
+  }).join("");
+  sel.value = _monthFilter;
+}
+
+// =====================================================================
+// Controls
+// =====================================================================
+document.getElementById("view-group").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  document.querySelectorAll("#view-group button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  _view = btn.dataset.view;
+  render();
+});
+
+document.getElementById("currency-group").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  document.querySelectorAll("#currency-group button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  _currency = btn.dataset.cur;
+  render();
+});
+
+document.getElementById("month-filter").addEventListener("change", e => {
+  _monthFilter = e.target.value; render();
+});
+
+document.getElementById("cal-prev").addEventListener("click", () => {
+  _calMonth = new Date(_calMonth.getFullYear(), _calMonth.getMonth() - 1, 1); render();
+});
+document.getElementById("cal-next").addEventListener("click", () => {
+  _calMonth = new Date(_calMonth.getFullYear(), _calMonth.getMonth() + 1, 1); render();
+});
+document.getElementById("cal-today").addEventListener("click", () => {
+  _calMonth = new Date(); render();
+});
+
+// Name filter dropdown open/close + search + acciones
+const nfBtn = document.getElementById("name-filter-btn");
+const nfPanel = document.getElementById("name-filter-panel");
+nfBtn.addEventListener("click", e => { e.stopPropagation(); nfPanel.classList.toggle("open"); });
+nfPanel.addEventListener("click", e => e.stopPropagation());
+document.addEventListener("click", () => nfPanel.classList.remove("open"));
+
+document.getElementById("name-filter-search").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll("#name-filter-list .name-filter-item").forEach(it => {
+    it.style.display = it.dataset.search.includes(q) ? "" : "none";
+  });
+});
+
+document.querySelectorAll(".name-filter-action").forEach(b => {
+  b.addEventListener("click", () => {
+    if (b.dataset.act === "clear") {
+      _nameFilter.clear();
+    } else { // "all" → selecciona las visibles según búsqueda
+      document.querySelectorAll("#name-filter-list .name-filter-item").forEach(it => {
+        if (it.style.display !== "none") _nameFilter.add(it.querySelector("input").value);
+      });
+    }
+    document.querySelectorAll("#name-filter-list input").forEach(i => {
+      i.checked = _nameFilter.has(i.value);
+    });
+    updateNameBtn();
+    render();
+  });
+});
+
+// =====================================================================
+// Init
+// =====================================================================
+// Deep-link de vista inicial: #table | #calendar
+if (location.hash === "#table") {
+  _view = "table";
+  document.querySelectorAll("#view-group button").forEach(b =>
+    b.classList.toggle("active", b.dataset.view === "table"));
+}
+loadData();
+</script>
+</body>
+</html>

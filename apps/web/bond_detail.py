@@ -115,7 +115,7 @@ def _resolve_instrument_and_leg(ticker: str, repo, indices):
         return None
     instrument, indices_override = _apply_leg(instrument, leg)
     indices_eff = indices_override if indices_override is not None else indices
-    return base_ticker, instrument, indices_eff
+    return base_ticker, instrument, indices_eff, leg
 
 
 def _cupon_label(instrument: Instrument) -> str:
@@ -148,6 +148,12 @@ def _cupon_label(instrument: Instrument) -> str:
         # Backear el cupón anual desde el próximo cashflow con interés:
         # annual_rate = next.interest × freq / residual_at_settlement.
         # Aproximado pero útil — soberanos AR pagan semestral.
+        return _infer_coupon_rate_label(instrument)
+    # ON y demás tasa-fija: usar el cupón explícito si está cargado; si no,
+    # backearlo desde los cashflows (mismo criterio que soberanos).
+    if instrument.coupon_rate:
+        return f"Tasa fija {instrument.coupon_rate * 100:.3f}% anual"
+    if itype == "ON":
         return _infer_coupon_rate_label(instrument)
     return "—"
 
@@ -455,7 +461,8 @@ def get_bond_detail(
     resolved = _resolve_instrument_and_leg(ticker, repo, indices)
     if resolved is None:
         return None
-    base_ticker, instrument, indices_eff = resolved
+    base_ticker, instrument, indices_eff, leg = resolved
+    ticker_u = ticker.upper().strip()
 
     ref_date = _resolve_ref(settlement_lag)
     snapshots = provider.fetch_snapshots([base_ticker])
@@ -525,7 +532,7 @@ def calculate(
     resolved = _resolve_instrument_and_leg(ticker, repo, indices)
     if resolved is None:
         return None
-    base_ticker, instrument, indices_eff = resolved
+    base_ticker, instrument, indices_eff, _leg = resolved
 
     ref_date = _resolve_ref(settlement_lag)
 
@@ -675,7 +682,7 @@ def cer_return_scenarios(
     resolved = _resolve_instrument_and_leg(ticker, repo, indices)
     if resolved is None:
         return None
-    base_ticker, instrument, indices_eff = resolved
+    base_ticker, instrument, indices_eff, _leg = resolved
 
     empty = {"rows": []}
     if not _is_cer_type(instrument.instrument_type) or not instrument.cer_base:
