@@ -1,0 +1,9 @@
+# Tickers base a ignorar permanentemente en core/infrastructure/ons_sync.py.
+# Un ticker base por línea (sin la última letra O/D/C). Líneas vacías y
+# comentarios (#) se ignoran.
+#
+# Ejemplo: para ignorar PNDCO/PNDCD/PNDCC escribir:  PNDC
+#
+# Agregar acá los tickers que borraste del master para que no vuelvan a
+# aparecer cuando el background task detecte nuevas ONs en arg_corp.
+

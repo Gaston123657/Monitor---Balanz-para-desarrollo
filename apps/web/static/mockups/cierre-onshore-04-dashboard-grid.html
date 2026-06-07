@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre Onshore · Dashboard Grid</title>
+<style>
+  :root{
+    --bg:#06121F; --panel:#0E2237; --panel2:#163553;
+    --line:#23415e; --tx:#FFFFFF; --mut:#94A8BD; --cyan:#00D4FF;
+    --pos:#00C896; --neg:#FF5252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;max-width:430px;margin:0 auto;padding:10px 8px 24px;font-size:11px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+  .head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 10px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+  .head .brand{font-size:10px;letter-spacing:.24em;color:var(--cyan);font-weight:700}
+  .head .ts{font-size:10px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 7px;min-height:54px;position:relative;overflow:hidden}
+  .tile .l{font-size:8px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase}
+  .tile .v{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px;color:#fff;line-height:1.1}
+  .tile .d{font-size:10px;font-variant-numeric:tabular-nums;margin-top:1px;font-weight:600}
+  .stitle{font-size:9px;letter-spacing:.22em;color:var(--cyan);margin:14px 4px 6px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+  .stitle .right{color:var(--mut);font-size:9px;letter-spacing:.12em}
+  .span2{grid-column:span 2}
+  .span4{grid-column:span 4}
+  .lst .r{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;margin-bottom:4px}
+  .lst .tk{font-weight:700;font-size:11px;min-width:50px}
+  .lst .mid{font-size:9px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+  .lst .dlt{font-weight:700;font-size:11px;font-variant-numeric:tabular-nums;text-align:right;min-width:54px}
+  .footer{text-align:center;font-size:8px;color:var(--mut);letter-spacing:.18em;margin-top:14px}
+  .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="head">
+  <span class="brand">▣ DASHBOARD · CIERRE ONSHORE</span>
+  <span class="ts">29·05·26 17:00</span>
+</div>
+
+<div class="stitle">Dólares <span class="right">USD/ARS</span></div>
+<div class="grid" id="fx"></div>
+
+<div class="stitle">BCRA <span class="right">cierre día</span></div>
+<div class="grid">
+  <div class="tile span2"><div class="l">Reservas</div><div class="v" id="res"></div><div class="d" id="resd"></div></div>
+  <div class="tile span2"><div class="l">Riesgo País</div><div class="v" id="rp"></div><div class="d" id="rpd"></div></div>
+</div>
+
+<div class="stitle">Acciones MERVAL <span class="right">hoy · 1m · ytd</span></div>
+<div class="lst" id="acc"></div>
+
+<div class="stitle">Soberanos <span class="right">TIR · Δ día</span></div>
+<div class="lst" id="sov"></div>
+
+<div class="stitle">Renta Fija <span class="right">TIR / TEM</span></div>
+<div class="lst" id="rf"></div>
+
+<div class="stitle">Futuros DLR <span class="right">ROFEX · 4 ctos</span></div>
+<div class="grid" id="fut"></div>
+
+<div class="footer">DATOS · CON · FINES · INFORMATIVOS</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA, F=window.fmt;
+
+const fx=document.getElementById("fx");
+M.dolares.forEach(d=>{
+  const cls=F.cls(d.delta);
+  fx.insertAdjacentHTML("beforeend",
+   `<div class="tile span2"><div class="l">${d.tipo}</div><div class="v">$${F.num(d.precio,0)}</div><div class="d ${cls}">${F.arrow(d.delta)} ${F.pct(d.delta)}</div></div>`);
+});
+
+res.textContent  = "US$"+(M.bcra.reservas_usd_mm/1000).toFixed(2)+"B";
+resd.outerHTML   = `<div class="d ${F.cls(M.bcra.reservas_delta_usd_mm)}" id="resd">${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm}M USD</div>`;
+rp.textContent   = M.bcra.riesgo_pais_bps+" pb";
+rpd.outerHTML    = `<div class="d ${F.cls(-M.bcra.riesgo_pais_delta_bps)}" id="rpd">${F.bps(M.bcra.riesgo_pais_delta_bps)}</div>`;
+
+function showG(arr,n=3){return arr.slice(0,n)}
+function showP(arr,n=2){return arr.slice(0,n)}
+
+const acc=document.getElementById("acc");
+showG(M.acciones.ganadores,3).forEach(s=>acc.insertAdjacentHTML("beforeend",
+ `<div class="r"><span class="tk"><span class="dot" style="background:var(--pos)"></span>${s.ticker}</span><span class="mid">1M ${F.pct(s.mes)} · YTD ${F.pct(s.ytd)}</span><span class="dlt pos">${F.pct(s.hoy)}</span></div>`));
+showP(M.acciones.perdedores,2).forEach(s=>acc.insertAdjacentHTML("beforeend",
+ `<div class="r"><span class="tk"><span class="dot" style="background:var(--neg)"></span>${s.ticker}</span><span class="mid">1M ${F.pct(s.mes)} · YTD ${F.pct(s.ytd)}</span><span class="dlt neg">${F.pct(s.hoy)}</span></div>`));
+
+const sov=document.getElementById("sov");
+function addBnd(panel,label){
+  const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,2).forEach(b=>sov.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${b.ticker}</span><span class="mid">${label} · TIR ${F.num(b.tir)}%</span><span class="dlt ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+}
+addBnd(M.soberanos.globales,"GLOB");
+addBnd(M.soberanos.bonares,"BONAR");
+addBnd(M.soberanos.bopreales,"BOPR");
+
+const rf=document.getElementById("rf");
+(function(){
+  const all=[...M.renta_fija.cer.ganadores,...M.renta_fija.cer.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,2).forEach(b=>rf.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${b.ticker}</span><span class="mid">CER · TIR ${F.num(b.tir)}%</span><span class="dlt ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+})();
+(function(){
+  const all=[...M.renta_fija.lecaps.ganadores,...M.renta_fija.lecaps.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,2).forEach(b=>rf.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${b.ticker}</span><span class="mid">LECAP · TEM ${F.num(b.tem)}% · TNA ${F.num(b.tna)}%</span><span class="dlt ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+})();
+(function(){
+  const all=[...M.renta_fija.tamar_puro.ganadores,...M.renta_fija.tamar_puro.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,2).forEach(b=>rf.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${b.ticker}</span><span class="mid">TAMAR · TIR ${F.num(b.tir)}%</span><span class="dlt ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+})();
+
+const fut=document.getElementById("fut");
+M.futuros.forEach(f=>fut.insertAdjacentHTML("beforeend",
+ `<div class="tile span2"><div class="l">${f.contrato}</div><div class="v">$${F.num(f.precio,0)}</div><div class="d ${F.cls(f.delta)}">${F.pct(f.delta)} · TNA ${F.num(f.tna)}%</div></div>`));
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre · Light BALANZ</title>
+<style>
+  :root{
+    --bg:#F2F6FA;
+    --panel:#FFFFFF;
+    --panel2:#EBF3FB;
+    --panel3:#F7FAFE;
+    --line:#D4E4F0;
+    --line2:#C0D8EC;
+    --tx:#0A1929;
+    --tx2:#2D4A63;
+    --mut:#6B8BA4;
+    --mut2:#9DB8CC;
+    --blue:#003C80;
+    --blue2:#0055B3;
+    --blue3:#1A7FD4;
+    --pos:#097A3E;
+    --posbg:#E3F5EC;
+    --posbdr:#B2DFC7;
+    --neg:#B8281E;
+    --negbg:#FDEAEA;
+    --negbdr:#F2B8B5;
+    --amber:#8A5E00;
+    --amberbg:#FFF5DC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,'SF Pro Display',Inter,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  body{width:430px;margin:0 auto;padding:0 0 0;font-size:11px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+
+  /* ===================== HEADER ===================== */
+  .hd{
+    background:linear-gradient(135deg,#002560 0%,#004AAD 60%,#006CD6 100%);
+    padding:14px 16px 14px;
+    position:relative;overflow:hidden;
+  }
+  .hd::after{
+    content:"";position:absolute;top:-40px;right:-40px;
+    width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.10) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .hd::before{
+    content:"";position:absolute;bottom:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,rgba(255,255,255,.0),rgba(255,255,255,.3),rgba(255,255,255,.0));
+  }
+  .hd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;position:relative;z-index:1}
+  .logo{display:flex;align-items:center;gap:8px}
+  .logo-sq{width:28px;height:28px;background:rgba(255,255,255,.95);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:900;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .logo-name{font-size:14px;font-weight:800;color:#fff;letter-spacing:.06em}
+  .hd-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:3px 9px;font-size:8.5px;color:rgba(255,255,255,.9);letter-spacing:.14em;font-weight:600;backdrop-filter:blur(4px)}
+  .hd-title{position:relative;z-index:1}
+  .hd-title h1{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+  .hd-title .sub{font-size:10px;color:rgba(255,255,255,.65);margin-top:3px;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+  /* Riesgo País strip */
+  .rp-strip{
+    background:rgba(0,0,0,.18);border-radius:10px;
+    margin-top:10px;padding:8px 12px;
+    display:flex;align-items:center;justify-content:space-between;
+    border:1px solid rgba(255,255,255,.12);
+    position:relative;z-index:1;
+  }
+  .rp-strip .rp-lbl{font-size:9px;letter-spacing:.18em;color:rgba(255,255,255,.65);text-transform:uppercase;font-weight:700}
+  .rp-strip .rp-val{font-size:20px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .rp-strip .rp-delta{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;padding:2px 9px;border-radius:20px}
+  .rp-strip .rp-delta.pos{background:rgba(9,122,62,.25);color:#6FEFB0;border:1px solid rgba(9,122,62,.35)}
+  .rp-strip .rp-delta.neg{background:rgba(184,40,30,.25);color:#FFAAAA;border:1px solid rgba(184,40,30,.35)}
+
+  /* ===================== CONTENT ===================== */
+  .ct{padding:9px 9px 0}
+  section{margin-bottom:8px}
+  .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px}
+  .sh-l{display:flex;align-items:center;gap:6px}
+  .sh-dot{width:3px;height:12px;border-radius:2px;background:linear-gradient(180deg,var(--blue2),var(--blue3))}
+  .sh .t{font-size:9px;letter-spacing:.2em;color:var(--blue);font-weight:800;text-transform:uppercase}
+  .sh .m{font-size:8px;color:var(--mut2);letter-spacing:.1em;background:var(--panel2);padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
+
+  /* ===================== DÓLARES ===================== */
+  .fxg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .fxb{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:7px 8px;
+    box-shadow:0 2px 6px rgba(0,60,128,.07),0 1px 2px rgba(0,0,0,.04);
+    position:relative;overflow:hidden;
+  }
+  .fxb::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue2),var(--blue3))}
+  .fxb .l{font-size:7.5px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;font-weight:700}
+  .fxb .v{font-size:13px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--blue)}
+  .fxb .d{font-size:9px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+
+  /* ===================== BCRA ===================== */
+  .bcrag{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .bcrab{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:10px 12px;
+    box-shadow:0 2px 8px rgba(0,60,128,.08);
+    position:relative;overflow:hidden;
+  }
+  .bcrab::after{
+    content:"";position:absolute;bottom:-14px;right:-14px;
+    width:56px;height:56px;border-radius:50%;
+    background:radial-gradient(circle,rgba(0,85,179,.06),transparent 70%);
+  }
+  .bcrab .l{font-size:8px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;font-weight:700}
+  .bcrab .v{font-size:20px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--blue);line-height:1}
+  .bcrab .d{font-size:11px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+
+  /* ===================== TABLAS ===================== */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .panel{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;overflow:hidden;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);
+  }
+  .ph{font-size:8px;letter-spacing:.14em;text-align:center;padding:5px 0;font-weight:800;text-transform:uppercase;border-bottom:1px solid;display:flex;align-items:center;justify-content:center;gap:4px}
+  .ph.pos{color:var(--pos);background:var(--posbg);border-color:var(--posbdr)}
+  .ph.neg{color:var(--neg);background:var(--negbg);border-color:var(--negbdr)}
+  .ph.blue{color:var(--blue2);background:var(--panel2);border-color:var(--line2)}
+  .row{display:grid;grid-template-columns:40px 1fr auto;gap:3px;align-items:center;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.04)}
+  .row:last-child{border-bottom:none}
+  .row .tk{font-size:11px;font-weight:800;color:var(--blue)}
+  .row .mt{font-size:8px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums;line-height:1.3}
+  .row .d{font-size:11px;font-weight:800;text-align:right;min-width:42px;font-variant-numeric:tabular-nums}
+  .three .row{grid-template-columns:36px 1fr auto;padding:3px 6px;gap:2px}
+  .three .row .tk{font-size:10px}
+  .three .row .d{font-size:10px;min-width:36px}
+  .three .row .mt{font-size:7.5px}
+
+  /* ===================== FUTUROS ===================== */
+  .futg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .futc{
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    padding:7px 6px;text-align:center;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);
+    position:relative;overflow:hidden;
+  }
+  .futc::before{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue3),transparent)}
+  .futc .l{font-size:7.5px;letter-spacing:.1em;color:var(--blue2);font-weight:700}
+  .futc .v{font-size:12px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--tx)}
+  .futc .b{display:flex;justify-content:space-between;align-items:center;margin-top:3px;font-size:8px;font-weight:700;font-variant-numeric:tabular-nums}
+  .futc .tna{color:var(--amber);background:var(--amberbg);border:1px solid #E8C96640;border-radius:4px;padding:0 4px;font-size:8px}
+  .futc .sep{width:1px;height:10px;background:var(--line);margin:0 2px}
+
+  /* ===================== FOOTER ===================== */
+  .footer{
+    background:linear-gradient(135deg,#002560,#004AAD);
+    padding:8px 14px;
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:8px;
+  }
+  .footer .fr{font-size:8px;color:rgba(255,255,255,.6);letter-spacing:.12em;text-align:center;width:100%}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hd">
+  <div class="hd-title">
+    <h1>Cierre Mercado Onshore</h1>
+  </div>
+  <div class="rp-strip">
+    <div>
+      <div class="rp-lbl">Riesgo País</div>
+      <div class="rp-val" id="rp"></div>
+    </div>
+    <div class="rp-delta" id="rpd"></div>
+  </div>
+</div>
+
+<div class="ct">
+
+  <!-- DÓLARES -->
+  <section>
+    <div class="sh">
+      <div class="sh-l"><div class="sh-dot"></div><span class="t">Dólares</span></div>
+      <span class="m">USD / ARS</span>
+    </div>
+    <div class="fxg" id="fx"></div>
+  </section>
+
+  <!-- ACCIONES -->
+  <section>
+    <div class="sh">
+      <div class="sh-l"><div class="sh-dot"></div><span class="t">Acciones MERVAL</span></div>
+      <span class="m">hoy · 1m · ytd</span>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph pos">▲ Ganadores</div><div id="acc-g"></div></div>
+      <div class="panel"><div class="ph neg">▼ Perdedores</div><div id="acc-p"></div></div>
+    </div>
+  </section>
+
+  <!-- SOBERANOS -->
+  <section>
+    <div class="sh">
+      <div class="sh-l"><div class="sh-dot"></div><span class="t">Soberanos</span></div>
+      <span class="m">TIR · Δ día</span>
+    </div>
+    <div class="three">
+      <div class="panel"><div class="ph blue">Globales</div><div id="sov-g"></div></div>
+      <div class="panel"><div class="ph blue">Bonares</div><div id="sov-b"></div></div>
+      <div class="panel"><div class="ph blue">Bopreales</div><div id="sov-bp"></div></div>
+    </div>
+  </section>
+
+  <!-- RENTA FIJA -->
+  <section>
+    <div class="sh">
+      <div class="sh-l"><div class="sh-dot"></div><span class="t">Renta Fija Pesos</span></div>
+      <span class="m">cierre</span>
+    </div>
+    <div class="three">
+      <div class="panel"><div class="ph blue">CER · TIR</div><div id="cer"></div></div>
+      <div class="panel"><div class="ph blue">LECAPS · TNA</div><div id="lec"></div></div>
+      <div class="panel"><div class="ph blue">TAMAR · TIR</div><div id="tam"></div></div>
+    </div>
+  </section>
+
+  <!-- FUTUROS -->
+  <section>
+    <div class="sh">
+      <div class="sh-l"><div class="sh-dot"></div><span class="t">Futuros DLR</span></div>
+      <span class="m">ROFEX</span>
+    </div>
+    <div class="futg" id="fut"></div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <span class="fr">29 DE MAYO DE 2026 · DATOS CON FINES INFORMATIVOS</span>
+</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA, F=window.fmt;
+
+// DÓLARES
+document.getElementById("fx").innerHTML = M.dolares.map(d=>
+  `<div class="fxb">
+    <div class="l">${d.tipo}</div>
+    <div class="v">$${F.num(d.precio,0)}</div>
+    <div class="d ${F.cls(d.delta)}">${F.arrow(d.delta)} ${F.pct(d.delta)}</div>
+  </div>`
+).join("");
+
+// RIESGO PAÍS (en header)
+rp.textContent = M.bcra.riesgo_pais_bps + " pb";
+const rpCls = M.bcra.riesgo_pais_delta_bps <= 0 ? "pos" : "neg";
+rpd.className  = "rp-delta " + rpCls;
+rpd.textContent = (M.bcra.riesgo_pais_delta_bps >= 0 ? "+" : "") + M.bcra.riesgo_pais_delta_bps + " pb";
+
+// ACCIONES
+function stk(arr, id, cls){
+  document.getElementById(id).innerHTML = arr.slice(0,4).map(s=>
+    `<div class="row">
+      <span class="tk">${s.ticker}</span>
+      <span class="mt">1M ${F.pct(s.mes)}<br>YTD ${F.pct(s.ytd)}</span>
+      <span class="d ${cls}">${F.pct(s.hoy)}</span>
+    </div>`
+  ).join("");
+}
+stk(M.acciones.ganadores, "acc-g", "pos");
+stk(M.acciones.perdedores, "acc-p", "neg");
+
+// BONOS
+function bnd(panel, id, uf, n=3){
+  const all = [...panel.ganadores, ...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  document.getElementById(id).innerHTML = all.slice(0,n).map(b=>
+    `<div class="row">
+      <span class="tk">${b.ticker}</span>
+      <span class="mt">${uf(b)}</span>
+      <span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span>
+    </div>`
+  ).join("");
+}
+bnd(M.soberanos.globales,      "sov-g",  b=>`TIR ${F.num(b.tir)}%`);
+bnd(M.soberanos.bonares,       "sov-b",  b=>`TIR ${F.num(b.tir)}%`);
+bnd(M.soberanos.bopreales,     "sov-bp", b=>`TIR ${F.num(b.tir)}%`);
+bnd(M.renta_fija.cer,          "cer",    b=>`TIR ${F.num(b.tir)}%`);
+bnd(M.renta_fija.lecaps,       "lec",    b=>`TNA ${F.num(b.tna,1)}%`);
+bnd(M.renta_fija.tamar_puro,   "tam",    b=>`TIR ${F.num(b.tir)}%`);
+
+// FUTUROS
+document.getElementById("fut").innerHTML = M.futuros.map(f=>
+  `<div class="futc">
+    <div class="l">${f.contrato.replace("DLR ","")}</div>
+    <div class="v">$${F.num(f.precio,0)}</div>
+    <div class="b">
+      <span class="${F.cls(f.delta)}">${F.pct(f.delta)}</span>
+      <div class="sep"></div>
+      <span class="tna">${F.num(f.tna,1)}%</span>
+    </div>
+  </div>`
+).join("");
+</script>
+</body>
+</html>

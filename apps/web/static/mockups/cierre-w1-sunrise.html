@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre · Azul Bold</title>
+<style>
+  :root{
+    --bg:#E8EFF8; --panel:#FFFFFF; --panel2:#EBF2FB; --line:#C8D8EE;
+    --line2:#A8C2E0; --tx:#060F1E; --mut:#4A6888; --mut2:#8AAAC8;
+    --h1:#001E5A; --h2:#003C9A; --h3:#0A5FD4;
+    --pos:#0A6830; --posbg:#DEF4E8; --posbdr:#7EC8A0;
+    --neg:#A81C18; --negbg:#FDEAEA; --negbdr:#EEA0A0;
+    --goldbg:#FFF4DC; --gold:#7A5000;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  body{width:430px;margin:0 auto;font-size:11px}
+  .pos{color:var(--pos)}.neg{color:var(--neg)}.mut{color:var(--mut)}
+  /* HEADER — azul muy oscuro con textura de líneas diagonales */
+  .hd{
+    background:linear-gradient(160deg,#001040 0%,#003090 55%,#0058CC 100%);
+    padding:16px 16px 14px;position:relative;overflow:hidden;
+  }
+  /* líneas diagonales sutiles en el header */
+  .hd::after{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(
+      -55deg,
+      rgba(255,255,255,.015) 0px,rgba(255,255,255,.015) 1px,
+      transparent 1px,transparent 18px
+    );pointer-events:none;
+  }
+  .hd::before{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(100,200,255,.5),transparent)}
+  .hd h1{font-size:19px;font-weight:900;color:#fff;letter-spacing:-.03em;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+  /* Riesgo País — ocupa el ancho completo con borde izquierdo de acento */
+  .rp-strip{
+    border-left:3px solid rgba(100,200,255,.7);
+    background:rgba(0,0,0,.22);
+    border-radius:0 10px 10px 0;
+    margin-top:10px;padding:8px 14px;
+    display:flex;align-items:center;justify-content:space-between;
+    position:relative;z-index:1;
+  }
+  .rp-lbl{font-size:8.5px;letter-spacing:.18em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700}
+  .rp-val{font-size:22px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
+  .rp-delta{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px}
+  .rp-delta.pos{background:rgba(10,104,48,.35);color:#80F0A8;border:1px solid rgba(10,104,48,.4)}
+  .rp-delta.neg{background:rgba(168,28,24,.35);color:#FFB0B0;border:1px solid rgba(168,28,24,.4)}
+  /* CONTENT */
+  .ct{padding:8px 8px 0}
+  section{margin-bottom:7px}
+  .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px}
+  .sh-l{display:flex;align-items:center;gap:6px}
+  .sh-dot{width:3px;height:12px;border-radius:2px;background:linear-gradient(180deg,var(--h2),var(--h3))}
+  .sh .t{font-size:8.5px;letter-spacing:.22em;color:var(--h1);font-weight:800;text-transform:uppercase}
+  .sh .m{font-size:7.5px;color:var(--mut2);letter-spacing:.1em;background:var(--panel2);padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
+  /* DÓLARES — sin border-radius (estilo card plana) */
+  .fxg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line2);border-radius:10px;overflow:hidden;border:1px solid var(--line2)}
+  .fxb{background:var(--panel);padding:7px 8px}
+  .fxb:first-child{border-radius:9px 0 0 9px}
+  .fxb:last-child{border-radius:0 9px 9px 0}
+  .fxb .l{font-size:7px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;font-weight:700}
+  .fxb .v{font-size:13px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--h1)}
+  .fxb .d{font-size:9px;font-weight:700;margin-top:1px}
+  /* TABLAS */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden;box-shadow:0 1px 4px rgba(0,30,90,.07)}
+  .ph{font-size:8px;letter-spacing:.14em;text-align:center;padding:4px 0;font-weight:800;text-transform:uppercase;border-bottom:1px solid}
+  .ph.pos{color:var(--pos);background:var(--posbg);border-color:var(--posbdr)}
+  .ph.neg{color:var(--neg);background:var(--negbg);border-color:var(--negbdr)}
+  .ph.acc{color:var(--h2);background:var(--panel2);border-color:var(--line2)}
+  .row{display:grid;grid-template-columns:40px 1fr auto;gap:3px;align-items:center;padding:3px 8px;border-bottom:1px solid rgba(0,0,0,.04)}
+  .row:last-child{border-bottom:none}
+  .row .tk{font-size:11px;font-weight:800;color:var(--h1)}
+  .row .mt{font-size:8px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums;line-height:1.3}
+  .row .d{font-size:11px;font-weight:800;text-align:right;min-width:42px;font-variant-numeric:tabular-nums}
+  .three .row{grid-template-columns:36px 1fr auto;padding:2px 5px;gap:2px}
+  .three .row .tk{font-size:10px}
+  .three .row .d{font-size:10px;min-width:35px}
+  /* FUTUROS */
+  .futg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line2);border-radius:10px;overflow:hidden;border:1px solid var(--line2)}
+  .futc{background:var(--panel);padding:6px 5px;text-align:center}
+  .futc:first-child{border-radius:9px 0 0 9px}
+  .futc:last-child{border-radius:0 9px 9px 0}
+  .futc .l{font-size:7px;letter-spacing:.1em;color:var(--h2);font-weight:700}
+  .futc .v{font-size:12px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--tx)}
+  .futc .b{display:flex;justify-content:space-between;align-items:center;margin-top:2px;font-size:8px;font-weight:700;font-variant-numeric:tabular-nums}
+  .futc .sep{width:1px;height:9px;background:var(--line)}
+  .futc .tna{color:var(--gold);background:var(--goldbg);border-radius:3px;padding:0 3px}
+  .footer{background:linear-gradient(160deg,#001040,#003090);padding:8px 14px;text-align:center;margin-top:8px}
+  .footer .fr{font-size:8px;color:rgba(255,255,255,.55);letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="hd">
+  <h1>Cierre Mercado Onshore</h1>
+  <div class="rp-strip"><div><div class="rp-lbl">Riesgo País</div><div class="rp-val" id="rp"></div></div><div class="rp-delta" id="rpd"></div></div>
+</div>
+<div class="ct">
+  <section><div class="sh"><div class="sh-l"><div class="sh-dot"></div><span class="t">Dólares</span></div><span class="m">USD/ARS</span></div><div class="fxg" id="fx"></div></section>
+  <section><div class="sh"><div class="sh-l"><div class="sh-dot"></div><span class="t">Acciones MERVAL</span></div><span class="m">hoy · 1m · ytd</span></div><div class="two"><div class="panel"><div class="ph pos">▲ Ganadores</div><div id="acc-g"></div></div><div class="panel"><div class="ph neg">▼ Perdedores</div><div id="acc-p"></div></div></div></section>
+  <section><div class="sh"><div class="sh-l"><div class="sh-dot"></div><span class="t">Soberanos</span></div><span class="m">TIR · Δ día</span></div><div class="three"><div class="panel"><div class="ph acc">Globales</div><div id="sov-g"></div></div><div class="panel"><div class="ph acc">Bonares</div><div id="sov-b"></div></div><div class="panel"><div class="ph acc">Bopreales</div><div id="sov-bp"></div></div></div></section>
+  <section><div class="sh"><div class="sh-l"><div class="sh-dot"></div><span class="t">Renta Fija Pesos</span></div><span class="m">cierre</span></div><div class="three"><div class="panel"><div class="ph acc">CER · TIR</div><div id="cer"></div></div><div class="panel"><div class="ph acc">LECAPS · TNA</div><div id="lec"></div></div><div class="panel"><div class="ph acc">TAMAR · TIR</div><div id="tam"></div></div></div></section>
+  <section><div class="sh"><div class="sh-l"><div class="sh-dot"></div><span class="t">Futuros DLR</span></div><span class="m">ROFEX</span></div><div class="futg" id="fut"></div></section>
+</div>
+<div class="footer"><span class="fr">29 DE MAYO DE 2026 · DATOS CON FINES INFORMATIVOS</span></div>
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA,F=window.fmt;
+document.getElementById("fx").innerHTML=M.dolares.map(d=>`<div class="fxb"><div class="l">${d.tipo}</div><div class="v">$${F.num(d.precio,0)}</div><div class="d ${F.cls(d.delta)}">${F.arrow(d.delta)} ${F.pct(d.delta)}</div></div>`).join("");
+rp.textContent=M.bcra.riesgo_pais_bps+" pb";const rc=M.bcra.riesgo_pais_delta_bps<=0?"pos":"neg";rpd.className="rp-delta "+rc;rpd.textContent=(M.bcra.riesgo_pais_delta_bps>=0?"+":"")+M.bcra.riesgo_pais_delta_bps+" pb";
+function stk(arr,id,cls){document.getElementById(id).innerHTML=arr.slice(0,4).map(s=>`<div class="row"><span class="tk">${s.ticker}</span><span class="mt">1M ${F.pct(s.mes)}<br>YTD ${F.pct(s.ytd)}</span><span class="d ${cls}">${F.pct(s.hoy)}</span></div>`).join("");}
+stk(M.acciones.ganadores,"acc-g","pos");stk(M.acciones.perdedores,"acc-p","neg");
+function bnd(panel,id,uf,n=3){const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));document.getElementById(id).innerHTML=all.slice(0,n).map(b=>`<div class="row"><span class="tk">${b.ticker}</span><span class="mt">${uf(b)}</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`).join("");}
+bnd(M.soberanos.globales,"sov-g",b=>`TIR ${F.num(b.tir)}%`);bnd(M.soberanos.bonares,"sov-b",b=>`TIR ${F.num(b.tir)}%`);bnd(M.soberanos.bopreales,"sov-bp",b=>`TIR ${F.num(b.tir)}%`);
+bnd(M.renta_fija.cer,"cer",b=>`TIR ${F.num(b.tir)}%`);bnd(M.renta_fija.lecaps,"lec",b=>`TNA ${F.num(b.tna,1)}%`);bnd(M.renta_fija.tamar_puro,"tam",b=>`TIR ${F.num(b.tir)}%`);
+document.getElementById("fut").innerHTML=M.futuros.map(f=>`<div class="futc"><div class="l">${f.contrato.replace("DLR ","")}</div><div class="v">$${F.num(f.precio,0)}</div><div class="b"><span class="${F.cls(f.delta)}">${F.pct(f.delta)}</span><div class="sep"></div><span class="tna">${F.num(f.tna,1)}%</span></div></div>`).join("");
+</script>
+</body>
+</html>

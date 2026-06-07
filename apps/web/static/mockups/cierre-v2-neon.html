@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre · Neon Dark</title>
+<style>
+  :root{
+    --bg:#000913; --panel:#030E1C; --panel2:#041424;
+    --line:rgba(0,212,255,.12); --tx:#FFFFFF; --mut:#7A93AB; --mut2:#4A6278;
+    --cyan:#00E5FF; --gold:#FFD166; --pos:#00FF8C; --neg:#FF3B5C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tx);font-family:'SF Mono',ui-monospace,Menlo,monospace;-webkit-font-smoothing:antialiased}
+  body{width:430px;margin:0 auto;padding:0 0 14px;font-size:11px;
+    background:radial-gradient(ellipse 500px 300px at 50% 0,rgba(0,229,255,.06),transparent 55%),#000913}
+  .pos{color:var(--pos)}.neg{color:var(--neg)}.mut{color:var(--mut)}
+  .glow-cyan{text-shadow:0 0 12px rgba(0,229,255,.7)}
+  .glow-pos{text-shadow:0 0 10px rgba(0,255,140,.6)}
+  .glow-neg{text-shadow:0 0 10px rgba(255,59,92,.6)}
+
+  /* HEADER */
+  .hd{padding:12px 14px 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+  .hd-top{display:flex;justify-content:space-between;align-items:center}
+  .brand{font-size:11px;letter-spacing:.3em;color:var(--cyan);font-weight:700}
+  .live{font-size:8px;letter-spacing:.2em;color:var(--pos);display:flex;align-items:center;gap:4px}
+  .live-dot{width:5px;height:5px;border-radius:50%;background:var(--pos);box-shadow:0 0 8px var(--pos)}
+  .hd-title{display:flex;justify-content:space-between;align-items:baseline}
+  .hd-title h1{font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--cyan);text-shadow:0 0 18px rgba(0,229,255,.4)}
+  .hd-title .ts{font-size:9px;color:var(--mut);letter-spacing:.12em;font-variant-numeric:tabular-nums}
+
+  /* CONTENT */
+  .ct{padding:8px 10px 0}
+  section{margin-bottom:7px}
+  .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;padding:0 1px}
+  .sh .t{font-size:8.5px;letter-spacing:.22em;color:var(--cyan);font-weight:700;text-transform:uppercase}
+  .sh .m{font-size:7.5px;color:var(--mut2);letter-spacing:.14em}
+
+  /* DÓLARES */
+  .fxg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .fxb{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 6px;position:relative;overflow:hidden}
+  .fxb::before{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,229,255,.06)}
+  .fxb .l{font-size:7.5px;letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
+  .fxb .v{font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--tx)}
+  .fxb .d{font-size:9px;font-weight:700;margin-top:1px}
+
+  /* BCRA */
+  .bcrag{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .bcrab{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+  .bcrab .l{font-size:7.5px;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
+  .bcrab .v{font-size:18px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .bcrab .d{font-size:10px;font-weight:700;margin-top:2px}
+
+  /* ROWS */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .ph{font-size:8px;letter-spacing:.14em;text-align:center;padding:3px 0;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--line)}
+  .ph.pos{color:var(--pos)}
+  .ph.neg{color:var(--neg)}
+  .ph.cyan{color:var(--cyan)}
+  .row{display:grid;grid-template-columns:40px 1fr auto;gap:3px;align-items:center;padding:3px 7px;border-bottom:1px solid rgba(255,255,255,.03)}
+  .row:last-child{border-bottom:none}
+  .row .tk{font-size:10.5px;font-weight:700;letter-spacing:.02em}
+  .row .mt{font-size:8px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums;line-height:1.3}
+  .row .d{font-size:10.5px;font-weight:700;text-align:right;min-width:38px;font-variant-numeric:tabular-nums}
+  .three .row{grid-template-columns:36px 1fr auto;padding:2px 5px;gap:2px}
+  .three .row .tk{font-size:9.5px}
+  .three .row .d{font-size:9.5px;min-width:34px}
+  .three .row .mt{font-size:7.5px}
+
+  /* FUTUROS */
+  .futg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .futc{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:5px 5px;text-align:center}
+  .futc .l{font-size:7.5px;letter-spacing:.10em;color:var(--cyan);font-weight:700}
+  .futc .v{font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .futc .b{display:flex;justify-content:space-between;margin-top:2px;font-size:8px;font-weight:600}
+  .futc .tna{color:var(--gold)}
+
+  .footer{text-align:center;font-size:7.5px;color:var(--mut2);letter-spacing:.2em;margin-top:9px;padding:0 12px}
+  .sep{color:var(--cyan);margin:0 4px}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div class="hd-top"><span class="brand">BALANZ</span><span class="live"><span class="live-dot"></span>CIERRE 17:00 ARS</span></div>
+  <div class="hd-title"><h1 class="glow-cyan">MERCADO ONSHORE</h1><span class="ts">29.05.2026</span></div>
+</div>
+<div class="ct">
+
+  <section>
+    <div class="sh"><span class="t">Dólares</span><span class="m">USD / ARS</span></div>
+    <div class="fxg" id="fx"></div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="t">BCRA</span><span class="m">cierre día</span></div>
+    <div class="bcrag">
+      <div class="bcrab"><div class="l">Reservas</div><div class="v" id="res"></div><div class="d" id="resd"></div></div>
+      <div class="bcrab"><div class="l">Riesgo País</div><div class="v" id="rp"></div><div class="d" id="rpd"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="t">Acciones MERVAL</span><span class="m">hoy · 1m · ytd</span></div>
+    <div class="two">
+      <div class="panel"><div class="ph pos">↑ Ganadores</div><div id="acc-g"></div></div>
+      <div class="panel"><div class="ph neg">↓ Perdedores</div><div id="acc-p"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="t">Soberanos</span><span class="m">TIR · Δ día</span></div>
+    <div class="three">
+      <div class="panel"><div class="ph cyan">Globales</div><div id="sov-g"></div></div>
+      <div class="panel"><div class="ph cyan">Bonares</div><div id="sov-b"></div></div>
+      <div class="panel"><div class="ph cyan">Bopreales</div><div id="sov-bp"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="t">Renta Fija Pesos</span><span class="m">cierre</span></div>
+    <div class="three">
+      <div class="panel"><div class="ph cyan">CER · TIR</div><div id="cer"></div></div>
+      <div class="panel"><div class="ph cyan">LECAPS · TEM</div><div id="lec"></div></div>
+      <div class="panel"><div class="ph cyan">TAMAR · TIR</div><div id="tam"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh"><span class="t">Futuros DLR</span><span class="m">ROFEX</span></div>
+    <div class="futg" id="fut"></div>
+  </section>
+
+</div>
+<div class="footer">BALANZ<span class="sep">·</span>DATOS CON FINES INFORMATIVOS<span class="sep">·</span>29 MAY 2026</div>
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA,F=window.fmt;
+M.dolares.forEach(d=>fx.insertAdjacentHTML("beforeend",
+ `<div class="fxb"><div class="l">${d.tipo}</div><div class="v">$${F.num(d.precio,0)}</div><div class="d ${F.cls(d.delta)}">${F.arrow(d.delta)} ${F.pct(d.delta)}</div></div>`));
+res.textContent="US$"+(M.bcra.reservas_usd_mm/1000).toFixed(2)+"B";
+resd.innerHTML=`<span class="${F.cls(M.bcra.reservas_delta_usd_mm)} glow-pos">${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm}M USD</span>`;
+rp.textContent=M.bcra.riesgo_pais_bps+" pb";
+rpd.innerHTML=`<span class="${F.cls(-M.bcra.riesgo_pais_delta_bps)}">${F.bps(M.bcra.riesgo_pais_delta_bps)}</span>`;
+function stk(arr,id,cls){const el=document.getElementById(id);arr.slice(0,4).forEach(s=>el.insertAdjacentHTML("beforeend",`<div class="row"><span class="tk">${s.ticker}</span><span class="mt">1M ${F.pct(s.mes)}<br>YTD ${F.pct(s.ytd)}</span><span class="d ${cls}">${F.pct(s.hoy)}</span></div>`));}
+stk(M.acciones.ganadores,"acc-g","pos");stk(M.acciones.perdedores,"acc-p","neg");
+function bnd(panel,id,uf,n=3){const el=document.getElementById(id);const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));all.slice(0,n).forEach(b=>el.insertAdjacentHTML("beforeend",`<div class="row"><span class="tk">${b.ticker}</span><span class="mt">${uf(b)}</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));}
+bnd(M.soberanos.globales,"sov-g",b=>`${F.num(b.tir)}%`);bnd(M.soberanos.bonares,"sov-b",b=>`${F.num(b.tir)}%`);bnd(M.soberanos.bopreales,"sov-bp",b=>`${F.num(b.tir)}%`);
+bnd(M.renta_fija.cer,"cer",b=>`${F.num(b.tir)}%`);bnd(M.renta_fija.lecaps,"lec",b=>`${F.num(b.tem)}%`);bnd(M.renta_fija.tamar_puro,"tam",b=>`${F.num(b.tir)}%`);
+M.futuros.forEach(f=>fut.insertAdjacentHTML("beforeend",`<div class="futc"><div class="l">${f.contrato.replace("DLR ","")}</div><div class="v">$${F.num(f.precio,0)}</div><div class="b"><span class="${F.cls(f.delta)}">${F.pct(f.delta)}</span><span class="tna">${F.num(f.tna,1)}%</span></div></div>`));
+</script>
+</body>
+</html>

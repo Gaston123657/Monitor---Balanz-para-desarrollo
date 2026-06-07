@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre de Mercado Onshore</title>
+<style>
+  :root{
+    --bg:#F0F4F8; --panel:#FFFFFF; --panel2:#E8F0F8; --line:#C8D8E8; --line2:#A8C0D8;
+    --tx:#0A1520; --mut:#4A6880; --mut2:#88A8C0;
+    --blue:#0B2438; --blue2:#0D3050; --blue3:#1A5080;
+    --pos:#1F8C3B; --posbg:#E3F5E9; --posbdr:#9DD4B0;
+    --neg:#CC2233; --negbg:#FDEAEC; --negbdr:#F0A8B0;
+    --amber:#7A5000; --amberbg:#FFF4DC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,'SF Pro Display',Inter,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;font-size:11px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+
+  /* ── TOOLBAR (botones, fuera del area capturada) ── */
+  .toolbar{
+    background:#fff;border-bottom:1px solid var(--line);
+    padding:8px 14px;display:flex;align-items:center;gap:8px;
+    position:sticky;top:0;z-index:100;
+  }
+  .toolbar .title{font-size:12px;font-weight:700;color:var(--blue);flex:1;letter-spacing:.02em}
+  .ts{font-size:10px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .tbtn{
+    display:flex;align-items:center;gap:5px;
+    padding:6px 13px;border-radius:8px;border:none;cursor:pointer;
+    font-size:11px;font-weight:700;letter-spacing:.04em;
+    font-family:inherit;transition:opacity .15s;
+  }
+  .tbtn:active{opacity:.75}
+  .tbtn-refresh{background:var(--blue2);color:#fff}
+  .tbtn-png{background:var(--pos);color:#fff}
+  .tbtn svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
+  .tbtn.loading{opacity:.6;pointer-events:none}
+  .spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── CONTENIDO (área capturada) ── */
+  #cierre-content{width:430px;margin:0 auto;padding:0 0 0}
+
+  /* HEADER */
+  .hd{
+    background:linear-gradient(160deg,#091E30 0%,#0D2B44 55%,#154570 100%);
+    padding:15px 16px 13px;position:relative;overflow:hidden;
+  }
+  .hd::after{content:"";position:absolute;top:-50px;right:-50px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(100,200,255,.08),transparent 65%);pointer-events:none}
+  .hd::before{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(100,190,255,.4),transparent)}
+  .hd h1{font-size:17px;font-weight:800;color:#fff;letter-spacing:.08em;text-transform:uppercase;text-align:center;position:relative;z-index:1;text-shadow:0 1px 6px rgba(0,0,0,.3)}
+  /* Header KPIs: Riesgo País + MERVAL en dos columnas */
+  .hd-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;position:relative;z-index:1}
+  .kpi-box{background:rgba(0,0,0,.20);border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,.10)}
+  .kpi-box .kpi-lbl{font-size:8.5px;letter-spacing:.16em;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700}
+  .kpi-box .kpi-val{font-size:18px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px;line-height:1}
+  .kpi-box .kpi-delta{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .kpi-box .kpi-delta.pos{background:rgba(31,140,59,.30);color:#7EEEA0;border:1px solid rgba(31,140,59,.40)}
+  .kpi-box .kpi-delta.neg{background:rgba(204,34,51,.30);color:#FFAAB0;border:1px solid rgba(204,34,51,.40)}
+  .rp-loading{color:rgba(255,255,255,.4);font-size:12px}
+
+  /* CONTENT */
+  .ct{padding:9px 9px 0}
+  section{margin-bottom:8px}
+  .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:0 2px}
+  .sh-l{display:flex;align-items:center;gap:6px}
+  .sh-dot{width:3px;height:12px;border-radius:2px;background:linear-gradient(180deg,var(--blue2),var(--blue3))}
+  .sh .t{font-size:9px;letter-spacing:.2em;color:var(--blue);font-weight:800;text-transform:uppercase}
+  .sh .m{font-size:8px;color:var(--mut2);letter-spacing:.1em;background:var(--panel2);padding:2px 7px;border-radius:20px;border:1px solid var(--line)}
+
+  /* DÓLARES */
+  .fxg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .fxb{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 8px;box-shadow:0 2px 6px rgba(0,60,128,.07);position:relative;overflow:hidden}
+  .fxb::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue2),var(--blue3))}
+  .fxb .l{font-size:7.5px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;font-weight:700}
+  .fxb .v{font-size:13px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--blue)}
+  .fxb .d{font-size:9px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .fxb .d.pos{color:var(--pos)} .fxb .d.neg{color:var(--neg)}
+
+  /* TABLAS */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .ph{font-size:8px;letter-spacing:.14em;text-align:center;padding:5px 0;font-weight:800;text-transform:uppercase;border-bottom:1px solid;display:flex;align-items:center;justify-content:center;gap:4px}
+  .ph.pos{color:var(--pos);background:var(--posbg);border-color:var(--posbdr)}
+  .ph.neg{color:var(--neg);background:var(--negbg);border-color:var(--negbdr)}
+  .ph.blue{
+    color:#0B2438;
+    background:linear-gradient(180deg,#C8DCF0 0%,#DCF0FA 100%);
+    border-color:#7AAACE;border-bottom-width:2px;
+    text-shadow:0 1px 0 rgba(255,255,255,.9);
+    letter-spacing:.16em;font-weight:900;
+  }
+  .row{display:grid;grid-template-columns:40px 1fr auto;gap:3px;align-items:center;padding:4px 8px;border-bottom:1px solid rgba(0,0,0,.04)}
+  .row:last-child{border-bottom:none}
+  .row .tk{font-size:11px;font-weight:800;color:var(--blue)}
+  .row .mt{font-size:7.5px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .d{font-size:11px;font-weight:800;text-align:right;min-width:42px;font-variant-numeric:tabular-nums}
+  .row .d.pos{color:var(--pos)} .row .d.neg{color:var(--neg)}
+  .three .row{grid-template-columns:38px 1fr auto;padding:3px 6px;gap:2px}
+  .three .row .tk{font-size:10px}
+  .three .row .d{font-size:10px;min-width:36px}
+  .three .row .mt{font-size:7.5px}
+
+  /* FUTUROS */
+  .futg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+  .futc{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 6px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.05);position:relative;overflow:hidden}
+  .futc::before{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue3),transparent)}
+  .futc .l{font-size:7.5px;letter-spacing:.1em;color:var(--blue2);font-weight:700}
+  .futc .v{font-size:12px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--tx)}
+  .futc .b{display:flex;justify-content:space-between;align-items:center;margin-top:3px;font-size:8px;font-weight:700;font-variant-numeric:tabular-nums}
+  .futc .sep{width:1px;height:10px;background:var(--line);margin:0 2px}
+  .futc .tna{color:var(--amber);background:var(--amberbg);border:1px solid #E8C96640;border-radius:4px;padding:0 4px;font-size:8px}
+  .futc .delta{} /* hereda color pos/neg */
+
+  /* FOOTER */
+  .footer{background:linear-gradient(160deg,#091E30,#0D2B44);padding:8px 14px;display:flex;align-items:center;justify-content:center;margin-top:8px}
+  .footer .fr{font-size:8px;color:rgba(255,255,255,.6);letter-spacing:.12em;text-align:center}
+
+  /* Placeholder cuando no hay datos */
+  .placeholder{font-size:9px;color:var(--mut);padding:8px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- Toolbar (excluida del PNG) -->
+<div class="toolbar" id="toolbar">
+  <span class="title">Cierre de Mercado Onshore</span>
+  <span class="ts" id="ts-label">—</span>
+  <button class="tbtn tbtn-refresh" id="btn-refresh" onclick="doRefresh()">
+    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    Actualizar
+  </button>
+  <button class="tbtn tbtn-png" id="btn-png" onclick="doPNG()">
+    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+    PNG
+  </button>
+</div>
+
+<!-- Contenido capturado para PNG -->
+<div id="cierre-content">
+
+  <div class="hd">
+    <h1>Cierre Mercado Onshore</h1>
+    <div class="hd-kpis">
+      <div class="kpi-box">
+        <div>
+          <div class="kpi-lbl">Riesgo País</div>
+          <div class="kpi-val" id="rp-val"><span class="rp-loading">…</span></div>
+        </div>
+        <div class="kpi-delta" id="rp-delta"></div>
+      </div>
+      <div class="kpi-box">
+        <div>
+          <div class="kpi-lbl">Merval USD</div>
+          <div class="kpi-val" id="merval-val"><span class="rp-loading">…</span></div>
+        </div>
+        <div class="kpi-delta" id="merval-delta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ct">
+
+    <section>
+      <div class="sh">
+        <div class="sh-l"><div class="sh-dot"></div><span class="t">Dólares</span></div>
+        <span class="m">USD / ARS</span>
+      </div>
+      <div class="fxg" id="fx-grid"></div>
+    </section>
+
+    <section>
+      <div class="sh">
+        <div class="sh-l"><div class="sh-dot"></div><span class="t">Acciones MERVAL</span></div>
+        <span class="m">1m · ytd · hoy</span>
+      </div>
+      <div class="two">
+        <div class="panel"><div class="ph pos">▲ Ganadores</div><div id="acc-g"></div></div>
+        <div class="panel"><div class="ph neg">▼ Perdedores</div><div id="acc-p"></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sh">
+        <div class="sh-l"><div class="sh-dot"></div><span class="t">Soberanos</span></div>
+        <span class="m">TIR · Δ día</span>
+      </div>
+      <div class="three">
+        <div class="panel"><div class="ph blue">Globales</div><div id="sov-g"></div></div>
+        <div class="panel"><div class="ph blue">Bonares</div><div id="sov-b"></div></div>
+        <div class="panel"><div class="ph blue">Bopreales</div><div id="sov-bp"></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sh">
+        <div class="sh-l"><div class="sh-dot"></div><span class="t">Renta Fija Pesos</span></div>
+        <span class="m">Δ día · top movimientos</span>
+      </div>
+      <div class="three">
+        <div class="panel"><div class="ph blue">CER · TIR</div><div id="rf-cer"></div></div>
+        <div class="panel"><div class="ph blue">LECAPS · TNA</div><div id="rf-lec"></div></div>
+        <div class="panel"><div class="ph blue">TAMAR · TIR</div><div id="rf-tam"></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sh">
+        <div class="sh-l"><div class="sh-dot"></div><span class="t">Futuros DLR</span></div>
+        <span class="m">ROFEX</span>
+      </div>
+      <div class="futg" id="fut-grid"></div>
+    </section>
+
+  </div>
+
+  <div class="footer">
+    <span class="fr" id="footer-date">— · DATOS CON FINES INFORMATIVOS</span>
+  </div>
+
+</div><!-- /cierre-content -->
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+// ─── Helpers ──────────────────────────────────────────────────────────────
+const F = {
+  num:  (v, d=0) => v == null ? '—' : (+v).toLocaleString('es-AR', {minimumFractionDigits:d, maximumFractionDigits:d}),
+  pct:  (v, d=2) => v == null ? '—' : (v >= 0 ? '+' : '') + (+v).toFixed(d) + '%',
+  cls:  (v)      => v == null ? '' : (+v >= 0 ? 'pos' : 'neg'),
+  arrow:(v)      => v == null ? '' : (+v >= 0 ? '▲' : '▼'),
+  dateStr: () => {
+    const d = new Date();
+    const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  },
+  timeStr: () => {
+    const d = new Date();
+    return d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+  }
+};
+
+// ─── Render Dólares ───────────────────────────────────────────────────────
+const FX_CASAS = [
+  ['oficial',          'Oficial'],
+  ['mayorista',        'Mayorista'],
+  ['bolsa',            'MEP'],
+  ['contadoconliqui',  'CCL'],
+  ['blue',             'Blue'],
+  ['tarjeta',          'Tarjeta'],
+  ['cripto',           'Cripto'],
+];
+
+function renderFx(fxMap) {
+  const grid = document.getElementById('fx-grid');
+  grid.innerHTML = FX_CASAS.map(([key, label]) => {
+    const q = fxMap[key];
+    const precio = q ? (q.venta ?? q.compra) : null;
+    const pct = q?.change_pct ?? null;
+    const deltaHtml = pct != null
+      ? `<div class="d ${pct >= 0 ? 'pos' : 'neg'}">${F.pct(pct)}</div>`
+      : '';
+    return `<div class="fxb">
+      <div class="l">${label}</div>
+      <div class="v">${precio != null ? '$' + F.num(precio, 0) : '—'}</div>
+      ${deltaHtml}
+    </div>`;
+  }).join('');
+}
+
+// ─── Render Riesgo País ───────────────────────────────────────────────────
+function renderRiesgoPais(rp) {
+  const valEl   = document.getElementById('rp-val');
+  const deltaEl = document.getElementById('rp-delta');
+  if (!rp || rp.valor == null) { valEl.textContent = '—'; return; }
+  valEl.textContent = F.num(rp.valor, 0) + ' pb';
+  const d = rp.delta_abs;
+  if (d != null) {
+    deltaEl.className = 'kpi-delta ' + (d <= 0 ? 'pos' : 'neg');
+    deltaEl.textContent = (d >= 0 ? '+' : '') + d + ' pb';
+  }
+}
+
+// ─── Render MERVAL USD CCL ────────────────────────────────────────────────
+async function fetchAndRenderMerval() {
+  try {
+    const data = await fetch('/api/merval').then(r => r.json());
+    const valEl   = document.getElementById('merval-val');
+    const deltaEl = document.getElementById('merval-delta');
+    if (data.usd_ccl != null) {
+      valEl.textContent = 'USD ' + F.num(data.usd_ccl, 0);
+    } else {
+      valEl.textContent = '—';
+    }
+    const pct = data.change_pct_usd ?? data.change_pct;
+    if (pct != null) {
+      const cls = pct >= 0 ? 'pos' : 'neg';
+      deltaEl.className = 'kpi-delta ' + cls;
+      deltaEl.textContent = F.pct(pct);
+    }
+  } catch(e) {
+    document.getElementById('merval-val').textContent = '—';
+    console.warn('MERVAL fetch error:', e);
+  }
+}
+
+// ─── Render Acciones ──────────────────────────────────────────────────────
+function renderAcciones(ganadores, perdedores) {
+  function rows(arr, id, cls) {
+    const el = document.getElementById(id);
+    el.innerHTML = arr.map(s => {
+      const hoy = s.change_pct;
+      const mes = s.change_30d;
+      const ytd = s.change_ytd;
+      const meta = [mes != null ? '1M ' + F.pct(mes) : '', ytd != null ? 'YTD ' + F.pct(ytd) : ''].filter(Boolean).join('  ');
+      return `<div class="row">
+        <span class="tk">${s.ticker}</span>
+        <span class="mt">${meta}</span>
+        <span class="d ${cls}">${F.pct(hoy)}</span>
+      </div>`;
+    }).join('');
+  }
+  rows(ganadores, 'acc-g', 'pos');
+  rows(perdedores, 'acc-p', 'neg');
+}
+
+// ─── Render Bonos (top movers) ────────────────────────────────────────────
+function topMovers(arr, n=3) {
+  return [...arr]
+    .filter(b => b.tir != null && b.change_pct != null)
+    .sort((a,b) => Math.abs(b.change_pct) - Math.abs(a.change_pct))
+    .slice(0, n);
+}
+
+function renderBondPanel(arr, id, metaFn, tickerFn, n=3) {
+  const el = document.getElementById(id);
+  const rows = n == null
+    ? [...arr].filter(b => b.tir != null).sort((a,b) => (a.ticker||'').localeCompare(b.ticker||''))
+    : topMovers(arr, n);
+  if (!rows.length) { el.innerHTML = '<div class="placeholder">sin datos</div>'; return; }
+  el.innerHTML = rows.map(b => {
+    const cls = F.cls(b.change_pct);
+    const label = tickerFn ? tickerFn(b.ticker) : (b.ticker || '').split('_')[0];
+    return `<div class="row">
+      <span class="tk">${label}</span>
+      <span class="mt">${metaFn(b)}</span>
+      <span class="d ${cls}">${F.pct(b.change_pct)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── Render Futuros ───────────────────────────────────────────────────────
+function renderFuturos(futuros) {
+  const grid = document.getElementById('fut-grid');
+  if (!futuros.length) { grid.innerHTML = '<div class="placeholder">sin datos</div>'; return; }
+  grid.innerHTML = futuros.slice(0, 4).map(f => {
+    const precio = f.settle ?? f.last;
+    const label  = (f.ticker || f.vto || '').replace(/^DLR[/\s]*/i, '');
+    const rawTna = f.tna;
+    // tna ya viene en % (ej: 28.2 = 28.2% TNA)
+    const tnaPct = rawTna != null ? rawTna : null;
+    return `<div class="futc">
+      <div class="l">${label}</div>
+      <div class="v">${precio != null ? '$' + F.num(precio, 0) : '—'}</div>
+      <div class="b">
+        <span style="color:var(--mut);font-size:7.5px">TNA</span>
+        <span class="tna">${tnaPct != null ? F.num(tnaPct, 1) + '%' : '—'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Fetch principal ──────────────────────────────────────────────────────
+async function fetchAndRender() {
+  const data = await fetch('/api/snapshot').then(r => r.json());
+
+  // Dólares
+  const fxMap = data.fx || {};
+  renderFx(fxMap);
+
+  // Riesgo País
+  renderRiesgoPais(fxMap._riesgo_pais || null);
+
+  // Construir lookup de panels: { bonares: [...rows], cer: [...rows], ... }
+  const byId = Object.fromEntries(
+    (data.monitors || []).map(m => [m.id, m.rows || []])
+  );
+
+  // Acciones
+  const stocks = byId.panel_lider || [];
+  const ganadores = [...stocks]
+    .filter(s => (s.change_pct ?? 0) > 0)
+    .sort((a,b) => (b.change_pct??0) - (a.change_pct??0))
+    .slice(0, 5);
+  const perdedores = [...stocks]
+    .filter(s => (s.change_pct ?? 0) < 0)
+    .sort((a,b) => (a.change_pct??0) - (b.change_pct??0))
+    .slice(0, 5);
+  renderAcciones(ganadores, perdedores);
+
+  // Soberanos — "bonares" panel contiene AL* y GD*
+  const bonos     = byId.bonares  || [];
+  const globales  = bonos.filter(b => b.ticker && b.ticker.startsWith('GD'));
+  const bonares   = bonos.filter(b => b.ticker && (b.ticker.startsWith('AL') || b.ticker.startsWith('AO')));
+  const bopreales = byId.bopreales || [];
+  renderBondPanel(globales,  'sov-g',  b => `TIR ${F.num(b.tir, 2)}%`, null, null);
+  renderBondPanel(bonares,   'sov-b',  b => `TIR ${F.num(b.tir, 2)}%`, null, null);
+  renderBondPanel(bopreales, 'sov-bp', b => `TIR ${F.num(b.tir, 2)}%`, null, null);
+
+  // Renta Fija
+  const lecaps = (byId.tasa_fija || []).filter(b => b.ticker && b.ticker.startsWith('S'));
+  renderBondPanel(byId.cer   || [], 'rf-cer', b => `TIR ${F.num(b.tir, 2)}%`, null, 4);
+  renderBondPanel(lecaps,           'rf-lec', b => `TNA ${F.num(b.tna ?? b.tna_360, 1)}%`, null, 4);
+  renderBondPanel(byId.tamar || [], 'rf-tam', b => `TIR ${F.num(b.tir, 2)}%`, t => t.replace(/_TAM$/i, ''), 4);
+
+  // Futuros
+  renderFuturos(byId.futuros || []);
+}
+
+// ─── Refresh ──────────────────────────────────────────────────────────────
+async function doRefresh() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spinner"></span> Actualizando…';
+  try {
+    await Promise.all([fetchAndRender(), fetchAndRenderMerval()]);
+    const now = new Date();
+    document.getElementById('ts-label').textContent =
+      'actualizado ' + now.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('footer-date').textContent =
+      F.dateStr() + ' · DATOS CON FINES INFORMATIVOS';
+  } catch(e) {
+    document.getElementById('ts-label').textContent = 'error al actualizar';
+    console.error('fetchAndRender error:', e);
+  } finally {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> Actualizar`;
+  }
+}
+
+// ─── PNG export ───────────────────────────────────────────────────────────
+async function doPNG() {
+  const btn = document.getElementById('btn-png');
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spinner"></span> Generando…';
+  try {
+    const target = document.getElementById('cierre-content');
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#F0F4F8',
+      scale: 6,          // ~2580px de ancho → muy alta resolución
+      useCORS: true,
+      logging: false,
+      windowWidth: 430,
+    });
+    const today = new Date().toISOString().slice(0,10);
+    const link  = document.createElement('a');
+    link.download = `cierre_onshore_${today}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) {
+    alert('No se pudo generar el PNG. Verificá que el servidor esté activo.');
+    console.error('html2canvas error:', e);
+  } finally {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg> PNG`;
+  }
+}
+
+// ─── Arranque ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('footer-date').textContent =
+    F.dateStr() + ' · DATOS CON FINES INFORMATIVOS';
+  doRefresh();
+  // El PNG usa backgroundColor del nuevo diseño
+  window._cierreBackground = '#F0F4F8';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galería · Cierre de Mercado Onshore</title>
+<style>
+  :root{--bg:#04101D;--panel:#0E2237;--line:#1d3a5a;--tx:#FFFFFF;--mut:#9EB3CA;--cyan:#00D4FF;--pos:#16C784;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse 1000px 500px at 50% -100px,rgba(0,212,255,.07),transparent 60%),linear-gradient(180deg,#04101D 0%,#081A2D 100%);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;min-height:100vh;padding:24px 16px 50px}
+  .wrap{max-width:1500px;margin:0 auto}
+  .head{margin-bottom:20px}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--mut);font-size:12px;line-height:1.5;max-width:680px}
+  .legend{display:inline-block;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.16);border-radius:7px;padding:4px 10px;margin-top:8px;font-size:10px;color:var(--cyan);letter-spacing:.04em}
+  .slab{font-size:10px;letter-spacing:.22em;color:var(--cyan);font-weight:700;text-transform:uppercase;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid rgba(0,212,255,.12)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .18s,border-color .18s,box-shadow .18s;display:flex;flex-direction:column}
+  .card:hover{transform:translateY(-3px);border-color:var(--cyan);box-shadow:0 8px 22px rgba(0,212,255,.10)}
+  .card.base{border-color:rgba(22,199,132,.35)}
+  .card.base:hover{border-color:var(--pos)}
+  .preview{height:250px;background:#04101D;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .preview iframe{width:295px;height:560px;border:0;transform:scale(0.473);transform-origin:top left;pointer-events:none}
+  .badge{position:absolute;top:7px;right:7px;font-size:8px;letter-spacing:.1em;font-weight:800;padding:2px 8px;border-radius:20px;text-transform:uppercase}
+  .badge.base{background:var(--pos);color:#04101D}
+  .info{padding:10px 13px 12px}
+  .num{font-size:9px;letter-spacing:.2em;color:var(--cyan);font-weight:700;text-transform:uppercase}
+  .title{font-size:13px;font-weight:700;margin-top:2px}
+  .desc{font-size:10.5px;color:var(--mut);margin-top:4px;line-height:1.4}
+  .open{font-size:9.5px;color:var(--cyan);margin-top:7px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>Cierre Mercado Onshore · Galería</h1>
+    <p class="sub">Todos los diseños son screenshot-ready (430px, sin scroll, sin branding, sin hora). Hacé clic para abrir en pantalla completa.</p>
+    <span class="legend">Tip: F12 → Responsive 430px → Ctrl+Shift+P → "Capture full size screenshot"</span>
+  </div>
+
+  <div class="slab">Versión activa (Light Profesional mejorada)</div>
+  <div class="grid">
+    <a class="card base" href="cierre-v3-light.html" target="_blank">
+      <div class="preview"><div class="badge base">BASE</div><iframe src="cierre-v3-light.html"></iframe></div>
+      <div class="info"><div class="num">Light · Azul BALANZ</div><div class="title">Light Profesional</div><div class="desc">Header azul corporativo, fondo blanco, riesgo país destacado, estructura limpia.</div><div class="open">Abrir ›</div></div>
+    </a>
+  </div>
+
+  <div class="slab">5 nuevas variaciones sobre el mismo layout</div>
+  <div class="grid">
+
+    <a class="card" href="cierre-w1-sunrise.html" target="_blank">
+      <div class="preview"><iframe src="cierre-w1-sunrise.html"></iframe></div>
+      <div class="info"><div class="num">W1 · Azul Bold</div><div class="title">Azul Oscuro + Líneas</div><div class="desc">Header muy oscuro con textura de líneas diagonales. Dólares y futuros como strip conectado. Máximo contraste.</div><div class="open">Abrir ›</div></div>
+    </a>
+
+    <a class="card" href="cierre-w2-forest.html" target="_blank">
+      <div class="preview"><iframe src="cierre-w2-forest.html"></iframe></div>
+      <div class="info"><div class="num">W2 · Azul Celeste</div><div class="title">Azul Cielo Claro</div><div class="desc">Gradiente azul más claro, fondo blanco puro. Header con burbuja de luz. Riesgo país con frosted glass.</div><div class="open">Abrir ›</div></div>
+    </a>
+
+    <a class="card" href="cierre-w3-graphite.html" target="_blank">
+      <div class="preview"><iframe src="cierre-w3-graphite.html"></iframe></div>
+      <div class="info"><div class="num">W3 · Azul Medianoche</div><div class="title">Medianoche + Borde Lateral</div><div class="desc">Header muy oscuro con borde izquierdo azul eléctrico como firma. Sección bar horizontal en lugar de punto.</div><div class="open">Abrir ›</div></div>
+    </a>
+
+    <a class="card" href="cierre-w4-violet.html" target="_blank">
+      <div class="preview"><iframe src="cierre-w4-violet.html"></iframe></div>
+      <div class="info"><div class="num">W4 · Azul Zafiro</div><div class="title">Zafiro + Rombo Acento</div><div class="desc">Gradiente zafiro profundo, pattern de ondas en header. Ícono rombo en lugar de punto en los títulos.</div><div class="open">Abrir ›</div></div>
+    </a>
+
+    <a class="card" href="cierre-w5-rose.html" target="_blank">
+      <div class="preview"><iframe src="cierre-w5-rose.html"></iframe></div>
+      <div class="info"><div class="num">W5 · Dos Columnas</div><div class="title">Header Split — Riesgo País lateral</div><div class="desc">Header dividido en dos columnas: título a la izquierda, riesgo país integrado como panel derecho del header.</div><div class="open">Abrir ›</div></div>
+    </a>
+
+  </div>
+</div>
+</body>
+</html>

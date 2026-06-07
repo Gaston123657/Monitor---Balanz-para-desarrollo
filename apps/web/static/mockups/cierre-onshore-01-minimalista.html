@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre Onshore · Minimalista</title>
+<style>
+  :root{
+    --bg:#0A1929; --panel:#0E2237; --line:#1c2f45;
+    --tx:#FFFFFF; --mut:#8FA0B5;
+    --pos:#00C896; --neg:#FF5252; --cyan:#00D4FF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  body{max-width:430px;margin:0 auto;padding:14px 14px 24px;font-size:13px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+  .head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .head h1{font-size:13px;letter-spacing:.18em;color:var(--cyan);font-weight:600}
+  .head .ts{font-size:10px;color:var(--mut);letter-spacing:.06em}
+  section{margin-top:18px}
+  .stitle{font-size:10px;letter-spacing:.22em;color:var(--mut);margin-bottom:8px;text-transform:uppercase}
+  .rows{display:flex;flex-direction:column;gap:6px}
+  .row{display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
+  .row .l{font-weight:500}
+  .row .v{font-variant-numeric:tabular-nums;font-weight:600}
+  .row .d{font-size:11px;font-variant-numeric:tabular-nums;min-width:60px;text-align:right}
+  .kpi{display:flex;gap:12px;margin-top:4px}
+  .kpi .b{flex:1;padding:10px 0}
+  .kpi .lbl{font-size:9px;letter-spacing:.2em;color:var(--mut);text-transform:uppercase}
+  .kpi .num{font-size:22px;font-weight:300;margin-top:2px;font-variant-numeric:tabular-nums}
+  .kpi .dlt{font-size:11px;margin-top:1px;font-variant-numeric:tabular-nums}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .twocol h3{font-size:9px;letter-spacing:.2em;color:var(--mut);margin-bottom:6px;text-transform:uppercase}
+  .stk{display:flex;flex-direction:column;gap:4px;font-size:12px}
+  .stk .r{display:flex;justify-content:space-between;padding:2px 0}
+  .stk .t{font-weight:600}
+  .small{font-size:10px;color:var(--mut)}
+  .footer{margin-top:24px;text-align:center;font-size:9px;color:var(--mut);letter-spacing:.16em}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>CIERRE ONSHORE</h1>
+  <span class="ts" id="ts"></span>
+</div>
+
+<section>
+  <div class="stitle">Dólares</div>
+  <div class="rows" id="fx"></div>
+</section>
+
+<section>
+  <div class="stitle">BCRA</div>
+  <div class="kpi">
+    <div class="b">
+      <div class="lbl">Reservas</div>
+      <div class="num" id="res"></div>
+      <div class="dlt" id="resd"></div>
+    </div>
+    <div class="b">
+      <div class="lbl">Riesgo País</div>
+      <div class="num" id="rp"></div>
+      <div class="dlt" id="rpd"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stitle">Acciones MERVAL</div>
+  <div class="twocol">
+    <div>
+      <h3>Top Ganadores</h3>
+      <div class="stk" id="stk-g"></div>
+    </div>
+    <div>
+      <h3>Top Perdedores</h3>
+      <div class="stk" id="stk-p"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stitle">Soberanos</div>
+  <div class="rows" id="sov"></div>
+</section>
+
+<section>
+  <div class="stitle">Renta Fija</div>
+  <div class="rows" id="rf"></div>
+</section>
+
+<section>
+  <div class="stitle">Futuros DLR</div>
+  <div class="rows" id="fut"></div>
+</section>
+
+<div class="footer">DATOS · CON · FINES · INFORMATIVOS</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M = window.MOCK_DATA, F = window.fmt;
+document.getElementById("ts").textContent = M.timestamp;
+
+const fx = document.getElementById("fx");
+M.dolares.forEach(d=>{
+  fx.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="l">${d.tipo}</span><span class="v">$${F.num(d.precio)}</span><span class="d ${F.cls(d.delta)}">${F.pct(d.delta)}</span></div>`);
+});
+
+document.getElementById("res").textContent  = "US$ " + (M.bcra.reservas_usd_mm/1000).toFixed(1) + " B";
+document.getElementById("resd").innerHTML   = `<span class="${F.cls(M.bcra.reservas_delta_usd_mm)}">${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm} M USD</span>`;
+document.getElementById("rp").textContent   = M.bcra.riesgo_pais_bps + " pb";
+document.getElementById("rpd").innerHTML    = `<span class="${F.cls(-M.bcra.riesgo_pais_delta_bps)}">${F.bps(M.bcra.riesgo_pais_delta_bps)}</span>`;
+
+const sg = document.getElementById("stk-g");
+M.acciones.ganadores.slice(0,5).forEach(s=>{
+  sg.insertAdjacentHTML("beforeend",`<div class="r"><span class="t">${s.ticker}</span><span class="pos">${F.pct(s.hoy)}</span></div>`);
+});
+const sp = document.getElementById("stk-p");
+M.acciones.perdedores.slice(0,5).forEach(s=>{
+  sp.insertAdjacentHTML("beforeend",`<div class="r"><span class="t">${s.ticker}</span><span class="neg">${F.pct(s.hoy)}</span></div>`);
+});
+
+function pickMovers(g,p,n=2){
+  const arr = [...g.map(x=>({...x,_g:1})), ...p.map(x=>({...x,_g:0}))];
+  arr.sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  return arr.slice(0,n);
+}
+const sov = document.getElementById("sov");
+[["Globales",M.soberanos.globales],["Bonares",M.soberanos.bonares],["Bopreales",M.soberanos.bopreales]].forEach(([n,o])=>{
+  pickMovers(o.ganadores,o.perdedores,2).forEach(b=>{
+    sov.insertAdjacentHTML("beforeend",
+     `<div class="row"><span class="l">${b.ticker} <span class="small">${n}</span></span><span class="v">${F.num(b.tir)}%</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`);
+  });
+});
+
+const rf = document.getElementById("rf");
+pickMovers(M.renta_fija.cer.ganadores,M.renta_fija.cer.perdedores,1).forEach(b=>{
+  rf.insertAdjacentHTML("beforeend",
+    `<div class="row"><span class="l">${b.ticker} <span class="small">CER</span></span><span class="v">${F.num(b.tir)}%</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`);
+});
+pickMovers(M.renta_fija.lecaps.ganadores,M.renta_fija.lecaps.perdedores,1).forEach(b=>{
+  rf.insertAdjacentHTML("beforeend",
+    `<div class="row"><span class="l">${b.ticker} <span class="small">LECAP · TNA ${F.num(b.tna)}%</span></span><span class="v">${F.num(b.tem)}%</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`);
+});
+pickMovers(M.renta_fija.tamar_puro.ganadores,M.renta_fija.tamar_puro.perdedores,1).forEach(b=>{
+  rf.insertAdjacentHTML("beforeend",
+    `<div class="row"><span class="l">${b.ticker} <span class="small">TAMAR</span></span><span class="v">${F.num(b.tir)}%</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`);
+});
+
+const fut = document.getElementById("fut");
+M.futuros.forEach(f=>{
+  fut.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="l">${f.contrato} <span class="small">TNA ${F.num(f.tna)}%</span></span><span class="v">$${F.num(f.precio)}</span><span class="d ${F.cls(f.delta)}">${F.pct(f.delta)}</span></div>`);
+});
+</script>
+</body>
+</html>

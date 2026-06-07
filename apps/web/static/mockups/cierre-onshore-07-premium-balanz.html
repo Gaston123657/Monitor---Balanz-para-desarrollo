@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre Onshore · Screenshot</title>
+<style>
+  :root{
+    --bg:#04101D; --bg2:#081A2D; --panel:#0E2237; --panel2:#163553;
+    --line:#1d3a5a; --line2:#2a5683;
+    --tx:#FFFFFF; --mut:#9EB3CA; --mut2:#6B829B;
+    --cyan:#00D4FF; --cyan2:#0090C8; --gold:#F3C969;
+    --pos:#16C784; --neg:#EA3943;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  body{
+    width:430px;margin:0 auto;padding:0 0 12px;font-size:11px;
+    background:
+      radial-gradient(ellipse 600px 280px at 50% -60px,rgba(0,212,255,.10),transparent 60%),
+      linear-gradient(180deg,#04101D 0%,#081A2D 100%);
+  }
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+
+  /* HEADER */
+  .header{padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+  .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .logo{display:flex;align-items:center;gap:7px}
+  .logo-mark{width:26px;height:26px;background:linear-gradient(135deg,#00D4FF,#16C784);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#04101D;font-weight:900;font-size:14px;box-shadow:0 3px 10px rgba(0,212,255,.3)}
+  .logo-text{font-weight:700;font-size:12px;letter-spacing:.04em}
+  .live{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--mut);letter-spacing:.16em}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--pos);box-shadow:0 0 6px var(--pos)}
+  .header-sub{display:flex;justify-content:space-between;align-items:baseline}
+  .header-sub h1{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .header-sub .ts{font-size:10px;color:var(--mut);font-variant-numeric:tabular-nums}
+
+  /* CONTENT */
+  .content{padding:8px 10px 0}
+  section{margin-bottom:8px}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;padding:0 2px}
+  .sec-title{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.18em;font-weight:700;text-transform:uppercase}
+  .sec-title .bar{width:2px;height:11px;background:linear-gradient(180deg,var(--cyan),var(--pos));border-radius:2px}
+  .sec-meta{font-size:8px;color:var(--mut2);letter-spacing:.12em;text-transform:uppercase}
+
+  /* DÓLARES — grid de 4 columnas, 2 filas (7 + spacer) */
+  .fx-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .fx-box{background:linear-gradient(160deg,var(--panel) 0%,var(--bg2) 100%);border:1px solid var(--line);border-radius:8px;padding:5px 6px;position:relative;overflow:hidden}
+  .fx-box::before{content:"";position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.3),transparent)}
+  .fx-box .lbl{font-size:8px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;font-weight:600}
+  .fx-box .val{font-size:12px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .fx-box .dlt{font-size:9px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums}
+
+  /* BCRA */
+  .bcra-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .bcra-box{background:linear-gradient(160deg,var(--panel) 0%,var(--panel2) 100%);border:1px solid var(--line2);border-radius:9px;padding:7px 9px;position:relative;overflow:hidden}
+  .bcra-box::after{content:"";position:absolute;right:-10px;bottom:-10px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.08),transparent 70%)}
+  .bcra-box .lbl{font-size:8px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;font-weight:600}
+  .bcra-box .val{font-size:16px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .bcra-box .dlt{font-size:10px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums}
+
+  /* LISTAS COMPACTAS */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .row{display:grid;grid-template-columns:46px 1fr auto;gap:5px;align-items:center;padding:3px 8px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .row:last-child{border-bottom:none}
+  .row .tk{font-weight:700;font-size:11px;letter-spacing:.02em}
+  .row .meta{font-size:9px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+  .row .d{font-weight:700;font-size:11px;font-variant-numeric:tabular-nums;text-align:right;min-width:54px}
+
+  /* DOS COLUMNAS ACCIONES */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .two .panel{padding:3px 0}
+  .two .h{font-size:8px;letter-spacing:.16em;color:var(--cyan);text-align:center;padding:3px 0 2px;font-weight:700;text-transform:uppercase;border-bottom:1px solid rgba(0,212,255,.15);margin-bottom:1px}
+  .two .row{grid-template-columns:38px 1fr auto;padding:3px 6px;gap:3px}
+  .two .row .tk{font-size:10px}
+  .two .row .meta{font-size:8px}
+  .two .row .d{font-size:10px;min-width:42px}
+
+  /* TRES COLUMNAS (soberanos / RF) */
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .three .panel{padding:2px 0}
+  .three .h{font-size:8px;letter-spacing:.14em;color:var(--cyan);text-align:center;padding:3px 0 2px;font-weight:700;text-transform:uppercase;border-bottom:1px solid rgba(0,212,255,.15)}
+  .three .row{grid-template-columns:40px 1fr auto;padding:2px 5px;gap:2px}
+  .three .row .tk{font-size:9.5px}
+  .three .row .meta{font-size:8px}
+  .three .row .d{font-size:9.5px;font-weight:700;min-width:36px}
+
+  /* FUTUROS */
+  .fut-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .fut-card{background:linear-gradient(160deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:8px;padding:5px 6px;text-align:center}
+  .fut-card .lbl{font-size:8px;letter-spacing:.10em;color:var(--cyan);font-weight:700}
+  .fut-card .val{font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .fut-card .dl{display:flex;justify-content:space-between;margin-top:2px;font-size:8.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .fut-card .tna{color:var(--gold)}
+
+  /* FOOTER */
+  .footer{text-align:center;font-size:8px;color:var(--mut2);letter-spacing:.18em;margin-top:8px;padding:0 12px}
+  .footer .br{color:var(--cyan);letter-spacing:.28em;font-weight:700;display:inline-block;margin-right:6px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo"><div class="logo-mark">B</div><span class="logo-text">BALANZ</span></div>
+    <div class="live"><div class="live-dot"></div><span>CIERRE 17:00 ARS</span></div>
+  </div>
+  <div class="header-sub">
+    <h1>Cierre Mercado Onshore</h1>
+    <span class="ts">29 · 05 · 2026</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <section>
+    <div class="sec-head"><div class="sec-title"><div class="bar"></div>Dólares</div><div class="sec-meta">USD/ARS</div></div>
+    <div class="fx-grid" id="fx"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="sec-title"><div class="bar"></div>BCRA</div><div class="sec-meta">cierre día</div></div>
+    <div class="bcra-grid">
+      <div class="bcra-box"><div class="lbl">Reservas</div><div class="val" id="res"></div><div class="dlt" id="resd"></div></div>
+      <div class="bcra-box"><div class="lbl">Riesgo País</div><div class="val" id="rp"></div><div class="dlt" id="rpd"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="sec-title"><div class="bar"></div>Acciones MERVAL</div><div class="sec-meta">hoy · 1m · ytd</div></div>
+    <div class="two">
+      <div class="panel"><div class="h pos">↑ Ganadores</div><div id="acc-g"></div></div>
+      <div class="panel"><div class="h neg">↓ Perdedores</div><div id="acc-p"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="sec-title"><div class="bar"></div>Soberanos</div><div class="sec-meta">TIR · Δ día</div></div>
+    <div class="three">
+      <div class="panel"><div class="h">Globales</div><div id="sov-g"></div></div>
+      <div class="panel"><div class="h">Bonares</div><div id="sov-b"></div></div>
+      <div class="panel"><div class="h">Bopreales</div><div id="sov-bp"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="sec-title"><div class="bar"></div>Renta Fija Pesos</div><div class="sec-meta">cierre</div></div>
+    <div class="three">
+      <div class="panel"><div class="h">CER · TIR</div><div id="cer"></div></div>
+      <div class="panel"><div class="h">LECAPS · TEM</div><div id="lec"></div></div>
+      <div class="panel"><div class="h">TAMAR · TIR</div><div id="tam"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="sec-title"><div class="bar"></div>Futuros DLR</div><div class="sec-meta">ROFEX</div></div>
+    <div class="fut-grid" id="fut"></div>
+  </section>
+
+</div>
+
+<div class="footer"><span class="br">BALANZ</span>Datos con fines informativos · 29 MAY 2026</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA, F=window.fmt;
+
+// DÓLARES
+const fx=document.getElementById("fx");
+M.dolares.forEach(d=>fx.insertAdjacentHTML("beforeend",
+ `<div class="fx-box"><div class="lbl">${d.tipo}</div><div class="val">$${F.num(d.precio,0)}</div><div class="dlt ${F.cls(d.delta)}">${F.arrow(d.delta)} ${F.pct(d.delta)}</div></div>`));
+
+// BCRA
+res.textContent  = "US$ "+(M.bcra.reservas_usd_mm/1000).toFixed(2)+" B";
+resd.innerHTML   = `<span class="${F.cls(M.bcra.reservas_delta_usd_mm)}">${F.arrow(M.bcra.reservas_delta_usd_mm)} ${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm} M USD</span>`;
+rp.textContent   = M.bcra.riesgo_pais_bps+" pb";
+rpd.innerHTML    = `<span class="${F.cls(-M.bcra.riesgo_pais_delta_bps)}">${F.arrow(-M.bcra.riesgo_pais_delta_bps)} ${F.bps(M.bcra.riesgo_pais_delta_bps)}</span>`;
+
+// ACCIONES — 4 cada lado (compacto)
+function listStk(arr,id,cls){
+  const el=document.getElementById(id);
+  arr.slice(0,4).forEach(s=>el.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="tk">${s.ticker}</span><span class="meta">1M ${F.pct(s.mes)}<br>YTD ${F.pct(s.ytd)}</span><span class="d ${cls}">${F.pct(s.hoy)}</span></div>`));
+}
+listStk(M.acciones.ganadores,"acc-g","pos");
+listStk(M.acciones.perdedores,"acc-p","neg");
+
+// BONOS — top 3 movers por panel (sube + baja mezclados)
+function listBnd(panel,id,unitFn,n=3){
+  const el=document.getElementById(id);
+  const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,n).forEach(b=>el.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="tk">${b.ticker}</span><span class="meta">${unitFn(b)}</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+}
+listBnd(M.soberanos.globales,"sov-g",b=>`${F.num(b.tir)}%`);
+listBnd(M.soberanos.bonares,"sov-b",b=>`${F.num(b.tir)}%`);
+listBnd(M.soberanos.bopreales,"sov-bp",b=>`${F.num(b.tir)}%`);
+listBnd(M.renta_fija.cer,"cer",b=>`${F.num(b.tir)}%`);
+listBnd(M.renta_fija.lecaps,"lec",b=>`${F.num(b.tem)}% · ${F.num(b.tna,1)}%`);
+listBnd(M.renta_fija.tamar_puro,"tam",b=>`${F.num(b.tir)}%`);
+
+// FUTUROS
+const fut=document.getElementById("fut");
+M.futuros.forEach(f=>fut.insertAdjacentHTML("beforeend",
+ `<div class="fut-card"><div class="lbl">${f.contrato.replace("DLR ","")}</div><div class="val">$${F.num(f.precio,0)}</div><div class="dl"><span class="${F.cls(f.delta)}">${F.pct(f.delta)}</span><span class="tna">${F.num(f.tna,1)}%</span></div></div>`));
+</script>
+</body>
+</html>

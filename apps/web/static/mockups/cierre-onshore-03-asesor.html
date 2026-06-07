@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre Onshore · Asesor</title>
+<style>
+  :root{
+    --bg:#0A1929; --panel:#0E2237; --line:#1c344e;
+    --tx:#FFFFFF; --mut:#8FA0B5; --cyan:#00D4FF;
+    --pos:#00C896; --neg:#FF5252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;max-width:430px;margin:0 auto;padding:12px 10px 26px;font-size:12px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+  .head{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+  .head h1{font-size:12px;letter-spacing:.2em;color:var(--cyan);font-weight:700}
+  .head .ts{font-size:10px;color:var(--mut)}
+  section{margin-bottom:14px}
+  .stitle{font-size:10px;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase;padding:5px 8px;background:rgba(0,212,255,.08);border-left:2px solid var(--cyan);margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{padding:4px 6px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
+  th{font-size:9px;color:var(--mut);font-weight:500;letter-spacing:.08em;text-transform:uppercase;text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  .tk{font-weight:700;color:#fff}
+  .num{font-weight:600}
+  .bcrabar{display:flex;gap:8px}
+  .bcrabar .b{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+  .bcrabar .lbl{font-size:9px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase}
+  .bcrabar .v{font-size:17px;font-weight:600;margin-top:2px}
+  .bcrabar .d{font-size:11px;margin-top:1px;font-weight:600}
+  .sub{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.14em;margin:8px 0 3px;padding-left:2px}
+  .footer{text-align:center;font-size:9px;color:var(--mut);letter-spacing:.16em;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>▸ CIERRE ONSHORE · ASESOR</h1>
+  <span class="ts">29/05/26 · 17:00</span>
+</div>
+
+<section>
+  <div class="stitle">Dólares</div>
+  <table>
+    <thead><tr><th>Tipo</th><th>Precio</th><th>Δ Día</th></tr></thead>
+    <tbody id="fx"></tbody>
+  </table>
+</section>
+
+<section>
+  <div class="stitle">BCRA</div>
+  <div class="bcrabar">
+    <div class="b">
+      <div class="lbl">Reservas USD MM</div>
+      <div class="v" id="res"></div>
+      <div class="d" id="resd"></div>
+    </div>
+    <div class="b">
+      <div class="lbl">Riesgo País bps</div>
+      <div class="v" id="rp"></div>
+      <div class="d" id="rpd"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stitle">Acciones MERVAL</div>
+  <div class="sub">Top ganadores</div>
+  <table><thead><tr><th>Tk</th><th>Precio</th><th>Hoy</th><th>1M</th><th>YTD</th></tr></thead><tbody id="stk-g"></tbody></table>
+  <div class="sub">Top perdedores</div>
+  <table><thead><tr><th>Tk</th><th>Precio</th><th>Hoy</th><th>1M</th><th>YTD</th></tr></thead><tbody id="stk-p"></tbody></table>
+</section>
+
+<section>
+  <div class="stitle">Soberanos · TIR Cierre</div>
+  <div class="sub">Globales</div>
+  <table><thead><tr><th>Tk</th><th>TIR</th><th>Δ Día</th></tr></thead><tbody id="sov-g"></tbody></table>
+  <div class="sub">Bonares</div>
+  <table><thead><tr><th>Tk</th><th>TIR</th><th>Δ Día</th></tr></thead><tbody id="sov-b"></tbody></table>
+  <div class="sub">Bopreales</div>
+  <table><thead><tr><th>Tk</th><th>TIR</th><th>Δ Día</th></tr></thead><tbody id="sov-bp"></tbody></table>
+</section>
+
+<section>
+  <div class="stitle">Renta Fija Pesos</div>
+  <div class="sub">CER · TIR Cierre</div>
+  <table><thead><tr><th>Tk</th><th>TIR</th><th>Δ Día</th></tr></thead><tbody id="cer"></tbody></table>
+  <div class="sub">LECAPS · TEM / TNA</div>
+  <table><thead><tr><th>Tk</th><th>TEM</th><th>TNA</th><th>Δ Día</th></tr></thead><tbody id="lec"></tbody></table>
+  <div class="sub">TAMAR Puros · TIR Cierre</div>
+  <table><thead><tr><th>Tk</th><th>TIR</th><th>Δ Día</th></tr></thead><tbody id="tam"></tbody></table>
+</section>
+
+<section>
+  <div class="stitle">Futuros DLR · ROFEX</div>
+  <table><thead><tr><th>Contrato</th><th>Precio</th><th>Δ Día</th><th>TNA</th></tr></thead><tbody id="fut"></tbody></table>
+</section>
+
+<div class="footer">BALANZ · DATOS CON FINES INFORMATIVOS</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA, F=window.fmt;
+const pc = v => `<span class="${F.cls(v)}">${F.pct(v)}</span>`;
+const pcInv = v => `<span class="${F.cls(-v)}">${F.pct(v)}</span>`;
+
+M.dolares.forEach(d=>fx.insertAdjacentHTML("beforeend",
+ `<tr><td class="tk">${d.tipo}</td><td class="num">$${F.num(d.precio)}</td><td>${pc(d.delta)}</td></tr>`));
+
+res.textContent  = (M.bcra.reservas_usd_mm).toLocaleString("es-AR");
+resd.innerHTML   = `<span class="${F.cls(M.bcra.reservas_delta_usd_mm)}">${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm} M USD</span>`;
+rp.textContent   = M.bcra.riesgo_pais_bps;
+rpd.innerHTML    = `<span class="${F.cls(-M.bcra.riesgo_pais_delta_bps)}">${F.bps(M.bcra.riesgo_pais_delta_bps)}</span>`;
+
+function rowsStk(arr,id){
+  const el=document.getElementById(id);
+  arr.forEach(s=>el.insertAdjacentHTML("beforeend",
+   `<tr><td class="tk">${s.ticker}</td><td class="num">$${F.num(s.precio,0)}</td><td>${pc(s.hoy)}</td><td>${pc(s.mes)}</td><td>${pc(s.ytd)}</td></tr>`));
+}
+rowsStk(M.acciones.ganadores,"stk-g");
+rowsStk(M.acciones.perdedores,"stk-p");
+
+function rowsBnd(panel,id,n=5){
+  const el=document.getElementById(id);
+  const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,n).forEach(b=>el.insertAdjacentHTML("beforeend",
+   `<tr><td class="tk">${b.ticker}</td><td class="num">${F.num(b.tir)}%</td><td>${pcInv(b.delta)}</td></tr>`));
+}
+rowsBnd(M.soberanos.globales,"sov-g");
+rowsBnd(M.soberanos.bonares,"sov-b");
+rowsBnd(M.soberanos.bopreales,"sov-bp");
+rowsBnd(M.renta_fija.cer,"cer");
+
+(function(){
+  const all=[...M.renta_fija.lecaps.ganadores,...M.renta_fija.lecaps.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,5).forEach(b=>lec.insertAdjacentHTML("beforeend",
+   `<tr><td class="tk">${b.ticker}</td><td class="num">${F.num(b.tem)}%</td><td class="num">${F.num(b.tna)}%</td><td>${pcInv(b.delta)}</td></tr>`));
+})();
+
+rowsBnd(M.renta_fija.tamar_puro,"tam");
+
+M.futuros.forEach(f=>fut.insertAdjacentHTML("beforeend",
+ `<tr><td class="tk">${f.contrato}</td><td class="num">$${F.num(f.precio,0)}</td><td>${pc(f.delta)}</td><td class="num">${F.num(f.tna)}%</td></tr>`));
+</script>
+</body>
+</html>

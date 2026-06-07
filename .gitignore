@@ -23,8 +23,26 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Backups manuales de Excel / data
+*.bak
+*.bak[0-9]
+
+# Artefactos de Playwright MCP (snapshots/console de pruebas de UI)
+.playwright-mcp/
+
 # Scratch
 scratch/
+
+# CAFCI: cache de composición de fondos (regenerable a diario desde la API).
+# Snapshot diario completo (~2 MB, se reemplaza en cada fetch) + un archivo
+# por fondo. La app rehidrata sola desde la API al arrancar, no es semilla.
+data/history/cafci_diario.json
+data/history/cafci_composicion/
+
+# Claude Code: settings personales/por-máquina (permisos locales).
+# El settings.json compartido (si existiera) sí se versiona.
+.claude/settings.local.json
+.claude/*.local.json
 
 # Secrets / credentials (NEVER commit)
 .env

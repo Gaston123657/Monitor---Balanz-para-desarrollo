@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre Onshore · Sparklines</title>
+<style>
+  :root{
+    --bg:#06121F; --panel:#0E2237; --line:#1c344e;
+    --tx:#FFFFFF; --mut:#8FA0B5; --cyan:#00D4FF;
+    --pos:#00C896; --neg:#FF5252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;max-width:430px;margin:0 auto;padding:12px 12px 28px;font-size:12px}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+  .head{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+  .head h1{font-size:12px;letter-spacing:.2em;color:var(--cyan);font-weight:700}
+  .head .ts{font-size:10px;color:var(--mut)}
+  section{margin-bottom:14px}
+  .stitle{font-size:10px;letter-spacing:.2em;color:var(--cyan);margin-bottom:8px;text-transform:uppercase;font-weight:600}
+  .row{display:grid;grid-template-columns:60px 1fr auto auto;gap:10px;align-items:center;padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .row .tk{font-weight:700;font-size:12px}
+  .row .v{font-variant-numeric:tabular-nums;font-size:12px;text-align:right;font-weight:600;min-width:62px}
+  .row .d{font-variant-numeric:tabular-nums;font-size:11px;font-weight:700;text-align:right;min-width:58px}
+  .row .meta{font-size:10px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+  .spk{height:22px;width:100%}
+  .bcra{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .bcra .b{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+  .bcra .l{font-size:9px;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
+  .bcra .v{font-size:17px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+  .bcra .d{font-size:11px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+  .sub{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.14em;margin:8px 0 2px}
+  .footer{text-align:center;font-size:9px;color:var(--mut);letter-spacing:.18em;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="head"><h1>~ CIERRE ONSHORE</h1><span class="ts" id="ts"></span></div>
+
+<section><div class="stitle">Dólares</div><div id="fx"></div></section>
+
+<section>
+  <div class="stitle">BCRA</div>
+  <div class="bcra">
+    <div class="b"><div class="l">Reservas</div><div class="v" id="res"></div><div class="d" id="resd"></div></div>
+    <div class="b"><div class="l">Riesgo País</div><div class="v" id="rp"></div><div class="d" id="rpd"></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="stitle">Acciones MERVAL</div>
+  <div class="sub">Ganadores</div><div id="stk-g"></div>
+  <div class="sub">Perdedores</div><div id="stk-p"></div>
+</section>
+
+<section>
+  <div class="stitle">Soberanos · TIR cierre</div>
+  <div class="sub">Globales</div><div id="sov-g"></div>
+  <div class="sub">Bonares</div><div id="sov-b"></div>
+  <div class="sub">Bopreales</div><div id="sov-bp"></div>
+</section>
+
+<section>
+  <div class="stitle">Renta Fija</div>
+  <div class="sub">CER</div><div id="cer"></div>
+  <div class="sub">LECAPS</div><div id="lec"></div>
+  <div class="sub">TAMAR PURO</div><div id="tam"></div>
+</section>
+
+<section><div class="stitle">Futuros DLR · ROFEX</div><div id="fut"></div></section>
+
+<div class="footer">BALANZ · DATOS CON FINES INFORMATIVOS</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA, F=window.fmt;
+document.getElementById("ts").textContent = M.timestamp;
+
+// Sparkline generator
+function spk(seed, trend){
+  const n=20, vals=[]; let v=50;
+  for(let i=0;i<n;i++){
+    const r = Math.sin(seed*i*0.7) + Math.cos(seed*i*1.3)*0.5;
+    v += r*4 + trend*0.6;
+    vals.push(v);
+  }
+  const mn=Math.min(...vals), mx=Math.max(...vals), w=86, h=22;
+  const pts = vals.map((y,i)=>{
+    const x = (i/(n-1))*w;
+    const yy = h - ((y-mn)/(mx-mn||1))*h;
+    return `${x.toFixed(1)},${yy.toFixed(1)}`;
+  }).join(" ");
+  const color = trend>=0 ? "var(--pos)" : "var(--neg)";
+  return `<svg class="spk" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function seed(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%997;return h/997+0.3}
+
+const fx=document.getElementById("fx");
+M.dolares.forEach(d=>fx.insertAdjacentHTML("beforeend",
+ `<div class="row"><span class="tk">${d.tipo}</span>${spk(seed(d.tipo),d.delta)}<span class="v">$${F.num(d.precio,0)}</span><span class="d ${F.cls(d.delta)}">${F.pct(d.delta)}</span></div>`));
+
+res.textContent  = "US$ "+(M.bcra.reservas_usd_mm/1000).toFixed(2)+" B";
+resd.innerHTML   = `<span class="${F.cls(M.bcra.reservas_delta_usd_mm)}">${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm} M USD</span>`;
+rp.textContent   = M.bcra.riesgo_pais_bps+" pb";
+rpd.innerHTML    = `<span class="${F.cls(-M.bcra.riesgo_pais_delta_bps)}">${F.bps(M.bcra.riesgo_pais_delta_bps)}</span>`;
+
+function listStk(arr,id){
+  const el=document.getElementById(id);
+  arr.forEach(s=>el.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="tk">${s.ticker}</span>${spk(seed(s.ticker),s.hoy)}<span class="meta">YTD ${F.pct(s.ytd)}</span><span class="d ${F.cls(s.hoy)}">${F.pct(s.hoy)}</span></div>`));
+}
+listStk(M.acciones.ganadores.slice(0,5),"stk-g");
+listStk(M.acciones.perdedores.slice(0,5),"stk-p");
+
+function listBnd(panel,id){
+  const el=document.getElementById(id);
+  const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,4).forEach(b=>el.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="tk">${b.ticker}</span>${spk(seed(b.ticker),-b.delta)}<span class="meta">${F.num(b.tir)}%</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+}
+listBnd(M.soberanos.globales,"sov-g");
+listBnd(M.soberanos.bonares,"sov-b");
+listBnd(M.soberanos.bopreales,"sov-bp");
+listBnd(M.renta_fija.cer,"cer");
+listBnd(M.renta_fija.tamar_puro,"tam");
+
+(function(){
+  const el=document.getElementById("lec");
+  const all=[...M.renta_fija.lecaps.ganadores,...M.renta_fija.lecaps.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,4).forEach(b=>el.insertAdjacentHTML("beforeend",
+   `<div class="row"><span class="tk">${b.ticker}</span>${spk(seed(b.ticker),-b.delta)}<span class="meta">TNA ${F.num(b.tna)}%</span><span class="d ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+})();
+
+M.futuros.forEach(f=>fut.insertAdjacentHTML("beforeend",
+ `<div class="row"><span class="tk">${f.contrato}</span>${spk(seed(f.contrato),f.delta)}<span class="meta">TNA ${F.num(f.tna)}%</span><span class="d ${F.cls(f.delta)}">${F.pct(f.delta)}</span></div>`));
+</script>
+</body>
+</html>

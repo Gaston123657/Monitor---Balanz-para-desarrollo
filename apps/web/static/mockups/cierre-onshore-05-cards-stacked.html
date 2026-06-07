@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cierre Onshore · Cards Stacked</title>
+<style>
+  :root{
+    --bg:#0A1929; --panel:#13304b; --panel2:#1c4068;
+    --line:#27567f; --tx:#FFFFFF; --mut:#9EB5CC;
+    --cyan:#00D4FF; --pos:#00C896; --neg:#FF5252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at top,#13304b 0%,#0A1929 70%);color:var(--tx);font-family:-apple-system,Inter,Segoe UI,Roboto,sans-serif;max-width:430px;margin:0 auto;padding:14px 14px 32px;font-size:13px;min-height:100vh}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--mut)}
+  .head{padding:0 4px 16px}
+  .head .brand{display:flex;align-items:center;gap:8px}
+  .head .logo{width:28px;height:28px;background:linear-gradient(135deg,#00D4FF 0%,#00C896 100%);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#06121F}
+  .head h1{font-size:14px;font-weight:700}
+  .head .ts{font-size:11px;color:var(--mut);margin-top:2px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;margin-bottom:12px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+  .card .ctitle{font-size:10px;letter-spacing:.22em;color:var(--cyan);margin-bottom:10px;text-transform:uppercase;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .card .ctitle .meta{color:var(--mut);letter-spacing:.12em;font-weight:500}
+  .fxlist{display:flex;flex-direction:column;gap:8px}
+  .fxlist .r{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:10px;padding:8px 12px}
+  .fxlist .l{font-weight:600}
+  .fxlist .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+  .fxlist .d{font-size:11px;font-weight:600;margin-left:8px;font-variant-numeric:tabular-nums;min-width:60px;text-align:right}
+  .bcra2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .bcra2 .b{background:rgba(255,255,255,.04);border-radius:12px;padding:10px 12px}
+  .bcra2 .l{font-size:9px;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
+  .bcra2 .v{font-size:20px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+  .bcra2 .d{font-size:11px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .lst .r{display:flex;align-items:center;justify-content:space-between;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .lst .r:last-child{border-bottom:none}
+  .lst .tk{font-weight:700;min-width:54px}
+  .lst .mid{flex:1;font-size:10px;color:var(--mut);text-align:right;padding-right:10px;font-variant-numeric:tabular-nums}
+  .lst .dlt{font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;min-width:60px;text-align:right}
+  .sect{font-size:9px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;margin:8px 0 2px;padding-left:4px}
+  .footer{text-align:center;font-size:9px;color:var(--mut);letter-spacing:.18em;margin-top:8px;padding:0 8px}
+</style>
+</head>
+<body>
+<div class="head">
+  <div class="brand"><div class="logo">B</div><div><h1>Cierre Onshore</h1><div class="ts" id="ts"></div></div></div>
+</div>
+
+<div class="card">
+  <div class="ctitle">Dólares <span class="meta">USD / ARS</span></div>
+  <div class="fxlist" id="fx"></div>
+</div>
+
+<div class="card">
+  <div class="ctitle">BCRA <span class="meta">cierre día</span></div>
+  <div class="bcra2">
+    <div class="b"><div class="l">Reservas</div><div class="v" id="res"></div><div class="d" id="resd"></div></div>
+    <div class="b"><div class="l">Riesgo País</div><div class="v" id="rp"></div><div class="d" id="rpd"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ctitle">Acciones MERVAL <span class="meta">hoy · 1m · ytd</span></div>
+  <div class="sect">Ganadores</div>
+  <div class="lst" id="stk-g"></div>
+  <div class="sect">Perdedores</div>
+  <div class="lst" id="stk-p"></div>
+</div>
+
+<div class="card">
+  <div class="ctitle">Soberanos <span class="meta">TIR · Δ día</span></div>
+  <div class="sect">Globales</div><div class="lst" id="sov-g"></div>
+  <div class="sect">Bonares</div><div class="lst" id="sov-b"></div>
+  <div class="sect">Bopreales</div><div class="lst" id="sov-bp"></div>
+</div>
+
+<div class="card">
+  <div class="ctitle">Renta Fija Pesos <span class="meta">cierre</span></div>
+  <div class="sect">CER · TIR</div><div class="lst" id="cer"></div>
+  <div class="sect">LECAPS · TEM / TNA</div><div class="lst" id="lec"></div>
+  <div class="sect">TAMAR · TIR</div><div class="lst" id="tam"></div>
+</div>
+
+<div class="card">
+  <div class="ctitle">Futuros DLR <span class="meta">ROFEX</span></div>
+  <div class="lst" id="fut"></div>
+</div>
+
+<div class="footer">BALANZ · DATOS CON FINES INFORMATIVOS · 29 MAY 2026</div>
+
+<script src="_mock-data.js"></script>
+<script>
+const M=window.MOCK_DATA, F=window.fmt;
+document.getElementById("ts").textContent = M.timestamp;
+
+const fx=document.getElementById("fx");
+M.dolares.forEach(d=>fx.insertAdjacentHTML("beforeend",
+ `<div class="r"><span class="l">${d.tipo}</span><span><span class="v">$${F.num(d.precio,0)}</span><span class="d ${F.cls(d.delta)}">${F.arrow(d.delta)} ${F.pct(d.delta)}</span></span></div>`));
+
+res.textContent  = "US$ "+(M.bcra.reservas_usd_mm/1000).toFixed(2)+" B";
+resd.innerHTML   = `<span class="${F.cls(M.bcra.reservas_delta_usd_mm)}">${M.bcra.reservas_delta_usd_mm>=0?"+":""}${M.bcra.reservas_delta_usd_mm} M USD</span>`;
+rp.textContent   = M.bcra.riesgo_pais_bps+" pb";
+rpd.innerHTML    = `<span class="${F.cls(-M.bcra.riesgo_pais_delta_bps)}">${F.bps(M.bcra.riesgo_pais_delta_bps)}</span>`;
+
+function listStk(arr,id){
+  const el=document.getElementById(id);
+  arr.forEach(s=>el.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${s.ticker}</span><span class="mid">1M ${F.pct(s.mes)} · YTD ${F.pct(s.ytd)}</span><span class="dlt ${F.cls(s.hoy)}">${F.pct(s.hoy)}</span></div>`));
+}
+listStk(M.acciones.ganadores.slice(0,5),"stk-g");
+listStk(M.acciones.perdedores.slice(0,5),"stk-p");
+
+function listBnd(panel,id,unit="TIR"){
+  const el=document.getElementById(id);
+  const all=[...panel.ganadores,...panel.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,4).forEach(b=>el.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${b.ticker}</span><span class="mid">${unit} ${F.num(b.tir)}%</span><span class="dlt ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+}
+listBnd(M.soberanos.globales,"sov-g");
+listBnd(M.soberanos.bonares,"sov-b");
+listBnd(M.soberanos.bopreales,"sov-bp");
+listBnd(M.renta_fija.cer,"cer");
+listBnd(M.renta_fija.tamar_puro,"tam");
+
+(function(){
+  const el=document.getElementById("lec");
+  const all=[...M.renta_fija.lecaps.ganadores,...M.renta_fija.lecaps.perdedores].sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  all.slice(0,4).forEach(b=>el.insertAdjacentHTML("beforeend",
+   `<div class="r"><span class="tk">${b.ticker}</span><span class="mid">TEM ${F.num(b.tem)}% · TNA ${F.num(b.tna)}%</span><span class="dlt ${F.cls(-b.delta)}">${F.pct(b.delta)}</span></div>`));
+})();
+
+M.futuros.forEach(f=>fut.insertAdjacentHTML("beforeend",
+ `<div class="r"><span class="tk">${f.contrato}</span><span class="mid">$${F.num(f.precio,0)} · TNA ${F.num(f.tna)}%</span><span class="dlt ${F.cls(f.delta)}">${F.pct(f.delta)}</span></div>`));
+</script>
+</body>
+</html>
