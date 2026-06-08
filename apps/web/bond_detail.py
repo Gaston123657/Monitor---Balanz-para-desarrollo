@@ -217,6 +217,7 @@ def _bond_metadata(instrument: Instrument, *, leg: Optional[str] = None) -> Dict
         "fecha_vencimiento": _iso(instrument.maturity_date),
         "payment_frequency": instrument.payment_frequency,
         "cupon": cupon,
+        "legislacion": getattr(instrument, "legislacion", None),
         "is_tamar_family": is_tamar_family,
     }
     # CER fields: bonos CER + DUAL_CER_TAMAR (que usa cer_base como rail CER).

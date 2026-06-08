@@ -1385,6 +1385,10 @@ function _renderBondDetailesTab(overlay, payload) {
     ["Próximo cupón", _bondFmtDate(metrics.next_coupon_date)],
     ["Freq. pagos (anual)", meta.payment_frequency || _DASH],
   ];
+  if (meta.legislacion) {
+    const _leg = String(meta.legislacion).toUpperCase();
+    metaRows.push(["Ley", _leg === "NY" ? "Ley NY" : (_leg === "AR" ? "Ley ARG" : _leg)]);
+  }
   if (meta.category) metaRows.splice(2, 0, ["Categoría", meta.category]);
   if (meta.cer_base != null) metaRows.push(["CER base", _bondFmtNum(meta.cer_base, 4)]);
   if (meta.cer_lag != null) metaRows.push(["CER lag (días háb.)", meta.cer_lag]);

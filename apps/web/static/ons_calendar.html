@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
   <link rel="stylesheet" href="/static/style.css?v=29" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     body { background: var(--page-bg); color: var(--text); font-family: "Inter Tight", sans-serif; margin: 0; }
 
@@ -184,6 +185,34 @@
 
     .cf-no-data { padding: 20px; color: var(--text-faint); font-style: italic; font-size: 12px; }
     .loading-msg { padding: 30px; color: var(--text-faint); font-size: 13px; text-align: center; }
+
+    /* ---- calculadora de flujos ---- */
+    .calc-intro {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px 16px;
+    }
+    .calc-file-btn {
+      background: var(--accent-blue); color: var(--text-white); border: 1px solid var(--accent-blue);
+      border-radius: 4px; padding: 7px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+      cursor: pointer; white-space: nowrap;
+    }
+    .calc-file-btn:hover { filter: brightness(1.08); }
+    .calc-hint { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+    .calc-hint code {
+      font-family: "JetBrains Mono", monospace; font-size: 10px; background: var(--row-alt);
+      padding: 1px 5px; border-radius: 3px; color: var(--text);
+    }
+    .calc-file-name { font-size: 11px; font-weight: 700; color: var(--accent-blue); }
+    .calc-chart-wrap { height: 380px; position: relative; }
+    .calc-warning {
+      background: color-mix(in srgb, #f5c451 12%, var(--panel-bg));
+      border: 1px solid color-mix(in srgb, #f5c451 45%, var(--panel-border));
+      border-radius: 6px; padding: 10px 14px; font-size: 11px; color: var(--text);
+    }
+    .calc-warning-title { font-weight: 800; color: #f5c451; margin-bottom: 6px; font-size: 11px; letter-spacing: 0.4px; }
+    .calc-warning-row { display: flex; gap: 8px; align-items: baseline; padding: 2px 0; }
+    .calc-warning-row .cw-ticker { font-family: "JetBrains Mono", monospace; font-weight: 700; min-width: 64px; }
+    .calc-warning-row .cw-reason { color: var(--text-dim); font-size: 10px; }
   </style>
 </head>
 <body>
@@ -200,6 +229,7 @@
   <div class="cf-btn-group" id="view-group">
     <button type="button" data-view="calendar" class="active">Calendario</button>
     <button type="button" data-view="table">Tabla</button>
+    <button type="button" data-view="calc">Calculadora</button>
   </div>
 
   <span class="cf-toolbar-label">Moneda</span>
@@ -291,6 +321,49 @@
     <div id="flows-empty" class="cf-no-data" style="display:none">No hay pagos para los filtros seleccionados.</div>
   </div>
 
+  <!-- Calculadora de flujos -->
+  <div id="calc-section" style="display:none">
+    <div class="calc-intro">
+      <button type="button" class="calc-file-btn" id="calc-file-btn">Cargar CSV de tenencia</button>
+      <input type="file" id="calc-file-input" accept=".csv,text/csv" style="display:none" />
+      <span class="calc-file-name" id="calc-file-name"></span>
+      <span class="calc-hint">
+        Formato: dos columnas <code>ticker;nominales</code> (una ON por fila). La especie no importa
+        (MEP, cable o pesos): se matchea por el ticker base. Ej: <code>YFCOD;10000</code>
+      </span>
+    </div>
+
+    <div id="calc-warning" class="calc-warning" style="display:none"></div>
+
+    <div id="calc-totals" class="cf-totals-bar" style="display:none">
+      <div class="cf-total-item">
+        <span class="cf-total-label">USD Cable (12m)</span>
+        <span class="cf-total-val usd" id="calc-tot-cable">—</span>
+      </div>
+      <div class="cf-total-sep"></div>
+      <div class="cf-total-item">
+        <span class="cf-total-label">USD MEP (12m)</span>
+        <span class="cf-total-val usd" id="calc-tot-mep">—</span>
+      </div>
+      <div class="cf-total-sep"></div>
+      <div class="cf-total-item">
+        <span class="cf-total-label">ARS (12m)</span>
+        <span class="cf-total-val" id="calc-tot-ars">—</span>
+      </div>
+      <div class="cf-total-sep"></div>
+      <div class="cf-total-item">
+        <span class="cf-total-label">ONs en cartera</span>
+        <span class="cf-total-val" id="calc-tot-ons" style="color:var(--text-dim)">—</span>
+      </div>
+    </div>
+
+    <div class="cal-wrap">
+      <div class="cf-section-title" style="margin-bottom:10px">Flujo estimado · próximos 12 meses</div>
+      <div class="calc-chart-wrap"><canvas id="calc-chart"></canvas></div>
+      <div id="calc-empty" class="cf-no-data">Cargá un CSV con tu tenencia para ver el flujo proyectado.</div>
+    </div>
+  </div>
+
   <!-- Sin datos -->
   <div id="sin-datos-section" style="display:none">
     <div class="cf-section-title" id="sin-datos-title">ONs sin datos suficientes para estimar</div>
@@ -314,6 +387,12 @@ let _nameFilter = new Set();   // tickers seleccionados; vacío = todos
 let _calMonth   = new Date();  // mes mostrado en la vista calendario
 let _monthFilter = "all";      // "all" | "YYYY-MM" (vista tabla)
 let _allFlows   = [];          // todos los flujos aplanados
+
+// Calculadora de flujos
+let _calcRows     = [];        // [{instrument, nominal}] matcheadas
+let _calcWarnings = [];        // [{ticker, reason}] no incluidas
+let _calcChart    = null;      // instancia Chart.js
+let _rootMaps     = null;      // {ok: Map raíz→inst, sinDatos: Set raíz} memoizado
 
 const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio",
                      "julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -401,22 +480,32 @@ function baseFiltered() {
 function render() {
   const calSec = document.getElementById("calendar-section");
   const tblSec = document.getElementById("cf-flows-section");
+  const clcSec = document.getElementById("calc-section");
   const monthLbl = document.getElementById("month-filter-label");
   const monthSel = document.getElementById("month-filter");
+  const totalsBar = document.getElementById("cf-totals-bar");
+  // Filtros moneda/nombre solo aplican a calendario/tabla, no a la calculadora.
+  const currencyGrp = document.getElementById("currency-group");
+  const currencyLbl = currencyGrp.previousElementSibling;
+  const nameFilter = document.getElementById("name-filter");
+  const sinDatos = document.getElementById("sin-datos-section");
 
-  if (_view === "calendar") {
-    calSec.style.display = "";
-    tblSec.style.display = "none";
-    monthLbl.style.display = "none";
-    monthSel.style.display = "none";
-    renderCalendar();
-  } else {
-    calSec.style.display = "none";
-    tblSec.style.display = "";
-    monthLbl.style.display = "";
-    monthSel.style.display = "";
-    renderTable();
-  }
+  const isCalc = _view === "calc";
+  calSec.style.display = (_view === "calendar") ? "" : "none";
+  tblSec.style.display = (_view === "table") ? "" : "none";
+  clcSec.style.display = isCalc ? "" : "none";
+  monthLbl.style.display = (_view === "table") ? "" : "none";
+  monthSel.style.display = (_view === "table") ? "" : "none";
+  currencyGrp.style.display = isCalc ? "none" : "";
+  currencyLbl.style.display = isCalc ? "none" : "";
+  nameFilter.style.display = isCalc ? "none" : "";
+  totalsBar.style.display = isCalc ? "none" : "";
+  // El listado "sin datos" general distrae en la calculadora (tiene su propio aviso).
+  if (sinDatos) sinDatos.style.display = (isCalc || !(_data.sin_datos || []).length) ? "none" : "";
+
+  if (_view === "calendar") renderCalendar();
+  else if (_view === "table") renderTable();
+  else renderCalc();
 }
 
 function renderTotals(rows) {
@@ -601,6 +690,186 @@ function buildMonthFilter() {
 }
 
 // =====================================================================
+// Calculadora de flujos (CSV de tenencia → barras 12 meses)
+// =====================================================================
+
+// Raíz del ticker: ignora la última letra de la especie (D/C/O/...).
+function tickerRoot(t) {
+  const s = String(t || "").trim().toUpperCase();
+  return s.length > 1 ? s.slice(0, -1) : s;
+}
+
+// Mapas raíz→instrumento (estimables) y raíz→true (en base pero sin datos).
+function buildRootMaps() {
+  if (_rootMaps) return _rootMaps;
+  const ok = new Map();
+  for (const inst of _data.instruments) {
+    const root = tickerRoot(inst.ticker);
+    const prev = ok.get(root);
+    // Colisión: preferir el ticker que termina en "D" (especie MEP).
+    if (!prev || (!/D$/.test((prev.ticker || "").toUpperCase()) &&
+                   /D$/.test((inst.ticker || "").toUpperCase()))) {
+      ok.set(root, inst);
+    }
+  }
+  const sinDatos = new Set((_data.sin_datos || []).map(s => tickerRoot(s.ticker)));
+  _rootMaps = { ok, sinDatos };
+  return _rootMaps;
+}
+
+// Parsea el CSV: separador ";" (fallback ","), descarta header, tolera miles.
+function parseCsv(text) {
+  const rows = [];
+  const lines = String(text).split(/\r?\n/);
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const sep = line.includes(";") ? ";" : ",";
+    const parts = line.split(sep);
+    if (parts.length < 2) continue;
+    const ticker = parts[0].trim();
+    let numStr = parts[1].trim();
+    if (!ticker) continue;
+    // Normaliza miles/decimales: "1.000.000,50" o "1,000,000.50" → número.
+    numStr = numStr.replace(/\s/g, "");
+    if (/,\d{1,2}$/.test(numStr)) numStr = numStr.replace(/\./g, "").replace(",", ".");
+    else numStr = numStr.replace(/,/g, "");
+    const nominal = parseFloat(numStr);
+    if (!isFinite(nominal)) continue;   // header u otra fila no numérica → descartar
+    rows.push({ ticker, nominal });
+  }
+  return rows;
+}
+
+// Matchea cada fila del CSV contra la base; llena _calcRows y _calcWarnings.
+function matchCsv(rows) {
+  const { ok, sinDatos } = buildRootMaps();
+  _calcRows = [];
+  _calcWarnings = [];
+  for (const r of rows) {
+    const root = tickerRoot(r.ticker);
+    const inst = ok.get(root);
+    if (inst) {
+      _calcRows.push({ instrument: inst, nominal: r.nominal });
+    } else if (sinDatos.has(root)) {
+      _calcWarnings.push({ ticker: r.ticker, reason: "en la base pero sin calendario / tasa cupón" });
+    } else {
+      _calcWarnings.push({ ticker: r.ticker, reason: "ticker no encontrado en la base de ONs" });
+    }
+  }
+}
+
+// Agrega los flujos a 12 buckets mensuales desde el mes actual.
+// Categoría: ARS por moneda; si es USD, Cable (ley NY) o MEP (ley local).
+function aggregate12m() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const keys = [], labels = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    keys.push(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}`);
+    labels.push(`${MONTH_NAMES[d.getMonth()].slice(0, 3)} ${String(d.getFullYear()).slice(2)}`);
+  }
+  const idx = Object.fromEntries(keys.map((k, i) => [k, i]));
+  const cable = new Array(12).fill(0);
+  const mep   = new Array(12).fill(0);
+  const ars   = new Array(12).fill(0);
+
+  for (const { instrument, nominal } of _calcRows) {
+    const factor = nominal / 100;
+    const isARS = instrument.currency === "ARS";
+    const isCable = !isARS && (instrument.legislacion || "").toUpperCase() === "NY";
+    const bucket = isARS ? ars : (isCable ? cable : mep);
+    for (const cf of instrument.cashflows) {
+      const mk = cf.date.slice(0, 7);
+      const i = idx[mk];
+      if (i === undefined) continue;   // fuera de la ventana de 12 meses
+      bucket[i] += (cf.total || 0) * factor;
+    }
+  }
+  return { labels, cable, mep, ars };
+}
+
+function renderCalc() {
+  const empty = document.getElementById("calc-empty");
+  const totals = document.getElementById("calc-totals");
+  const canvas = document.getElementById("calc-chart");
+
+  renderCalcWarning();
+
+  if (_calcRows.length === 0) {
+    empty.style.display = "";
+    totals.style.display = "none";
+    canvas.style.display = "none";
+    if (_calcChart) { _calcChart.destroy(); _calcChart = null; }
+    return;
+  }
+  empty.style.display = "none";
+  canvas.style.display = "";
+
+  const { labels, cable, mep, ars } = aggregate12m();
+  const sum = arr => arr.reduce((a, b) => a + b, 0);
+  document.getElementById("calc-tot-cable").textContent = fmtNum(sum(cable));
+  document.getElementById("calc-tot-mep").textContent   = fmtNum(sum(mep));
+  document.getElementById("calc-tot-ars").textContent   = fmtNum(sum(ars));
+  document.getElementById("calc-tot-ons").textContent   = `${_calcRows.length}`;
+  totals.style.display = "";
+
+  const datasets = [
+    { label: "USD Cable (NY)", data: cable, backgroundColor: "#3b82f6", stack: "f" },
+    { label: "USD MEP (local)", data: mep, backgroundColor: "#60c8ff", stack: "f" },
+  ];
+  if (sum(ars) > 0) datasets.push({ label: "ARS", data: ars, backgroundColor: "#f5c451", stack: "f" });
+
+  const css = getComputedStyle(document.body);
+  const tick = (css.getPropertyValue("--text-dim") || "#9aa").trim();
+  const grid = (css.getPropertyValue("--panel-border") || "#333").trim();
+
+  if (_calcChart) {
+    _calcChart.data.labels = labels;
+    _calcChart.data.datasets = datasets;
+    _calcChart.update();
+    return;
+  }
+  _calcChart = new Chart(canvas.getContext("2d"), {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: { stacked: true, ticks: { color: tick, font: { size: 10 } }, grid: { display: false } },
+        y: { stacked: true, ticks: { color: tick, font: { size: 10 },
+             callback: v => Number(v).toLocaleString("es-AR") }, grid: { color: grid } },
+      },
+      plugins: {
+        legend: { labels: { color: tick, font: { size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: c => `${c.dataset.label}: ${fmtNum(c.parsed.y)}`,
+            footer: items => {
+              const t = items.reduce((a, it) => a + it.parsed.y, 0);
+              return `Total mes: ${fmtNum(t)}`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function renderCalcWarning() {
+  const box = document.getElementById("calc-warning");
+  if (!_calcWarnings.length) { box.style.display = "none"; return; }
+  box.style.display = "";
+  const rows = _calcWarnings.map(w =>
+    `<div class="calc-warning-row"><span class="cw-ticker">${w.ticker}</span>` +
+    `<span class="cw-reason">${w.reason}</span></div>`).join("");
+  box.innerHTML =
+    `<div class="calc-warning-title">⚠ ${_calcWarnings.length} ON(s) no incluidas en el flujo</div>${rows}`;
+}
+
+// =====================================================================
 // Controls
 // =====================================================================
 document.getElementById("view-group").addEventListener("click", e => {
@@ -621,6 +890,22 @@ document.getElementById("currency-group").addEventListener("click", e => {
 
 document.getElementById("month-filter").addEventListener("change", e => {
   _monthFilter = e.target.value; render();
+});
+
+// Calculadora: carga de CSV.
+document.getElementById("calc-file-btn").addEventListener("click", () => {
+  document.getElementById("calc-file-input").click();
+});
+document.getElementById("calc-file-input").addEventListener("change", e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  document.getElementById("calc-file-name").textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = () => {
+    matchCsv(parseCsv(reader.result));
+    renderCalc();
+  };
+  reader.readAsText(file);
 });
 
 document.getElementById("cal-prev").addEventListener("click", () => {
@@ -667,11 +952,11 @@ document.querySelectorAll(".name-filter-action").forEach(b => {
 // =====================================================================
 // Init
 // =====================================================================
-// Deep-link de vista inicial: #table | #calendar
-if (location.hash === "#table") {
-  _view = "table";
+// Deep-link de vista inicial: #table | #calendar | #calc
+if (location.hash === "#table" || location.hash === "#calc") {
+  _view = location.hash.slice(1);
   document.querySelectorAll("#view-group button").forEach(b =>
-    b.classList.toggle("active", b.dataset.view === "table"));
+    b.classList.toggle("active", b.dataset.view === _view));
 }
 loadData();
 </script>
