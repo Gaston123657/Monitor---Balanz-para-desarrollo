@@ -169,6 +169,35 @@
     }
     table.cf-flows tfoot td.lft { text-align: left; }
 
+    /* ---- rayado por mes calendario (estable al ordenar) ---- */
+    table.cf-flows tbody tr.m-even td { background: color-mix(in srgb, var(--row-alt) 55%, transparent); }
+    table.cf-flows tbody tr.m-odd  td { background: transparent; }
+    table.cf-flows tbody tr:hover td { background: var(--row-hover); }  /* hover gana sobre el rayado */
+
+    /* ---- headers ordenables ---- */
+    table.cf-flows thead th.sortable { cursor: pointer; user-select: none; }
+    table.cf-flows thead th.sortable:hover { color: var(--text-dim); }
+    table.cf-flows thead th.sortable::after { content: "\2195"; opacity: 0.3; margin-left: 4px; font-size: 9px; }
+    table.cf-flows thead th.sort-asc::after  { content: "\2191"; opacity: 0.9; }
+    table.cf-flows thead th.sort-desc::after { content: "\2193"; opacity: 0.9; }
+
+    /* ---- buscador de la tabla de cupones ---- */
+    .calc-table-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .calc-table-head .cf-section-title { margin: 0; }
+    .calc-search {
+      margin-left: auto; background: var(--panel-bg); color: var(--text);
+      border: 1px solid var(--panel-border); border-radius: 4px; padding: 6px 10px;
+      font-size: 11px; font-family: "Inter Tight", sans-serif; width: 220px;
+    }
+    .calc-search::placeholder { color: var(--text-faint); }
+    .calc-search:focus { outline: none; border-color: var(--accent-blue); }
+    .calc-export {
+      background: var(--panel-bg); color: var(--text); border: 1px solid var(--panel-border);
+      border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+      cursor: pointer; white-space: nowrap;
+    }
+    .calc-export:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
     /* ---- sin datos ---- */
     table.cf-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     table.cf-table thead th {
@@ -362,6 +391,31 @@
       <div class="calc-chart-wrap"><canvas id="calc-chart"></canvas></div>
       <div id="calc-empty" class="cf-no-data">Cargá un CSV con tu tenencia para ver el flujo proyectado.</div>
     </div>
+
+    <div id="calc-flows-section" class="cf-flows-section" style="display:none;margin-top:18px">
+      <div class="calc-table-head">
+        <div class="cf-section-title" id="calc-flows-title">Detalle de cupones · próximos 12 meses</div>
+        <input type="text" class="calc-search" id="calc-search" placeholder="Buscar ticker, fecha o mes…" />
+        <button type="button" class="calc-export" id="calc-export" title="Exportar a CSV (Excel)">⬇ CSV</button>
+      </div>
+      <table class="cf-flows" id="calc-flows-table">
+        <thead>
+          <tr>
+            <th class="lft sortable sort-asc" data-sort="date">Fecha</th>
+            <th class="lft sortable" data-sort="ticker">Ticker</th>
+            <th class="sortable" data-sort="monLabel">Mon.</th>
+            <th class="sortable" data-sort="nominal">Nominales</th>
+            <th class="sortable" data-sort="rate">Tasa</th>
+            <th class="sortable" data-sort="interest">Renta</th>
+            <th class="sortable" data-sort="amort">Amort.</th>
+            <th class="sortable" data-sort="total">Total cash</th>
+          </tr>
+        </thead>
+        <tbody id="calc-flows-tbody"></tbody>
+        <tfoot id="calc-flows-tfoot"></tfoot>
+      </table>
+      <div id="calc-flows-empty" class="cf-no-data" style="display:none">Sin cupones para la búsqueda.</div>
+    </div>
   </div>
 
   <!-- Sin datos -->
@@ -393,6 +447,10 @@ let _calcRows     = [];        // [{instrument, nominal}] matcheadas
 let _calcWarnings = [];        // [{ticker, reason}] no incluidas
 let _calcChart    = null;      // instancia Chart.js
 let _rootMaps     = null;      // {ok: Map raíz→inst, sinDatos: Set raíz} memoizado
+let _calcFlows    = [];        // cupones aplanados (12m) de la tenencia
+let _calcViewRows = [];        // filas visibles (filtradas + ordenadas) para exportar
+let _calcSort     = { col: "date", dir: "asc" };
+let _calcSearch   = "";
 
 const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio",
                      "julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -801,6 +859,7 @@ function renderCalc() {
     empty.style.display = "";
     totals.style.display = "none";
     canvas.style.display = "none";
+    document.getElementById("calc-flows-section").style.display = "none";
     if (_calcChart) { _calcChart.destroy(); _calcChart = null; }
     return;
   }
@@ -814,6 +873,9 @@ function renderCalc() {
   document.getElementById("calc-tot-ars").textContent   = fmtNum(sum(ars));
   document.getElementById("calc-tot-ons").textContent   = `${_calcRows.length}`;
   totals.style.display = "";
+
+  buildCalcFlows();
+  renderCalcTable();
 
   const datasets = [
     { label: "USD Cable (NY)", data: cable, backgroundColor: "#3b82f6", stack: "f" },
@@ -869,9 +931,162 @@ function renderCalcWarning() {
     `<div class="calc-warning-title">⚠ ${_calcWarnings.length} ON(s) no incluidas en el flujo</div>${rows}`;
 }
 
+// Aplana _calcRows a nivel cupón, dentro de la ventana de 12 meses (igual que
+// aggregate12m). factor = nominal/100. Llena _calcFlows.
+function buildCalcFlows() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const keys = new Set();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    keys.add(`${d.getFullYear()}-${pad2(d.getMonth() + 1)}`);
+  }
+  _calcFlows = [];
+  for (const { instrument, nominal } of _calcRows) {
+    const factor = nominal / 100;
+    for (const cf of instrument.cashflows) {
+      if (!keys.has(cf.date.slice(0, 7))) continue;   // fuera de la ventana de 12 meses
+      const [y, m] = cf.date.split("-");
+      _calcFlows.push({
+        date:        cf.date,
+        nominalDate: cf.nominal_date,
+        adjusted:    !!cf.adjusted,
+        ticker:      instrument.ticker,
+        shortName:   instrument.short_name || "",
+        currency:    instrument.currency,
+        monLabel:    instrument.currency === "ARS" ? "ARS"
+                     : ((instrument.legislacion || "").toUpperCase() === "NY" ? "USD CCL" : "USD MEP"),
+        nominal,
+        rate:        instrument.coupon_rate,   // decimal anual → se muestra *100 %
+        interest:    (cf.interest || 0) * factor,
+        amort:       (cf.amortization || 0) * factor,
+        total:       (cf.total || 0) * factor,
+        monthParity: (+y * 12 + (+m - 1)) % 2,
+      });
+    }
+  }
+}
+
+function renderCalcTable() {
+  const section = document.getElementById("calc-flows-section");
+  if (_calcRows.length === 0) { section.style.display = "none"; return; }
+  section.style.display = "";
+
+  // Filtro de búsqueda: ticker, nombre, fecha (dd/mm/aa o ISO), mes y moneda.
+  const q = _calcSearch.trim().toLowerCase();
+  let rows = _calcFlows;
+  if (q) {
+    rows = rows.filter(r => {
+      const monthName = MONTH_NAMES[+r.date.slice(5, 7) - 1];
+      const hay = `${r.ticker} ${r.shortName} ${fmtDate(r.date)} ${r.date} ${monthName} ${r.monLabel}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  // Ordenamiento.
+  const { col, dir } = _calcSort;
+  const sign = dir === "asc" ? 1 : -1;
+  const numeric = new Set(["nominal", "rate", "interest", "amort", "total"]);
+  rows = rows.slice().sort((a, b) => {
+    let cmp;
+    if (numeric.has(col)) cmp = (a[col] || 0) - (b[col] || 0);
+    else cmp = String(a[col]).localeCompare(String(b[col]));
+    if (cmp === 0) cmp = a.date.localeCompare(b.date) || a.ticker.localeCompare(b.ticker);
+    return cmp * sign;
+  });
+  _calcViewRows = rows;
+
+  document.getElementById("calc-flows-title").textContent =
+    `Detalle de cupones · próximos 12 meses · ${rows.length} pagos`;
+
+  const tbody = document.getElementById("calc-flows-tbody");
+  const tfoot = document.getElementById("calc-flows-tfoot");
+  const empty = document.getElementById("calc-flows-empty");
+  tbody.innerHTML = "";
+  tfoot.innerHTML = "";
+
+  if (rows.length === 0) { empty.style.display = ""; return; }
+  empty.style.display = "none";
+
+  let totUSD = 0, totARS = 0;
+  for (const r of rows) {
+    if (r.currency === "USD") totUSD += r.total; else totARS += r.total;
+    const cur = r.currency === "USD" ? "usd" : "";
+    const adj = r.adjusted
+      ? ` <span class="adj-flag" title="Movido de ${fmtDate(r.nominalDate)} por día hábil">*</span>`
+      : "";
+    const tr = document.createElement("tr");
+    tr.className = r.monthParity ? "m-odd" : "m-even";
+    tr.innerHTML = `
+      <td class="col-date">${fmtDate(r.date)}${adj}</td>
+      <td class="col-ticker">${r.ticker}</td>
+      <td class="${cur}">${r.monLabel}</td>
+      <td>${fmtNum(r.nominal, 0)}</td>
+      <td>${r.rate == null ? "—" : fmtNum(r.rate * 100, 2) + "%"}</td>
+      <td class="${cur}">${fmtNum(r.interest)}</td>
+      <td class="${cur}">${fmtNum(r.amort)}</td>
+      <td class="${cur}">${fmtNum(r.total)}</td>`;
+    tbody.appendChild(tr);
+  }
+  tfoot.innerHTML = `
+    <tr><td class="lft" colspan="7" style="color:#60c8ff">Total USD</td><td style="color:#60c8ff">${fmtNum(totUSD)}</td></tr>
+    <tr><td class="lft" colspan="7">Total ARS</td><td>${fmtNum(totARS)}</td></tr>`;
+}
+
+// Exporta las filas visibles a CSV (separador ";" y números es-AR para Excel local).
+function exportCalcCsv() {
+  if (!_calcViewRows.length) return;
+  const headers = ["Fecha", "Ticker", "Nombre", "Moneda", "Nominales", "Tasa %", "Renta", "Amortizacion", "Total cash"];
+  const esc = v => {
+    const s = String(v ?? "");
+    return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [headers.join(";")];
+  let totUSD = 0, totARS = 0;
+  for (const r of _calcViewRows) {
+    if (r.currency === "USD") totUSD += r.total; else totARS += r.total;
+    lines.push([
+      fmtDate(r.date), r.ticker, r.shortName, r.monLabel, fmtNum(r.nominal, 0),
+      r.rate == null ? "" : fmtNum(r.rate * 100, 2),
+      fmtNum(r.interest), fmtNum(r.amort), fmtNum(r.total),
+    ].map(esc).join(";"));
+  }
+  lines.push("");
+  lines.push(["Total USD", "", "", "", "", "", "", "", fmtNum(totUSD)].map(esc).join(";"));
+  lines.push(["Total ARS", "", "", "", "", "", "", "", fmtNum(totARS)].map(esc).join(";"));
+
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `detalle_cupones_${(_data && _data.as_of) || "ons"}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 // =====================================================================
 // Controls
 // =====================================================================
+
+// Tabla de cupones: buscador + ordenamiento por columna.
+document.getElementById("calc-search").addEventListener("input", e => {
+  _calcSearch = e.target.value;
+  renderCalcTable();
+});
+document.getElementById("calc-export").addEventListener("click", exportCalcCsv);
+document.querySelector("#calc-flows-table thead").addEventListener("click", e => {
+  const th = e.target.closest("th.sortable"); if (!th) return;
+  const col = th.dataset.sort;
+  _calcSort.dir = (_calcSort.col === col && _calcSort.dir === "asc") ? "desc" : "asc";
+  _calcSort.col = col;
+  document.querySelectorAll("#calc-flows-table thead th").forEach(h =>
+    h.classList.remove("sort-asc", "sort-desc"));
+  th.classList.add(_calcSort.dir === "asc" ? "sort-asc" : "sort-desc");
+  renderCalcTable();
+});
+
 document.getElementById("view-group").addEventListener("click", e => {
   const btn = e.target.closest("button"); if (!btn) return;
   document.querySelectorAll("#view-group button").forEach(b => b.classList.remove("active"));

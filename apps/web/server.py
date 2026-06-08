@@ -1831,6 +1831,7 @@ class Handler(BaseHTTPRequestHandler):
                     "sector": inst.sector,
                     "legislacion": inst.legislacion,
                     "currency": currency,
+                    "coupon_rate": inst.coupon_rate,  # decimal anual (0.05 = 5%); no-nulo aquí
                     "cashflows": cfs,
                 })
 
