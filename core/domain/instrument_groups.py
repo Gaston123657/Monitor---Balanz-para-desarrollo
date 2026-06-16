@@ -26,3 +26,13 @@ PANEL_LIDER = [
     "ROSE", "SAMI", "SEMI", "SUPV",  "TECO2", "TGNO4", "TGSU2", "TRAN",
     "TXAR", "VALO", "YPFD",
 ]
+
+# Panel principal (Panel Líder S&P Merval) — subconjunto de PANEL_LIDER.
+# Distingue las acciones del índice líder del resto (panel general). Lo usa el
+# cierre para privilegiar acciones del panel principal en ganadores/perdedores.
+# La composición la fija BYMA trimestralmente: actualizar al rebalanceo.
+PANEL_PRINCIPAL = {
+    "ALUA", "BBAR", "BMA",  "BYMA", "CEPU", "COME", "CRES", "EDN", "GGAL",
+    "LOMA", "METR", "MIRG", "PAMP", "SUPV", "TECO2", "TGNO4", "TGSU2",
+    "TRAN", "TXAR", "VALO", "YPFD",
+}
