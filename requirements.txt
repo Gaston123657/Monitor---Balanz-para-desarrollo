@@ -20,5 +20,8 @@ requests==2.34.2
 # WebSocket público Matba/Primary (curva de futuros DLR — futures_provider.py)
 websockets==16.0
 
+# LSEG Workspace / Eikon Data API: NO va acá. lseg-data exige pandas<3 y choca
+# con pandas==3.0.3. Vive en un venv aislado (.venv-lseg) — ver requirements-lseg.txt.
+
 # Tests
 pytest==9.0.3
