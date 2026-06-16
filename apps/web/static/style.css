@@ -874,6 +874,28 @@ table.bonds thead th {
   white-space: nowrap;
 }
 
+/* Headers ordenables: click cicla asc → desc → original. */
+table.bonds thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+table.bonds thead th.sortable:hover {
+  background: var(--accent-blue);
+  color: #fff;
+}
+/* Flecha del orden activo. Reservamos el hueco para evitar saltos. */
+table.bonds thead th.sortable::after {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  margin-left: 2px;
+  font-size: 9px;
+  vertical-align: middle;
+  opacity: 0;
+}
+table.bonds thead th.sort-asc::after  { content: "▲"; opacity: 0.9; }
+table.bonds thead th.sort-desc::after { content: "▼"; opacity: 0.9; }
+
 table.bonds tbody td {
   padding: 4px 5px;
   font-size: 12px;
@@ -1640,6 +1662,90 @@ a.btn {
 .curve-popup-body canvas {
   width: 100% !important;
   height: 100% !important;
+}
+
+/* Botón Capturar del popup de curva — captura header + gráfico + tabla a PNG. */
+.curve-popup-capture {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.curve-popup-capture:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+.curve-popup-capture:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Tabla de instrumentos que componen la curva (debajo del gráfico). */
+.curve-popup-table-wrap {
+  flex: 0 0 auto;
+  max-height: 38%;
+  overflow: auto;
+  margin: 0 14px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: var(--panel-bg, #fff);
+}
+.curve-popup-table-wrap[hidden] { display: none; }
+
+.curve-popup-table-caption {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--panel-bg, #fff);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+table.curve-popup-bonds {
+  width: 100%;
+}
+table.curve-popup-bonds thead th {
+  position: sticky;
+  top: 27px;
+  z-index: 1;
+}
+/* Celda con fondo heatmap (TIR / Paridad): el color lo setea JS inline; acá
+   solo reforzamos el peso para que el valor se lea sobre el fondo coloreado. */
+table.curve-popup-bonds td.heat-cell {
+  font-weight: 700;
+  color: var(--text-strong, var(--text));
+}
+
+/* Modo captura: el popup crece a su tamaño natural y la tabla se despliega
+   completa (sin scroll). El body mantiene su altura congelada vía JS para no
+   estirar/deformar el canvas del gráfico. */
+.curve-popup.capturing-popup {
+  height: auto;
+  max-height: none;
+}
+.curve-popup.capturing-popup .curve-popup-table-wrap {
+  max-height: none;
+  overflow: visible;
+}
+.curve-popup.capturing-popup .curve-popup-capture,
+.curve-popup.capturing-popup .curve-popup-close {
+  visibility: hidden;
 }
 
 /* =====================================================================

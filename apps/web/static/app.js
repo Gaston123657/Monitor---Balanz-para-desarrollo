@@ -172,6 +172,63 @@ function columnMaxAbs(rows, key) {
   return max || 1;
 }
 
+// =====================================================================
+// Ordenamiento de tablas: click en el <th> ordena las filas por esa
+// columna. Ciclo de 3 estados: ascendente → descendente → original.
+// El estado se guarda por monitor en memoria y se reaplica en cada
+// render (también tras un refresh de datos del backend).
+// =====================================================================
+
+const sortStateByMonitor = {};
+
+// Kinds cuyo valor crudo es numérico → se comparan como números.
+const NUMERIC_SORT_KINDS = new Set([
+  "number", "volume", "percent", "percent_signed", "scenario", "percent_bullet",
+]);
+// Kinds sin orden natural útil → su header no se hace clickeable.
+const UNSORTABLE_KINDS = new Set(["sparkline_range"]);
+
+// Devuelve el valor comparable de una celda. Null/vacío → null (van al final).
+function sortValue(col, v) {
+  if (v === null || v === undefined || v === "") return null;
+  if (NUMERIC_SORT_KINDS.has(col.kind)) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  return v; // text/date: string ISO ("YYYY-MM-DD" ordena bien) o texto
+}
+
+// Comparador de filas por una columna. Los nulos siempre al final,
+// sin importar la dirección.
+function compareRows(col, a, b, dir) {
+  const va = sortValue(col, a[col.key]);
+  const vb = sortValue(col, b[col.key]);
+  if (va === null && vb === null) return 0;
+  if (va === null) return 1;
+  if (vb === null) return -1;
+  let cmp;
+  if (typeof va === "number" && typeof vb === "number") {
+    cmp = va - vb;
+  } else {
+    cmp = String(va).localeCompare(String(vb), "es-AR", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  }
+  return dir === "desc" ? -cmp : cmp;
+}
+
+// Aplica el orden vigente a las filas del monitor (devuelve una copia
+// ordenada; no muta monitor.rows). Si no hay orden activo, devuelve las
+// filas tal cual.
+function sortedRowsFor(monitor, cols) {
+  const sort = sortStateByMonitor[monitor.id];
+  if (!sort || !sort.dir) return monitor.rows;
+  const col = cols.find((c) => c.key === sort.key);
+  if (!col) return monitor.rows;
+  return monitor.rows.slice().sort((a, b) => compareRows(col, a, b, sort.dir));
+}
+
 function renderCell(col, value, ctx) {
   const td = document.createElement("td");
 
@@ -401,19 +458,37 @@ function renderPanel(panel, monitor) {
   const table = document.createElement("table");
   table.className = "bonds";
 
+  const sort = sortStateByMonitor[monitor.id];
+
   const thead = document.createElement("thead");
   const trh = document.createElement("tr");
   cols.forEach((col) => {
     const th = document.createElement("th");
     th.textContent = col.label;
     if (col.kind === "text" || col.kind === "date") th.classList.add("col-text");
+    if (!UNSORTABLE_KINDS.has(col.kind)) {
+      th.classList.add("sortable");
+      if (sort && sort.key === col.key && sort.dir) {
+        th.classList.add(sort.dir === "asc" ? "sort-asc" : "sort-desc");
+      }
+      th.addEventListener("click", () => {
+        const cur = sortStateByMonitor[monitor.id];
+        // Ciclo asc → desc → sin orden (vuelve al orden original).
+        let dir = "asc";
+        if (cur && cur.key === col.key) {
+          dir = cur.dir === "asc" ? "desc" : cur.dir === "desc" ? null : "asc";
+        }
+        sortStateByMonitor[monitor.id] = dir ? { key: col.key, dir } : null;
+        renderPanel(panel, monitor);
+      });
+    }
     trh.appendChild(th);
   });
   thead.appendChild(trh);
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
-  monitor.rows.forEach((row) => {
+  sortedRowsFor(monitor, cols).forEach((row) => {
     const tr = document.createElement("tr");
     cols.forEach((col) => {
       const td = renderCell(col, row[col.key], ctx);
@@ -472,23 +547,138 @@ function fitLogCurve(points) {
   return { a, b };
 }
 
-// Para puntos clusterizados (cerca entre si en x,y), apila las labels
-// verticalmente con un offset incremental para evitar overlap.
-// Devuelve array de offsets (px) alineado con `series`.
-function computeLabelOffsets(series, baseOffset, thresholdX = 0.20,
-                              thresholdY = 0.5, step = 14) {
-  if (!series || !series.length) return [];
-  const out = [];
-  for (let i = 0; i < series.length; i++) {
-    let cluster = 0;
-    for (let j = 0; j < i; j++) {
-      const dx = Math.abs(series[i].x - series[j].x);
-      const dy = Math.abs(series[i].y - series[j].y);
-      if (dx < thresholdX && dy < thresholdY) cluster++;
-    }
-    out.push(baseOffset + cluster * step);
+// Anti-colisión de etiquetas en píxeles. El apilado por clusters en espacio de
+// datos no alcanza cuando hay muchos instrumentos juntos (ej. curva CER): las
+// labels son anchas y se pisan entre clusters vecinos. Esto resuelve el solape
+// en coordenadas de pantalla, ubicando cada label en el primer "carril" libre
+// (arriba/abajo del punto, a distancia creciente). Se computa una vez por draw
+// y se cachea en el chart; lo consumen los callbacks offset/align de datalabels.
+const _CURVE_LABEL = { fontSize: 10, charW: 6.0, padX: 3, labelH: 13, gapMargin: 1.5 };
+
+function _curveLabelLayout(chart) {
+  const xS = chart.scales && chart.scales.x;
+  const yS = chart.scales && chart.scales.y;
+  if (!xS || !yS) return {};
+  // Cache: se invalida si cambia el tamaño del chart o el rango de los ejes
+  // (rescale por datos nuevos). Dentro de un mismo draw devuelve lo cacheado.
+  const key = `${Math.round(xS.left)}|${Math.round(xS.right)}|${Math.round(yS.top)}|`
+            + `${Math.round(yS.bottom)}|${xS.min},${xS.max}|${yS.min},${yS.max}`;
+  if (chart._llKey === key && chart._ll) return chart._ll;
+
+  const { charW, padX, labelH, gapMargin } = _CURVE_LABEL;
+  // Recolectar todos los puntos etiquetables (datasets que no sean la línea log).
+  const items = [];
+  chart.data.datasets.forEach((ds, di) => {
+    if (!ds || !ds.data || String(ds.label || "").startsWith("_line_")) return;
+    if (ds.datalabels && ds.datalabels.display === false) return;
+    ds.data.forEach((pt, i) => {
+      if (!pt || pt.x == null || pt.y == null) return;
+      const text = String(pt.ticker || pt.label || "");
+      if (!text) return;
+      items.push({
+        di, i, text,
+        px: xS.getPixelForValue(pt.x),
+        py: yS.getPixelForValue(pt.y),
+        w: text.length * charW + padX * 2,
+      });
+    });
+  });
+  // Orden izquierda→derecha (y arriba en empates) para un layout estable.
+  items.sort((a, b) => a.px - b.px || a.py - b.py);
+
+  // Carriles candidatos: distancia creciente alternando arriba (+) / abajo (−).
+  const lanes = [];
+  for (let k = 0; k < 12; k++) {
+    const mag = 9 + k * (labelH + 2);
+    lanes.push(mag, -mag);
   }
-  return out;
+
+  const placed = [];   // rects ya colocados {x0,x1,y0,y1}
+  const layout = {};
+  const overlaps = (a, b) =>
+    a.x0 < b.x1 + gapMargin && a.x1 > b.x0 - gapMargin &&
+    a.y0 < b.y1 + gapMargin && a.y1 > b.y0 - gapMargin;
+
+  for (const it of items) {
+    let chosen = null, chosenRect = null;
+    for (const gap of lanes) {
+      // gap>0 → label arriba del punto (align top); gap<0 → abajo (align bottom).
+      const centerY = gap > 0
+        ? it.py - gap - labelH / 2
+        : it.py - gap + labelH / 2;
+      const rect = {
+        x0: it.px - it.w / 2, x1: it.px + it.w / 2,
+        y0: centerY - labelH / 2, y1: centerY + labelH / 2,
+      };
+      if (!placed.some((p) => overlaps(rect, p))) { chosen = gap; chosenRect = rect; break; }
+    }
+    if (chosen === null) { chosen = lanes[lanes.length - 1]; // último carril como fallback
+      const centerY = it.py - chosen + labelH / 2;
+      chosenRect = { x0: it.px - it.w / 2, x1: it.px + it.w / 2,
+                     y0: centerY - labelH / 2, y1: centerY + labelH / 2 };
+    }
+    placed.push(chosenRect);
+    layout[`${it.di}_${it.i}`] = { offset: Math.abs(chosen), align: chosen > 0 ? "top" : "bottom" };
+  }
+
+  chart._ll = layout;
+  chart._llKey = key;
+  return layout;
+}
+
+// Lee la propiedad ('offset'|'align') resuelta para la etiqueta de un punto.
+function _curveLabelProp(ctx, prop) {
+  const lay = _curveLabelLayout(ctx.chart);
+  const slot = lay[`${ctx.datasetIndex}_${ctx.dataIndex}`];
+  if (slot) return slot[prop];
+  return prop === "offset" ? 8 : "top";
+}
+
+// Mediana de un array de numeros (no muta el original). null si vacio.
+function _median(arr) {
+  if (!arr || !arr.length) return null;
+  const s = [...arr].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// Descarta los instrumentos que se alejan demasiado del resto de la curva y la
+// deforman (p. ej. un bono distressed a 63% cuando el resto rinde <12%). Ajusta
+// una regresion log inicial, mide los residuos y los puntua con el "modified
+// z-score" de Iglewicz-Hampel: usa mediana + MAD (desviacion absoluta mediana)
+// en vez de media + desvio, de modo que los propios outliers no inflan la
+// escala y se vuelven indetectables. Devuelve { kept, dropped }.
+//   - minPoints: con menos puntos el filtro no es confiable, no descarta nada.
+//   - threshold: |z| por encima del cual el punto se considera outlier (3.5 es
+//     el valor recomendado por Iglewicz-Hampel).
+function rejectCurveOutliers(points, { minPoints = 6, threshold = 3.5 } = {}) {
+  if (!points || points.length < minPoints) return { kept: points || [], dropped: [] };
+  const fit = fitLogCurve(points);
+  if (!fit) return { kept: points, dropped: [] };
+
+  const residuals = points.map((p) => p.y - (fit.a + fit.b * Math.log(p.x)));
+  const med = _median(residuals);
+  const mad = _median(residuals.map((r) => Math.abs(r - med)));
+
+  let scoreOf;
+  if (mad > 1e-9) {
+    scoreOf = (r) => 0.6745 * (r - med) / mad;        // modified z-score (MAD)
+  } else {
+    // MAD≈0 (puntos casi colineales): cae a z-score clasico con desvio estandar.
+    const mean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+    const sd = Math.sqrt(residuals.reduce((a, r) => a + (r - mean) ** 2, 0) / residuals.length);
+    if (!(sd > 1e-9)) return { kept: points, dropped: [] };
+    scoreOf = (r) => (r - mean) / sd;
+  }
+
+  const kept = [], dropped = [];
+  points.forEach((p, i) => {
+    (Math.abs(scoreOf(residuals[i])) > threshold ? dropped : kept).push(p);
+  });
+  // Nunca dejar la curva sin forma: si el filtro descartaria demasiados,
+  // se preserva el set original.
+  if (kept.length < minPoints) return { kept: points, dropped: [] };
+  return { kept, dropped };
 }
 
 // Genera N puntos a lo largo de la curva log (entre min y max de xs).
@@ -511,9 +701,6 @@ function logCurvePoints(points, n = 100) {
 // Construye los datasets de Chart.js para una serie (puntos + linea log).
 function curvaDatasets(series, color, label, labelAlign) {
   if (!series || series.length === 0) return [];
-  // Offset base segun alineacion (top -> negativo en datalabels conven., bot -> positivo)
-  const baseOffset = 8;
-  const offsets = computeLabelOffsets(series, baseOffset);
   return [
     {
       // Puntos reales
@@ -525,11 +712,12 @@ function curvaDatasets(series, color, label, labelAlign) {
       pointRadius: 6,
       pointHoverRadius: 9,
       datalabels: {
-        align: labelAlign, anchor: "center",
-        // offset por punto (apila labels en clusters)
-        offset: (ctx) => offsets[ctx.dataIndex] ?? baseOffset,
+        anchor: "center",
+        // Posición resuelta por anti-colisión en píxeles (ver _curveLabelLayout).
+        align: (ctx) => _curveLabelProp(ctx, "align"),
+        offset: (ctx) => _curveLabelProp(ctx, "offset"),
         color,
-        font: { weight: 700, size: 11 },
+        font: { weight: 700, size: _CURVE_LABEL.fontSize },
         formatter: (v) => v.ticker,
       },
     },
@@ -569,15 +757,24 @@ function renderCurvaPanel(panel, bonaresMonitor, bopMonitor) {
     .filter((p) => p.x != null && p.y != null && _isCurvaTicker(p.ticker))
     .sort((a, b) => a.x - b.x);
 
-  const { al, gd } = splitBySeries(sovPoints);
+  // Descarta los soberanos que se alejan demasiado del resto y deforman la curva.
+  // Se evalua sobre la nube soberana combinada (AL/AE/GD) antes de separar series.
+  const { kept: sovKept, dropped: sovDropped } = rejectCurveOutliers(sovPoints);
+  const { kept: boprKept, dropped: boprDropped } = rejectCurveOutliers(bopr);
 
-  const totalBonos = al.length + gd.length + bopr.length;
-  sub.textContent = `${totalBonos} bonos · regresión logarítmica · TIR vs Duration`;
+  const { al, gd } = splitBySeries(sovKept);
+
+  const totalBonos = al.length + gd.length + boprKept.length;
+  const dropped = [...sovDropped, ...boprDropped];
+  const subOut = dropped.length
+    ? ` · ${dropped.length} fuera de curva (${dropped.map((p) => p.ticker).join(", ")})`
+    : "";
+  sub.textContent = `${totalBonos} bonos · regresión logarítmica · TIR vs Duration${subOut}`;
 
   const datasets = [
     ...curvaDatasets(al,   "#6ab4f7",          "BONARES (AL/AO)",  "top"),
     ...curvaDatasets(gd,   "#f0c040",          "GLOBALES (GD/AE)", "bottom"),
-    ...curvaDatasets(bopr, CHART.BOPREAL,     "BOPREALES",              "bottom"),
+    ...curvaDatasets(boprKept, CHART.BOPREAL,     "BOPREALES",              "bottom"),
   ];
 
   // Update incremental si ya existe la instancia
@@ -995,6 +1192,14 @@ const CURVE_POPUP_SOURCES = new Set([
   "dolar_linked", "tamar", "ons_ny", "ons_ar",
 ]);
 
+// Columnas con fondo tipo heatmap en la tabla del popup de curva. RGB base; la
+// intensidad (alpha) la modula _renderCurvePopupTable según el valor relativo.
+// TIR → gama verde · Paridad → gama roja.
+const CURVE_HEATMAP_COLS = {
+  tir:    [46, 160, 67],
+  parity: [205, 60, 55],
+};
+
 // Singleton del popup: una sola instancia DOM reutilizada — al cerrar se
 // destruye el Chart.js pero el contenedor queda en el body para próxima vez.
 let _curvePopupChart = null;
@@ -1011,6 +1216,14 @@ function _ensureCurvePopupDom() {
         <h3 id="curve-popup-title">Curva</h3>
         <span class="curve-popup-sub" data-role="subtitle"></span>
         <span class="curve-popup-ts" data-role="ts">—</span>
+        <button class="curve-popup-capture" type="button" title="Capturar curva + tabla" aria-label="Capturar curva">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
+               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h2l1-1.5h4l1 1.5h2v7H3z"/>
+            <circle cx="8" cy="8.5" r="2.2"/>
+          </svg>
+          <span>Capturar</span>
+        </button>
         <button class="curve-popup-close" type="button" aria-label="Cerrar">×</button>
       </header>
       <div class="curve-popup-body panel panel-curva" data-id="__curve_popup__">
@@ -1018,11 +1231,16 @@ function _ensureCurvePopupDom() {
           <canvas data-role="canvas" role="img" aria-label="Curva TIR vs Duration Modificada"></canvas>
         </div>
       </div>
+      <div class="curve-popup-table-wrap" data-role="table-wrap" hidden></div>
     </div>`;
   document.body.appendChild(overlay);
 
   const close = () => closeCurvePopup();
   overlay.querySelector(".curve-popup-close").addEventListener("click", close);
+  overlay.querySelector(".curve-popup-capture").addEventListener("click", (e) => {
+    e.stopPropagation();
+    captureCurvePopup();
+  });
   // Click en el backdrop (fuera de .curve-popup) cierra; click dentro no.
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) close();
@@ -1060,9 +1278,151 @@ function openCurvePopup(monitorId, label, renderFn) {
   // Espejar subtitle/ts al header visible.
   if (sub) sub.textContent = bSub.textContent;
   if (ts) ts.textContent = bTs.textContent;
+  // Tabla con los instrumentos que componen la curva (los renderers dejan en
+  // body._curveTickers la lista de tickers efectivamente graficados, en orden).
+  _renderCurvePopupTable(monitor, body._curveTickers || []);
   _curvePopupChart = bondCurveCharts[`popup_${monitorId}`] || null;
   // Forzar resize tras el reveal porque el canvas pasó de hidden a visible.
   requestAnimationFrame(() => { if (_curvePopupChart) _curvePopupChart.resize(); });
+}
+
+// Tabla compacta debajo de la curva: una fila por instrumento graficado, con
+// las columnas relevantes de su clase (las mismas que declara el monitor en el
+// backend → paridad, TIR, MD, etc. según corresponda). Reusa renderCell/fmt
+// para que el formato y los colores coincidan con el panel tabular.
+function _renderCurvePopupTable(monitor, tickers) {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  const wrap = overlay.querySelector("[data-role='table-wrap']");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  if (!monitor || !monitor.rows || !monitor.rows.length || !tickers.length) {
+    wrap.hidden = true;
+    return;
+  }
+
+  // Filas en el mismo orden que la curva (tickers ya viene ordenado por el eje X).
+  const byTicker = new Map(
+    monitor.rows.map((r) => [String(r.ticker).toUpperCase(), r]),
+  );
+  const rows = tickers
+    .map((t) => byTicker.get(String(t).toUpperCase()))
+    .filter(Boolean);
+  if (!rows.length) {
+    wrap.hidden = true;
+    return;
+  }
+
+  // Mismas columnas visibles que el panel (drop redundantes + las que el
+  // usuario ocultó vía ▦), sin sparkline (no aporta en una tabla compacta).
+  const drop = DROP_KEYS_BY_MONITOR[monitor.id] || new Set();
+  const userHidden = new Set(hiddenColsByMonitor[monitor.id] || []);
+  const cols = monitor.columns.filter(
+    (c) => !drop.has(c.key) && !userHidden.has(c.key) && c.kind !== "sparkline_range",
+  );
+
+  const maxAbsByCol = new Map();
+  for (const c of cols) {
+    if (BAR_KINDS.has(c.kind)) maxAbsByCol.set(c.key, columnMaxAbs(rows, c.key));
+  }
+  const ctx = { maxAbsByCol, noDetail: true };
+
+  // Heatmap por columna: TIR en gama verde, Paridad en gama roja. Intensidad
+  // relativa al min/máx de los instrumentos mostrados (alto = color fuerte,
+  // bajo = tenue). Solo se aplica si la columna existe en este monitor.
+  const heatRanges = {};
+  for (const key of Object.keys(CURVE_HEATMAP_COLS)) {
+    if (!cols.some((c) => c.key === key)) continue;
+    let mn = Infinity, mx = -Infinity;
+    for (const r of rows) {
+      const v = Number(r[key]);
+      if (Number.isFinite(v)) { if (v < mn) mn = v; if (v > mx) mx = v; }
+    }
+    if (mn <= mx) heatRanges[key] = { mn, mx };
+  }
+
+  const caption = document.createElement("div");
+  caption.className = "curve-popup-table-caption";
+  caption.textContent = `${rows.length} instrumentos en la curva`;
+  wrap.appendChild(caption);
+
+  const table = document.createElement("table");
+  table.className = "bonds curve-popup-bonds";
+
+  const thead = document.createElement("thead");
+  const trh = document.createElement("tr");
+  cols.forEach((col) => {
+    const th = document.createElement("th");
+    th.textContent = col.label;
+    if (col.kind === "text" || col.kind === "date") th.classList.add("col-text");
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    cols.forEach((col) => {
+      const td = renderCell(col, row[col.key], ctx);
+      const rg = heatRanges[col.key];
+      const v = Number(row[col.key]);
+      if (rg && Number.isFinite(v)) {
+        // t = 1 en el máximo (color fuerte), 0 en el mínimo (tenue).
+        const t = rg.mx > rg.mn ? (v - rg.mn) / (rg.mx - rg.mn) : 0.5;
+        const a = (0.12 + t * 0.6).toFixed(3);
+        const [r, g, b] = CURVE_HEATMAP_COLS[col.key];
+        td.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+        td.classList.add("heat-cell");
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  wrap.hidden = false;
+}
+
+// Captura el popup de curva completo (header + gráfico + tabla) a PNG de alta
+// resolución. Congela la altura del chart para no estirar el canvas al expandir
+// el popup a su tamaño natural durante la captura.
+async function captureCurvePopup() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay || overlay.hidden) return;
+  const popup = overlay.querySelector(".curve-popup");
+  const body = overlay.querySelector(".curve-popup-body");
+  const btn = overlay.querySelector(".curve-popup-capture");
+  if (!popup) return;
+
+  const bodyH = body ? body.offsetHeight : 0;
+  if (btn) btn.disabled = true;
+  if (body) {
+    body.style.flex = "0 0 auto";
+    body.style.height = bodyH + "px";
+  }
+  popup.classList.add("capturing-popup");
+  try {
+    const canvas = await html2canvas(popup, {
+      backgroundColor: getComputedStyle(popup).backgroundColor,
+      scale: 4,
+      useCORS: true,
+      logging: false,
+    });
+    downloadCanvas(canvas, `curva_${todayStamp()}.png`);
+  } catch (e) {
+    console.error("captura de curva fallo:", e);
+    alert("No se pudo generar la captura: " + e.message);
+  } finally {
+    popup.classList.remove("capturing-popup");
+    if (body) {
+      body.style.flex = "";
+      body.style.height = "";
+    }
+    if (btn) btn.disabled = false;
+    if (_curvePopupChart) requestAnimationFrame(() => _curvePopupChart.resize());
+  }
 }
 
 function closeCurvePopup() {
@@ -4682,7 +5042,18 @@ function renderBondCurve(panel, sourceMonitor) {
                  && p.y > -10 && p.y < 500)
     .sort((a, b) => a.x - b.x);
 
-  if (sub) sub.textContent = `${points.length} bonos · regresión logarítmica · ${yLabel} vs DM`;
+  // Descarta instrumentos que se alejan demasiado del resto y deforman la curva
+  // (y el eje Y). El sanity filter de arriba solo corta valores absurdos; este
+  // es relativo a la forma de la propia curva.
+  const { kept, dropped } = rejectCurveOutliers(points);
+  // Tickers efectivamente graficados (en orden de DM) — los lee el popup para
+  // armar la tabla de instrumentos que componen la curva.
+  panel._curveTickers = kept.map((p) => p.ticker);
+
+  const subOut = dropped.length
+    ? ` · ${dropped.length} fuera de curva (${dropped.map((p) => p.ticker).join(", ")})`
+    : "";
+  if (sub) sub.textContent = `${kept.length} bonos · regresión logarítmica · ${yLabel} vs DM${subOut}`;
   if (ts) ts.textContent = sourceMonitor.ts
     ? `Act. ${fmt.timeHMS(new Date(sourceMonitor.ts))}`
     : "—";
@@ -4690,13 +5061,13 @@ function renderBondCurve(panel, sourceMonitor) {
   const sourceId = panel.getAttribute("data-source") || panel.getAttribute("data-id");
   let datasets;
   if (sourceMonitor.id === "bonares") {
-    const { al, gd } = splitBySeries(points);
+    const { al, gd } = splitBySeries(kept);
     datasets = [
       ...curvaDatasets(al, "#6ab4f7", "BONARES (AL/AO)", "top"),
       ...curvaDatasets(gd, "#f0c040", "GLOBALES (GD/AE)", "bottom"),
     ];
   } else {
-    datasets = curvaDatasets(points, CHART.ACCENT_BLUE, sourceMonitor.title || sourceId, "top");
+    datasets = curvaDatasets(kept, CHART.ACCENT_BLUE, sourceMonitor.title || sourceId, "top");
   }
 
   if (bondCurveCharts[sourceId]) {
@@ -4789,6 +5160,8 @@ function renderFuturosChart(panel, sourceMonitor) {
     }))
     .filter((p) => p.x != null && p.x > 0 && p.y != null && Number.isFinite(p.y))
     .sort((a, b) => a.x - b.x);
+  // Contratos graficados (en orden de días al vto) — para la tabla del popup.
+  panel._curveTickers = points.map((p) => p.ticker);
 
   if (sub) sub.textContent = `${points.length} contratos · regresión logarítmica · TNA implícita vs días al vto`;
   if (ts) ts.textContent = sourceMonitor.ts
