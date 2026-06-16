@@ -105,6 +105,7 @@ Monitores - Data912/
 │   │   ├── futures_provider.py         # RofexProvider — WS público matba/primary, sin auth, thread daemon persistente
 │   │   ├── rem_provider.py             # REMProvider (BCRA expectations API, TTL 6h)
 │   │   ├── cafci_provider.py           # CAFCIProvider (FCI: catálogo + matriz rendimientos diaria, fetch 1×/día, disk-mirror, offline-friendly)
+│   │   ├── lseg_provider.py            # LSEGWorkspaceProvider — Eikon Data API vía SDK lseg-data; Desktop Session (REQUIERE Workspace Desktop abierto+logueado en la misma máquina, handshake localhost:9000). Genérico get_data/get_history. App key en .env (LSEG_APP_KEY). OJO: lseg-data exige pandas<3 → vive en venv AISLADO .venv-lseg (requirements-lseg.txt), NO en el entorno del monitor (pandas 3.0.3). Enlazado+probado, aún no enchufado a paneles.
 │   │   └── ons_sync.py                 # Background sync de ONs nuevas detectadas en arg_corp (1×/día, replaces legacy ONs/updater.py)
 │   ├── use_cases/
 │   │   └── generate_report.py          # GenerateMonitorReport.execute(types) -> [InstrumentMetrics]
@@ -162,7 +163,7 @@ Monitores - Data912/
 **Nunca**:
 - Hardcodear listas de tickers en un monitor (usar `instrument_groups.py`).
 - Crear un cliente HTTP nuevo para precios live (usar `Data912MarketDataProvider`).
-- Crear un cliente HTTP nuevo para otra fuente sin pasar por `core/infrastructure/_http.py::http_get_json` (perdés el retry sobre transients).
+- Crear un cliente HTTP nuevo para otra fuente sin pasar por `core/infrastructure/_http.py::http_get_json` (perdés el retry sobre transients). Excepción: SDKs de vendor que gestionan su propia conexión (Matba/Primary WS en `futures_provider.py`; `lseg-data` en `lseg_provider.py`).
 - Reimplementar TIR / duration / NPV (usar `FinancialEngine`).
 - Reimplementar cashflow synthesis (usar `cashflow_synth.synth_cashflows`).
 - Leer el Excel maestro fuera de `ExcelInstrumentsRepository` (excepción permitida: `instruments_abm.py` para CRUD vía openpyxl).

@@ -1,0 +1,17 @@
+# LSEG Workspace / Eikon Data API — entorno AISLADO.
+#
+# Por qué separado: lseg-data exige pandas<3, y el monitor corre sobre
+# pandas==3.0.3 (ver requirements.txt). Para no degradar el monitor, lseg-data
+# vive en su propio venv y NO se mezcla con el entorno principal.
+#
+# Setup (una vez):
+#   python -m venv .venv-lseg
+#   .venv-lseg\Scripts\python.exe -m pip install -r requirements-lseg.txt
+#
+# Uso:
+#   .venv-lseg\Scripts\python.exe scripts/lseg_connection_test.py
+#
+# Requiere LSEG Workspace abierto y logueado en esta máquina (handshake
+# localhost:9000) y LSEG_APP_KEY en .env.
+
+lseg-data==2.1.1
