@@ -39,6 +39,12 @@ scratch/
 data/history/cafci_diario.json
 data/history/cafci_composicion/
 
+# Caches rolling de precios diarios (ventana de 7 días, ver server.py
+# _save_bond_prices / _save_fx_prices). Solo se usan de fallback para el % de
+# variación diaria; la app los reescribe en cada ciclo. No son fuente de verdad.
+data/history/bond_prices_daily.json
+data/history/fx_prices_daily.json
+
 # Claude Code: settings personales/por-máquina (permisos locales).
 # El settings.json compartido (si existiera) sí se versiona.
 .claude/settings.local.json
