@@ -46,6 +46,14 @@ data/history/cafci_composicion/
 data/history/bond_prices_daily.json
 data/history/fx_prices_daily.json
 
+# Series diarias regenerables (se reescriben en cada ciclo de fetch desde la
+# API/fuente). Cambian todos los días y no son fuente de verdad. NO se incluye
+# instruments_master.xlsx, que SÍ se versiona (fuente de verdad de instrumentos).
+data/history/a3500_diario.csv
+data/history/ccl_diario.json
+data/history/reservas_diario.csv
+data/history/tamar_diario.csv
+
 # Claude Code: settings personales/por-máquina (permisos locales).
 # El settings.json compartido (si existiera) sí se versiona.
 .claude/settings.local.json

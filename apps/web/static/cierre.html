@@ -388,16 +388,19 @@ async function fetchAndRender() {
     (data.monitors || []).map(m => [m.id, m.rows || []])
   );
 
-  // Acciones
+  // Acciones — privilegiar panel principal; completar con panel general si faltan.
   const stocks = byId.panel_lider || [];
-  const ganadores = [...stocks]
-    .filter(s => (s.change_pct ?? 0) > 0)
-    .sort((a,b) => (b.change_pct??0) - (a.change_pct??0))
-    .slice(0, 5);
-  const perdedores = [...stocks]
-    .filter(s => (s.change_pct ?? 0) < 0)
-    .sort((a,b) => (a.change_pct??0) - (b.change_pct??0))
-    .slice(0, 5);
+  // dir > 0 → ganadores (mayor suba primero); dir < 0 → perdedores (mayor baja primero).
+  const topMovers = (dir, n) => {
+    const sorted = list => list
+      .filter(s => Math.sign(s.change_pct ?? 0) === dir)
+      .sort((a,b) => dir * ((b.change_pct??0) - (a.change_pct??0)));
+    const principal = sorted(stocks.filter(s => s.panel === 'principal'));
+    const general   = sorted(stocks.filter(s => s.panel !== 'principal'));
+    return [...principal, ...general].slice(0, n);
+  };
+  const ganadores  = topMovers(1,  5);
+  const perdedores = topMovers(-1, 5);
   renderAcciones(ganadores, perdedores);
 
   // Soberanos — "bonares" panel contiene AL* y GD*

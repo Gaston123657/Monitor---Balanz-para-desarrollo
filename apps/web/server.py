@@ -20,7 +20,8 @@ import pandas as pd
 from apps.web import bond_detail, instruments_abm
 from config.settings import DATA_DIR, MASTER_XLSX, setup_logging
 from core.domain.instrument_groups import (
-    BOPREALES, CER, DOLAR_LINKED, DUAL_TAMAR, ONS, PANEL_LIDER, SOBERANOS, TAMAR, TASA_FIJA,
+    BOPREALES, CER, DOLAR_LINKED, DUAL_TAMAR, ONS, PANEL_LIDER, PANEL_PRINCIPAL,
+    SOBERANOS, TAMAR, TASA_FIJA,
 )
 from core.infrastructure.repositories import ExcelInstrumentsRepository, Data912MarketDataProvider
 from core.use_cases.generate_report import GenerateMonitorReport
@@ -720,10 +721,18 @@ def _refresh_fx_strip(ctx: _RefreshContext, snapshot: Snapshot) -> None:
         except Exception:
             logger.debug("Riesgo País fetch skipped", exc_info=True)
 
-        # Variación diaria FX: dolarapi no la provee → calcular vs último día hábil
+        # Variación diaria FX: dolarapi no la provee → calcular vs cierre anterior.
+        # Baseline: acumulado local (último día hábil guardado); si todavía no
+        # hay día previo (arranque/instalación fresca), se cae al cierre oficial
+        # del día anterior de ArgentinaDatos.
         _load_fx_prices()
         today_str = date.today().isoformat()
         prev_fx   = _fx_prices.get(_last_available_date(_fx_prices) or "", {})
+        try:
+            from core.infrastructure.argentinadatos_provider import get_provider as _ard
+            ad_prev = _ard().get_dolares_prev_close()
+        except Exception:
+            ad_prev = {}
         today_fx: dict = {}
         for casa, q in fx_data.items():
             if not isinstance(q, dict) or casa.startswith("_"):
@@ -732,6 +741,9 @@ def _refresh_fx_strip(ctx: _RefreshContext, snapshot: Snapshot) -> None:
             if venta:
                 today_fx[casa] = venta
             prev_v = prev_fx.get(casa)
+            if prev_v is None:
+                ad_q = ad_prev.get(casa)
+                prev_v = ad_q.get("venta") if ad_q else None
             if venta and prev_v:
                 q["change_pct"] = round((venta / prev_v - 1) * 100, 2)
         if today_fx:
@@ -1124,6 +1136,7 @@ def _refresh_panel_lider(ctx: _RefreshContext, snapshot: Snapshot) -> None:
             spark = [float(r["c"]) for r in (hist[-30:] if hist else []) if r.get("c") is not None]
             rows_stocks.append({
                 "ticker": t,
+                "panel": "principal" if t in PANEL_PRINCIPAL else "general",
                 "bid": s.bid, "ask": s.ask, "mid": mid,
                 "change_pct": s.change_pct,
                 "change_5d": _pct_change(mid, close_5d),
