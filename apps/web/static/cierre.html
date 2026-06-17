@@ -59,6 +59,9 @@
   .kpi-box .kpi-delta{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
   .kpi-box .kpi-delta.pos{background:rgba(31,140,59,.30);color:#7EEEA0;border:1px solid rgba(31,140,59,.40)}
   .kpi-box .kpi-delta.neg{background:rgba(204,34,51,.30);color:#FFAAB0;border:1px solid rgba(204,34,51,.40)}
+  .kpi-box .kpi-date{font-size:7.5px;letter-spacing:.08em;color:rgba(255,255,255,.45);font-weight:600;margin-top:2px;text-transform:uppercase}
+  .kpi-box .kpi-date.stale{color:#FFC663}
+  .kpi-box .kpi-date.stale::before{content:"⚠ ";}
   .rp-loading{color:rgba(255,255,255,.4);font-size:12px}
 
   /* CONTENT */
@@ -149,6 +152,7 @@
         <div>
           <div class="kpi-lbl">Riesgo País</div>
           <div class="kpi-val" id="rp-val"><span class="rp-loading">…</span></div>
+          <div class="kpi-date" id="rp-date"></div>
         </div>
         <div class="kpi-delta" id="rp-delta"></div>
       </div>
@@ -239,6 +243,15 @@ const F = {
   timeStr: () => {
     const d = new Date();
     return d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+  },
+  // ISO (YYYY-MM-DD) → "15 JUN". Parseo manual para evitar el corrimiento de
+  // zona horaria que mete `new Date('2026-06-15')` (lo interpreta como UTC).
+  fechaCorta: (iso) => {
+    if (!iso) return '';
+    const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return '';
+    const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    return `${+m[3]} ${meses[+m[2] - 1]}`;
   }
 };
 
@@ -274,12 +287,23 @@ function renderFx(fxMap) {
 function renderRiesgoPais(rp) {
   const valEl   = document.getElementById('rp-val');
   const deltaEl = document.getElementById('rp-delta');
-  if (!rp || rp.valor == null) { valEl.textContent = '—'; return; }
+  const dateEl  = document.getElementById('rp-date');
+  if (!rp || rp.valor == null) { valEl.textContent = '—'; if (dateEl) dateEl.textContent = ''; return; }
   valEl.textContent = F.num(rp.valor, 0) + ' pb';
   const d = rp.delta_abs;
   if (d != null) {
     deltaEl.className = 'kpi-delta ' + (d <= 0 ? 'pos' : 'neg');
     deltaEl.textContent = (d >= 0 ? '+' : '') + d + ' pb';
+  } else {
+    deltaEl.textContent = '';
+  }
+  // Fecha del dato realmente mostrado + aviso si quedó atrasado.
+  if (dateEl) {
+    dateEl.textContent = rp.fecha ? 'al ' + F.fechaCorta(rp.fecha) : '';
+    dateEl.classList.toggle('stale', !!rp.stale);
+    dateEl.title = rp.stale
+      ? 'Último dato publicado por ArgentinaDatos; aún no refleja la rueda más reciente'
+      : '';
   }
 }
 
