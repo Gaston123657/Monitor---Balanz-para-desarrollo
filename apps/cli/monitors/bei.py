@@ -519,9 +519,28 @@ def compute_bei_tables(
         "nom_n": len(nominal_points), "real_n": len(real_boot),
         "tamar_n": len(tamar_points), "dlr_n": len(dlr_points),
     }
+
+    # Bundle de la curva de pesos (tasa fija) para los sintéticos de dólar:
+    # la curva NSS ajustada + el rango observado + la lista de instrumentos
+    # tasa fija (tenor, ticker, TIR) para el cruce contra el bono real más
+    # cercano. Objeto Python — lo cachea el server, no se serializa a JSON.
+    peso_instruments = []
+    for m in m_tasa_fija:
+        inst = m.snapshot.instrument
+        if m.tir is None or not inst or not inst.maturity_date:
+            continue
+        yrs = (inst.maturity_date - today).days / 365.25
+        if yrs > 0 and -0.5 < m.tir < 5.0:
+            peso_instruments.append((yrs, inst.ticker, m.tir))
+
     return {
         "tenor": tenor_rows,
         "sendero": sendero_rows,
         "pares": pair_rows,
         "meta": meta,
+        "peso_curve": {
+            "curve": nom_curve,
+            "t_range": nom_range,
+            "instruments": peso_instruments,
+        },
     }

@@ -60,6 +60,14 @@ def _is_shutdown_error(exc: Exception) -> bool:
 _BEI_HISTORY_CACHE: dict = {}
 _BEI_HISTORY_LOCK = threading.Lock()
 
+# Curva de pesos (tasa fija) que ajusta el hilo BEI cada 5 min, cacheada en
+# proceso para que el loop rápido (~5s) compute los sintéticos de dólar contra
+# precios de futuros vivos sin re-ajustar la curva. Objeto Python (curva NSS +
+# instrumentos), nunca se serializa. Lock por el patrón check-then-use entre
+# el hilo BEI (writer) y el loop rápido (reader).
+_PESO_CURVE_CACHE: dict = {}
+_PESO_CURVE_LOCK = threading.Lock()
+
 # Precios diarios de bonos: fallback para change_pct cuando Data912 no lo provee.
 _BOND_PRICES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "history", "bond_prices_daily.json")
 _bond_prices: dict = {}          # {"YYYY-MM-DD": {"TICKER": price}}
@@ -282,6 +290,26 @@ def _get_columns(monitor_id: str):
             {"key": "open_interest", "label": "OP.INT", "kind": "volume"},
             {"key": "volume", "label": "Vol", "kind": "volume"},
         ],
+        "dlr_carry": [
+            {"key": "label", "label": "Contrato", "kind": "text"},
+            {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
+            {"key": "tea_fut", "label": "TEA fut.", "kind": "percent", "decimals": 2},
+            {"key": "tea_pesos", "label": "TEA pesos", "kind": "percent", "decimals": 2},
+            {"key": "carry", "label": "Carry (pp)", "kind": "percent_signed", "decimals": 2},
+            {"key": "basis", "label": "Basis $", "kind": "number", "decimals": 1},
+            {"key": "inst_ticker", "label": "Bono cercano", "kind": "text"},
+            {"key": "tea_pesos_inst", "label": "TEA bono", "kind": "percent", "decimals": 2},
+            {"key": "carry_inst", "label": "Carry bono", "kind": "percent_signed", "decimals": 2},
+            {"key": "open_interest", "label": "OP.INT", "kind": "volume"},
+        ],
+        "dlr_cobertura": [
+            {"key": "label", "label": "Mes", "kind": "text"},
+            {"key": "dolar_futuro", "label": "Dólar futuro", "kind": "number", "decimals": 1},
+            {"key": "vs_spot", "label": "vs Spot", "kind": "percent_signed", "decimals": 2},
+            {"key": "costo_cob_tea", "label": "Costo cob. (TEA)", "kind": "percent", "decimals": 2},
+            {"key": "costo_mensual", "label": "Costo mensual", "kind": "percent", "decimals": 2},
+            {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
+        ],
         "panel_lider": [
             {"key": "ticker", "label": "Ticker", "kind": "text"},
             {"key": "bid", "label": "Compra", "kind": "number", "decimals": 2},
@@ -347,6 +375,8 @@ class Snapshot:
                 {"id": "ons_ny", "title": "ONs · LEY NEW YORK", "status": "loading", "rows": [], "columns": _get_columns("ons_ny")},
                 {"id": "ons_ar", "title": "ONs · LEY ARGENTINA", "status": "loading", "rows": [], "columns": _get_columns("ons_ar")},
                 {"id": "futuros", "title": "FUTUROS ROFEX", "status": "loading", "rows": [], "columns": _get_columns("futuros")},
+                {"id": "dlr_carry", "title": "SINTÉTICOS DLR · CARRY", "status": "loading", "rows": [], "columns": _get_columns("dlr_carry")},
+                {"id": "dlr_cobertura", "title": "COSTO DE COBERTURA", "status": "loading", "rows": [], "columns": _get_columns("dlr_cobertura")},
                 {"id": "panel_lider", "title": "PANEL LÍDER (Acciones)", "status": "loading", "rows": [], "columns": _get_columns("panel_lider")},
                 {"id": "bei_tenor", "title": "BEI POR TENOR (NSS + Fisher)", "status": "loading", "rows": [], "columns": _get_columns("bei_tenor")},
                 {"id": "bei_sendero", "title": "SENDERO MENSUAL · BEI vs REM-BCRA", "status": "loading", "rows": [], "columns": _get_columns("bei_sendero")},
@@ -1022,6 +1052,61 @@ def _refresh_futuros(ctx: _RefreshContext, snapshot: Snapshot) -> None:
                                 subtitle=f"Error en refresh: {type(e).__name__}")
 
 
+def _refresh_dlr_synthetics(ctx: _RefreshContext, snapshot: Snapshot) -> None:
+    """Sintéticos de dólar: carry (TEA pesos vs deval implícita) y costo de
+    cobertura. Reusa futuros DLR vivos + la curva de pesos cacheada por el hilo
+    BEI. La curva sólo afecta a las columnas de carry; cobertura no la necesita.
+    """
+    from core.domain.dlr_synthetics import build_synthetic_rows
+    try:
+        quotes = ctx.rofex.get_quotes(ctx.rofex_symbols)
+        spot = ctx.resolve_spot_for_tna(ctx.fx, ctx.bcra)
+        with _PESO_CURVE_LOCK:
+            peso_curve = _PESO_CURVE_CACHE.get("bundle")
+
+        rows = build_synthetic_rows(quotes, ctx.rofex_symbols, spot, date.today(), peso_curve)
+        if not rows:
+            # Sin spot o sin contratos con precio → mantené loading (curva BEI
+            # corre eager al boot; los futuros tardan ~1-2s en calentar).
+            snapshot.update_monitor("dlr_carry", status="loading")
+            snapshot.update_monitor("dlr_cobertura", status="loading")
+            return
+
+        spot_sub = f"Spot de cierre: {spot:,.2f}"
+        curve_ready = bool(peso_curve and peso_curve.get("curve") is not None)
+        carry_sub = spot_sub if curve_ready else f"{spot_sub} · curva en pesos cargando…"
+
+        carry_rows = [{
+            "label": r["label"],
+            "dias": r["dias"],
+            "tea_fut": _scale_pct(r["tea_fut"]),
+            "tea_pesos": _scale_pct(r["tea_pesos"]),
+            "carry": _scale_pct(r["carry"]),
+            "basis": r["basis"],
+            "inst_ticker": r["inst_ticker"],
+            "tea_pesos_inst": _scale_pct(r["tea_pesos_inst"]),
+            "carry_inst": _scale_pct(r["carry_inst"]),
+            "open_interest": r["open_interest"],
+        } for r in rows]
+
+        cobertura_rows = [{
+            "label": r["label"],
+            "dolar_futuro": r["strike"],
+            "vs_spot": _scale_pct(r["vs_spot"]),
+            "costo_cob_tea": _scale_pct(r["tea_fut"]),
+            "costo_mensual": _scale_pct(r["costo_mensual"]),
+            "dias": r["dias"],
+        } for r in rows]
+
+        snapshot.update_monitor("dlr_carry", rows=carry_rows, subtitle=carry_sub, status="ok")
+        snapshot.update_monitor("dlr_cobertura", rows=cobertura_rows, subtitle=spot_sub, status="ok")
+    except Exception as e:
+        logger.exception("Monitor 'dlr_synthetics' refresh failed")
+        msg = f"Error en refresh: {type(e).__name__}"
+        snapshot.update_monitor("dlr_carry", status="error", subtitle=msg)
+        snapshot.update_monitor("dlr_cobertura", status="error", subtitle=msg)
+
+
 def _refresh_panel_lider(ctx: _RefreshContext, snapshot: Snapshot) -> None:
     """Acciones BYMA: mid + 5d/30d change + sparkline 30-trading-day."""
     try:
@@ -1135,6 +1220,7 @@ def _refresh_loop(snapshot: Snapshot):
         _refresh_fx_strip(ctx, snapshot)
         _refresh_bond_panels(ctx, snapshot, today)
         _refresh_futuros(ctx, snapshot)
+        _refresh_dlr_synthetics(ctx, snapshot)
         _refresh_panel_lider(ctx, snapshot)
 
         elapsed = time.monotonic() - loop_start
@@ -1204,6 +1290,13 @@ def _bei_refresh_loop(snapshot: Snapshot):
                     "delta_m1": _scale_pct(r["delta_m1"]),
                     "infl_mensual_impl": _scale_pct(r["infl_mensual_impl"]),
                 } for r in tables["pares"]]
+
+                # Publicar la curva de pesos para los sintéticos de dólar (loop
+                # rápido). Sólo si NSS/NS/lineal ajustó (curve no nula).
+                pc = tables.get("peso_curve")
+                if pc and pc.get("curve") is not None:
+                    with _PESO_CURVE_LOCK:
+                        _PESO_CURVE_CACHE["bundle"] = pc
 
                 snapshot.update_monitor("bei_tenor", rows=tenor_rows,
                                         subtitle=subtitle, status="ok")
@@ -1351,6 +1444,7 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/ons-calendar", "/ons_calendar.html"): return self._serve_static("ons_calendar.html")
         if path in ("/bcra", "/bcra.html"): return self._serve_static("bcra.html")
         if path in ("/cierre", "/cierre.html"): return self._serve_static("cierre.html")
+        if path in ("/detalle-futuros", "/detalle_futuros.html"): return self._serve_static("detalle_futuros.html")
         if path.startswith("/static/"): return self._serve_static(path[len("/static/"):])
         self._send(HTTPStatus.NOT_FOUND, b"not found", "text/plain")
 

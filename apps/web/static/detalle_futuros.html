@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070f24" />
+  <title>Detalle Dólar Futuro · Balanz</title>
+  <!-- Tema oscuro/claro: aplicar antes del paint (mismo storage que el dashboard). -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("monitor-theme");
+        document.documentElement.setAttribute("data-theme",
+          (t === "light") ? "light" : "dark");
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="/static/style.css?v=45" />
+  <style>
+    /* Layout propio de la página (los paneles reusan estilos de style.css). */
+    .df-page { padding: 16px; max-width: 1600px; margin: 0 auto; }
+    .df-head {
+      display: flex; align-items: baseline; gap: 14px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .df-head h1 {
+      font-size: 18px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--text); margin: 0;
+    }
+    .df-head .df-status { font-size: 12px; color: var(--text-dim); }
+    /* Botón de captura empujado al extremo derecho del header. */
+    .df-head .df-capture { margin-left: auto; align-self: center; }
+    .df-page.capturing .df-capture { visibility: hidden; }
+    .df-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 880px) { .df-grid { grid-template-columns: 1fr; } }
+    .df-grid .panel { height: auto; }
+    .df-grid .chart-container { height: 300px; position: relative; }
+    /* Tabla más compacta: el panel de carry (más columnas) entra sin
+       barra de desplazamiento horizontal manteniendo ambos paneles simétricos. */
+    .df-grid table.bonds thead th,
+    .df-grid table.bonds tbody td { padding-left: 4px; padding-right: 4px; }
+    .df-grid table.bonds thead th:first-child,
+    .df-grid table.bonds tbody td:first-child { padding-left: 8px; }
+    .df-grid table.bonds thead th:last-child,
+    .df-grid table.bonds tbody td:last-child { padding-right: 8px; }
+    .df-grid table.bonds tbody td { font-size: 11px; }
+    .df-note {
+      margin-top: 14px; font-size: 11px; color: var(--text-dim);
+      line-height: 1.5; border-top: 1px solid var(--panel-border); padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="df-page">
+    <div class="df-head">
+      <h1>Detalle Dólar Futuro</h1>
+      <span class="df-status" id="df-status">Cargando…</span>
+      <button class="btn df-capture" id="df-capture" type="button"
+              aria-label="Capturar paneles como imagen PNG">Capturar</button>
+    </div>
+
+    <div class="df-grid">
+      <section class="panel panel-synth" data-id="dlr_carry">
+        <div class="panel-header">
+          <h2>SINTÉTICOS DLR · CARRY</h2>
+          <span class="panel-sub" data-role="subtitle"></span>
+        </div>
+        <div class="panel-body" data-role="body">
+          <div class="chart-container">
+            <canvas data-role="canvas" role="img"
+                    aria-label="Carry: TEA en pesos vs TEA devaluación implícita por contrato"></canvas>
+          </div>
+          <div data-role="synth-table"></div>
+        </div>
+      </section>
+
+      <section class="panel panel-synth" data-id="dlr_cobertura">
+        <div class="panel-header">
+          <h2>COSTO DE COBERTURA</h2>
+          <span class="panel-sub" data-role="subtitle"></span>
+        </div>
+        <div class="panel-body" data-role="body">
+          <div class="chart-container">
+            <canvas data-role="canvas" role="img"
+                    aria-label="Costo de cobertura: dólar futuro vs costo en TEA por mes"></canvas>
+          </div>
+          <div data-role="synth-table"></div>
+        </div>
+      </section>
+    </div>
+
+    <p class="df-note">
+      <strong>Carry</strong> = TEA en pesos (curva de tasa fija) − TEA del dólar futuro
+      (devaluación implícita), en puntos porcentuales. <strong>Costo de cobertura</strong>
+      = brecha del contrato vs spot anualizada (TEA); sólo representa ese costo si la
+      diferencia contra el spot efectivamente se materializa. El contrato más cercano se
+      omite del gráfico (su tasa anualizada se distorsiona con pocos días al vto) pero se
+      mantiene en la tabla.
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="/static/detalle_futuros.js?v=2"></script>
+</body>
+</html>
