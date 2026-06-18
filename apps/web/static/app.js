@@ -1283,7 +1283,12 @@ function openCurvePopup(monitorId, label, renderFn) {
   _renderCurvePopupTable(monitor, body._curveTickers || []);
   _curvePopupChart = bondCurveCharts[`popup_${monitorId}`] || null;
   // Forzar resize tras el reveal porque el canvas pasó de hidden a visible.
-  requestAnimationFrame(() => { if (_curvePopupChart) _curvePopupChart.resize(); });
+  // Doble rAF: el primer frame deja que el navegador aplique el layout del
+  // popup recién mostrado, el segundo redibuja el chart ya con tamaño real
+  // (evita que quede dibujado a 0×0 si se construyó antes del reflow).
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (_curvePopupChart) _curvePopupChart.resize();
+  }));
 }
 
 // Tabla compacta debajo de la curva: una fila por instrumento graficado, con
@@ -5010,6 +5015,24 @@ function closeSettings() {
 
 const bondCurveCharts = {};
 
+// Guard anti "Canvas is already in use" (Chart.js liga la instancia al elemento
+// canvas, no a nuestra clave de caché). El popup de curva es un singleton que
+// reusa el mismo <canvas>; si por cualquier camino (cleanup que falló en el
+// try/catch de closeCurvePopup, reapertura rápida, cambio de tipo de instrumento)
+// quedó una instancia colgada de este canvas que no está bajo la clave esperada,
+// `new Chart(canvas)` tiraría excepción y el canvas quedaría en negro. Destruir
+// la instancia previa antes de recrear evita el cuelgue. Limpia también su
+// entrada de caché para no dejar referencias muertas.
+function _releaseCanvasChart(canvas) {
+  if (!canvas || !window.Chart || typeof Chart.getChart !== "function") return;
+  const existing = Chart.getChart(canvas);
+  if (!existing) return;
+  try { existing.destroy(); } catch {}
+  for (const k of Object.keys(bondCurveCharts)) {
+    if (bondCurveCharts[k] === existing) delete bondCurveCharts[k];
+  }
+}
+
 // LECAPs/BONCAPs se muestran al usuario en TNA (no TIR). El resto de los
 // bonos van en TIR — convención del panel. Mapeo source-id → row field.
 const CURVE_Y_FIELD_BY_ID = {
@@ -5079,6 +5102,7 @@ function renderBondCurve(panel, sourceMonitor) {
   if (window.Chart && window.ChartDataLabels) {
     try { Chart.register(ChartDataLabels); } catch {}
   }
+  _releaseCanvasChart(canvas);
   bondCurveCharts[sourceId] = new Chart(canvas.getContext("2d"), {
     type: "scatter",
     data: { datasets },
@@ -5213,6 +5237,7 @@ function renderFuturosChart(panel, sourceMonitor) {
   if (window.Chart && window.ChartDataLabels) {
     try { Chart.register(ChartDataLabels); } catch {}
   }
+  _releaseCanvasChart(canvas);
   bondCurveCharts[sourceId] = new Chart(canvas.getContext("2d"), {
     type: "scatter",
     data: { datasets },
