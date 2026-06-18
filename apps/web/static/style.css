@@ -923,6 +923,13 @@ table.bonds tbody td.col-text:not(:first-child) {
   text-align: left;
 }
 
+/* Emisor (col "nombre" en ONs): centrado en header y celdas, override del
+   left por default de las columnas de texto. */
+table.bonds thead th.col-emisor,
+table.bonds tbody td.col-emisor:not(:first-child) {
+  text-align: center;
+}
+
 /* CER · columna "Categoría" (col 2 después de Ticker) alineada a la derecha. */
 .panel[data-id="cer"] table.bonds thead th:nth-child(2),
 .panel[data-id="cer"] table.bonds tbody td:nth-child(2) {

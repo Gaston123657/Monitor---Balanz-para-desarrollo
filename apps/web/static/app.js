@@ -243,6 +243,7 @@ function renderCell(col, value, ctx) {
   switch (col.kind) {
     case "text":
       td.classList.add("col-text");
+      if (col.key === "nombre") td.classList.add("col-emisor");
       td.textContent = fmt.text(value);
       if (col.key === "ticker") {
         td.classList.add("ticker");
@@ -466,6 +467,7 @@ function renderPanel(panel, monitor) {
     const th = document.createElement("th");
     th.textContent = col.label;
     if (col.kind === "text" || col.kind === "date") th.classList.add("col-text");
+    if (col.key === "nombre") th.classList.add("col-emisor");
     if (!UNSORTABLE_KINDS.has(col.kind)) {
       th.classList.add("sortable");
       if (sort && sort.key === col.key && sort.dir) {
@@ -1192,13 +1194,44 @@ const CURVE_POPUP_SOURCES = new Set([
   "dolar_linked", "tamar", "ons_ny", "ons_ar",
 ]);
 
-// Columnas con fondo tipo heatmap en la tabla del popup de curva. RGB base; la
-// intensidad (alpha) la modula _renderCurvePopupTable según el valor relativo.
-// TIR → gama verde · Paridad → gama roja.
-const CURVE_HEATMAP_COLS = {
-  tir:    [46, 160, 67],
-  parity: [205, 60, 55],
+// Columnas con fondo tipo heatmap en la tabla del popup de curva. Antes cada
+// columna tenía un único RGB y solo se modulaba el alpha → poca diferenciación
+// entre valores cercanos. Ahora cada columna define una RAMPA de varios stops
+// que se interpola según el valor relativo, abriendo la gama de colores: los
+// valores bajos toman un tono frío/oscuro y los altos un tono cálido/vivo.
+// TIR → familia verde · Paridad → familia roja-cálida.
+const CURVE_HEATMAP_RAMPS = {
+  tir: [
+    [33, 102, 80],    // bajo  · verde-azulado oscuro
+    [46, 160, 67],    //       · verde medio
+    [120, 198, 83],   //       · verde lima
+    [205, 230, 110],  // alto  · verde-amarillo
+  ],
+  parity: [
+    [122, 70, 110],   // bajo  · ciruela
+    [205, 60, 55],    //       · rojo medio
+    [240, 130, 60],   //       · naranja
+    [248, 205, 95],   // alto  · amarillo cálido
+  ],
 };
+
+// Interpola la rampa de una columna en t∈[0,1] y devuelve un rgba() listo para
+// usar como background. El alpha sube levemente con el valor para reforzar la
+// lectura, pero el peso de la diferenciación lo lleva ahora el tono.
+function heatmapColor(key, t) {
+  const ramp = CURVE_HEATMAP_RAMPS[key];
+  if (!ramp) return null;
+  const x = Math.max(0, Math.min(1, t));
+  const seg = x * (ramp.length - 1);
+  const i = Math.min(Math.floor(seg), ramp.length - 2);
+  const f = seg - i;
+  const lerp = (a, b) => Math.round(a + (b - a) * f);
+  const r = lerp(ramp[i][0], ramp[i + 1][0]);
+  const g = lerp(ramp[i][1], ramp[i + 1][1]);
+  const b = lerp(ramp[i][2], ramp[i + 1][2]);
+  const a = (0.3 + x * 0.5).toFixed(3);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
 
 // Singleton del popup: una sola instancia DOM reutilizada — al cerrar se
 // destruye el Chart.js pero el contenedor queda en el body para próxima vez.
@@ -1337,7 +1370,7 @@ function _renderCurvePopupTable(monitor, tickers) {
   // relativa al min/máx de los instrumentos mostrados (alto = color fuerte,
   // bajo = tenue). Solo se aplica si la columna existe en este monitor.
   const heatRanges = {};
-  for (const key of Object.keys(CURVE_HEATMAP_COLS)) {
+  for (const key of Object.keys(CURVE_HEATMAP_RAMPS)) {
     if (!cols.some((c) => c.key === key)) continue;
     let mn = Infinity, mx = -Infinity;
     for (const r of rows) {
@@ -1361,6 +1394,7 @@ function _renderCurvePopupTable(monitor, tickers) {
     const th = document.createElement("th");
     th.textContent = col.label;
     if (col.kind === "text" || col.kind === "date") th.classList.add("col-text");
+    if (col.key === "nombre") th.classList.add("col-emisor");
     trh.appendChild(th);
   });
   thead.appendChild(trh);
@@ -1374,11 +1408,9 @@ function _renderCurvePopupTable(monitor, tickers) {
       const rg = heatRanges[col.key];
       const v = Number(row[col.key]);
       if (rg && Number.isFinite(v)) {
-        // t = 1 en el máximo (color fuerte), 0 en el mínimo (tenue).
+        // t = 1 en el máximo (tono cálido/vivo), 0 en el mínimo (frío/tenue).
         const t = rg.mx > rg.mn ? (v - rg.mn) / (rg.mx - rg.mn) : 0.5;
-        const a = (0.12 + t * 0.6).toFixed(3);
-        const [r, g, b] = CURVE_HEATMAP_COLS[col.key];
-        td.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+        td.style.backgroundColor = heatmapColor(col.key, t);
         td.classList.add("heat-cell");
       }
       tr.appendChild(td);
