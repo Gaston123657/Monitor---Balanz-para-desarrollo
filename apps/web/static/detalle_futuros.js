@@ -52,6 +52,7 @@
   // Celda de tabla según el `kind` del schema (subset de los kinds del dashboard).
   function cell(col, value) {
     const td = document.createElement("td");
+    if (col.align === "center") td.classList.add("col-center");
     if (value === null || value === undefined) {
       td.textContent = "–";
       td.classList.add("empty");
@@ -104,6 +105,7 @@
       const th = document.createElement("th");
       th.textContent = c.label;
       if (c.kind === "text") th.classList.add("col-text");
+      if (c.align === "center") th.classList.add("col-center");
       trh.appendChild(th);
     });
     thead.appendChild(trh);
