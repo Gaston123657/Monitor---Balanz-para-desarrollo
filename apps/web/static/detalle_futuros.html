@@ -39,6 +39,8 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
     }
     @media (max-width: 880px) { .df-grid { grid-template-columns: 1fr; } }
+    /* El sintético (más columnas) ocupa el ancho completo bajo carry+cobertura. */
+    .df-grid .df-wide { grid-column: 1 / -1; }
     .df-grid .panel { height: auto; }
     .df-grid .chart-container { height: 300px; position: relative; }
     /* Tabla más compacta: el panel de carry (más columnas) entra sin
@@ -93,6 +95,20 @@
           <div data-role="synth-table"></div>
         </div>
       </section>
+
+      <section class="panel panel-synth df-wide" data-id="dlr_sintetico">
+        <div class="panel-header">
+          <h2>SINTÉTICO DE TASA EN PESOS · DL + SHORT FUTURO</h2>
+          <span class="panel-sub" data-role="subtitle"></span>
+        </div>
+        <div class="panel-body" data-role="body">
+          <div class="chart-container">
+            <canvas data-role="canvas" role="img"
+                    aria-label="Tasa sintética en pesos (DL + short futuro) vs tasa fija por instrumento"></canvas>
+          </div>
+          <div data-role="synth-table"></div>
+        </div>
+      </section>
     </div>
 
     <p class="df-note">
@@ -103,11 +119,20 @@
       omite del gráfico (su tasa anualizada se distorsiona con pocos días al vto) pero se
       mantiene en la tabla.
     </p>
+    <p class="df-note">
+      <strong>Sintético de tasa en pesos</strong> = comprar un dólar-linked (par 100 USD)
+      + vender (short) el dólar futuro de vencimiento calzado. Las dos exposiciones al TC
+      oficial se cancelan y queda una tasa fija en pesos conocida hoy:
+      <code>TEA = (100·F / P_dl)^(365/d) − 1</code> (el spot se cancela). El
+      <strong>spread</strong> compara esa tasa contra la tasa fija directa (curva LECAP/BONCAP
+      y bono de plazo más cercano): un spread positivo indica que el sintético rinde más que
+      la tasa fija al mismo plazo. Cada DL se calza con el futuro de vencimiento más próximo.
+    </p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="/static/detalle_futuros.js?v=2"></script>
+  <script src="/static/detalle_futuros.js?v=5"></script>
 </body>
 </html>

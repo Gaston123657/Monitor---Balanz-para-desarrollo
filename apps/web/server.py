@@ -311,6 +311,19 @@ def _get_columns(monitor_id: str):
             {"key": "costo_mensual", "label": "Costo mensual", "kind": "percent", "decimals": 2},
             {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
         ],
+        "dlr_sintetico": [
+            {"key": "ticker", "label": "Dólar Linked", "kind": "text"},
+            {"key": "vto", "label": "Vto", "kind": "date"},
+            {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
+            {"key": "fut_label", "label": "Futuro", "kind": "text"},
+            {"key": "strike", "label": "Futuro $", "kind": "number", "decimals": 1},
+            {"key": "tna_sint", "label": "Sint. TNA", "kind": "percent", "decimals": 2},
+            {"key": "tea_sint", "label": "Sint. TEA", "kind": "percent", "decimals": 2},
+            {"key": "tea_fija", "label": "Fija TEA (curva)", "kind": "percent", "decimals": 2},
+            {"key": "spread", "label": "Spread (pp)", "kind": "percent_signed", "decimals": 2},
+            {"key": "inst_ticker", "label": "Bono ref.", "kind": "text"},
+            {"key": "spread_inst", "label": "Spread bono (pp)", "kind": "percent_signed", "decimals": 2},
+        ],
         "panel_lider": [
             {"key": "ticker", "label": "Ticker", "kind": "text"},
             {"key": "bid", "label": "Compra", "kind": "number", "decimals": 2},
@@ -378,6 +391,7 @@ class Snapshot:
                 {"id": "futuros", "title": "FUTUROS ROFEX", "status": "loading", "rows": [], "columns": _get_columns("futuros")},
                 {"id": "dlr_carry", "title": "SINTÉTICOS DLR · CARRY", "status": "loading", "rows": [], "columns": _get_columns("dlr_carry")},
                 {"id": "dlr_cobertura", "title": "COSTO DE COBERTURA", "status": "loading", "rows": [], "columns": _get_columns("dlr_cobertura")},
+                {"id": "dlr_sintetico", "title": "SINTÉTICO DE TASA EN PESOS (DL + short futuro)", "status": "loading", "rows": [], "columns": _get_columns("dlr_sintetico")},
                 {"id": "panel_lider", "title": "PANEL LÍDER (Acciones)", "status": "loading", "rows": [], "columns": _get_columns("panel_lider")},
                 {"id": "bei_tenor", "title": "BEI POR TENOR (NSS + Fisher)", "status": "loading", "rows": [], "columns": _get_columns("bei_tenor")},
                 {"id": "bei_sendero", "title": "SENDERO MENSUAL · BEI vs REM-BCRA", "status": "loading", "rows": [], "columns": _get_columns("bei_sendero")},
@@ -1064,12 +1078,31 @@ def _refresh_futuros(ctx: _RefreshContext, snapshot: Snapshot) -> None:
                                 subtitle=f"Error en refresh: {type(e).__name__}")
 
 
+def _fetch_dl_specs(ctx: _RefreshContext) -> List[dict]:
+    """Specs mínimos de los dólar-linked (ticker, vto, precio en pesos) para el
+    sintético de tasa. Reusa el snapshot Data912 cacheado (TTL 3s) → barato."""
+    specs: List[dict] = []
+    try:
+        for m in ctx.use_case.execute(list(DOLAR_LINKED)):
+            inst = m.snapshot.instrument
+            if inst and m.snapshot.price:
+                specs.append({
+                    "ticker": inst.ticker,
+                    "maturity": inst.maturity_date,
+                    "price": m.snapshot.price,
+                })
+    except Exception:
+        logger.debug("DL specs fetch para sintético falló", exc_info=True)
+    return specs
+
+
 def _refresh_dlr_synthetics(ctx: _RefreshContext, snapshot: Snapshot) -> None:
-    """Sintéticos de dólar: carry (TEA pesos vs deval implícita) y costo de
-    cobertura. Reusa futuros DLR vivos + la curva de pesos cacheada por el hilo
-    BEI. La curva sólo afecta a las columnas de carry; cobertura no la necesita.
+    """Sintéticos de dólar: carry (TEA pesos vs deval implícita), costo de
+    cobertura y sintético de tasa en pesos (DL + short futuro). Reusa futuros
+    DLR vivos + la curva de pesos cacheada por el hilo BEI. La curva sólo afecta
+    a las columnas de carry/spread; cobertura no la necesita.
     """
-    from core.domain.dlr_synthetics import build_synthetic_rows
+    from core.domain.dlr_synthetics import build_synthetic_rows, build_dl_synthetic_rows
     try:
         quotes = ctx.rofex.get_quotes(ctx.rofex_symbols)
         spot = ctx.resolve_spot_for_tna(ctx.fx, ctx.bcra)
@@ -1082,11 +1115,39 @@ def _refresh_dlr_synthetics(ctx: _RefreshContext, snapshot: Snapshot) -> None:
             # corre eager al boot; los futuros tardan ~1-2s en calentar).
             snapshot.update_monitor("dlr_carry", status="loading")
             snapshot.update_monitor("dlr_cobertura", status="loading")
+            snapshot.update_monitor("dlr_sintetico", status="loading")
             return
 
         spot_sub = f"Spot de cierre: {spot:,.2f}"
         curve_ready = bool(peso_curve and peso_curve.get("curve") is not None)
         carry_sub = spot_sub if curve_ready else f"{spot_sub} · curva en pesos cargando…"
+
+        # Sintético de tasa: cada DL calzado con su futuro de vto más cercano.
+        dl_specs = _fetch_dl_specs(ctx)
+        sint_raw = build_dl_synthetic_rows(
+            dl_specs, quotes, ctx.rofex_symbols, spot, date.today(), peso_curve
+        )
+        sint_rows = [{
+            "ticker": r["ticker"],
+            "vto": r["vto"],
+            "dias": r["dias"],
+            "fut_label": r["fut_label"],
+            "strike": r["strike"],
+            "tna_sint": _scale_pct(r["tna_sint"]),
+            "tea_sint": _scale_pct(r["tea_sint"]),
+            "tea_fija": _scale_pct(r["tea_fija"]),
+            # tna_fija no es columna de la tabla; alimenta el gráfico (en TNA).
+            "tna_fija": _scale_pct(r["tna_fija"]),
+            "spread": _scale_pct(r["spread"]),
+            "inst_ticker": r["inst_ticker"],
+            "spread_inst": _scale_pct(r["spread_inst"]),
+        } for r in sint_raw]
+        if sint_rows:
+            snapshot.update_monitor("dlr_sintetico", rows=sint_rows,
+                                    subtitle=carry_sub, status="ok")
+        else:
+            # Hay futuros pero ningún DL calzado todavía (curva/precios cargando).
+            snapshot.update_monitor("dlr_sintetico", status="loading")
 
         carry_rows = [{
             "label": r["label"],
@@ -1117,6 +1178,7 @@ def _refresh_dlr_synthetics(ctx: _RefreshContext, snapshot: Snapshot) -> None:
         msg = f"Error en refresh: {type(e).__name__}"
         snapshot.update_monitor("dlr_carry", status="error", subtitle=msg)
         snapshot.update_monitor("dlr_cobertura", status="error", subtitle=msg)
+        snapshot.update_monitor("dlr_sintetico", status="error", subtitle=msg)
 
 
 def _refresh_panel_lider(ctx: _RefreshContext, snapshot: Snapshot) -> None:

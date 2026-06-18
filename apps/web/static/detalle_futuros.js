@@ -64,6 +64,14 @@
         td.classList.add("col-text");
         td.textContent = String(value);
         break;
+      case "date":
+        // El backend serializa fechas como "YYYY-MM-DD" → mostrar "dd/mm/yy".
+        td.classList.add("col-text");
+        {
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value));
+          td.textContent = m ? `${m[3]}/${m[2]}/${m[1].slice(2)}` : String(value);
+        }
+        break;
       case "percent":
         td.textContent = fmt.percent(value, dec ?? 2);
         break;
@@ -267,6 +275,68 @@
     });
   }
 
+  // Sintético de tasa en pesos: una línea por instrumento DL (ordenado por
+  // días). Compara la TNA sintética (DL + short futuro) contra la TNA fija
+  // (curva LECAP/BONCAP) al mismo plazo. Se muestra en TNA (no TEA); la tabla
+  // de abajo conserva su detalle. A diferencia del carry/cobertura, NO se omite
+  // el primer punto: cada fila es un instrumento distinto, no un contrato de
+  // futuro con front-month distorsionado.
+  function renderSintetico(panel, monitor) {
+    const ready = prep(panel, monitor);
+    if (!ready) return;
+    const P = palette();
+    const rows = ready.rows.slice().sort((a, b) => (a.dias || 0) - (b.dias || 0));
+    const labels = rows.map((r) => r.ticker);
+    const sint = rows.map((r) => r.tna_sint);
+    // Fallback: si el backend no manda tna_fija (server con código viejo),
+    // derivarla de tea_fija con la misma convención base 365 (TEA→TNA). Ambos
+    // valores llegan en unidades de % (ya escalados).
+    const teaToTna = (tea) => (tea === null || tea === undefined || Number.isNaN(tea))
+      ? null
+      : 365 * (Math.pow(1 + tea / 100, 1 / 365) - 1) * 100;
+    const fija = rows.map((r) => (r.tna_fija !== null && r.tna_fija !== undefined)
+      ? r.tna_fija
+      : teaToTna(r.tea_fija));
+    const datasets = [
+      { label: "Sintético TNA (DL + short futuro)", data: sint,
+        borderColor: ORANGE, backgroundColor: ORANGE, pointBackgroundColor: ORANGE,
+        borderWidth: 2.5, pointRadius: 3, tension: 0.25, spanGaps: true, datalabels: { display: false } },
+      { label: "Tasa fija TNA (curva)", data: fija,
+        borderColor: P.BLUE, backgroundColor: P.BLUE, pointBackgroundColor: P.BLUE,
+        borderWidth: 2.5, pointRadius: 3, tension: 0.25, spanGaps: true,
+        borderDash: [5, 4], datalabels: { display: false } },
+    ];
+    const yb = tightBounds([sint, fija]);
+    if (charts.sint) {
+      charts.sint.data.labels = labels;
+      charts.sint.data.datasets = datasets;
+      Object.assign(charts.sint.options.scales.y, yb);
+      charts.sint.update("none");
+      return;
+    }
+    charts.sint = new Chart(ready.canvas.getContext("2d"), {
+      type: "line",
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: axis(P, ""),
+          y: axis(P, "TNA %", Object.assign({
+            ticks: { color: P.TEXT_DIM, font: { size: 10 }, callback: (v) => `${fmt.number(v, 1)}%` },
+          }, yb)),
+        },
+        plugins: {
+          legend: legend(P), datalabels: { display: false },
+          tooltip: {
+            backgroundColor: P.NAVY, titleColor: "#fff", bodyColor: "#fff", padding: 10,
+            callbacks: { label: (it) => `${it.dataset.label}: ${it.parsed.y != null ? fmt.number(it.parsed.y, 2) + "%" : "–"}` },
+          },
+        },
+      },
+    });
+  }
+
   async function refresh() {
     const statusEl = document.getElementById("df-status");
     try {
@@ -275,10 +345,13 @@
       const snap = await r.json();
       const carry = (snap.monitors || []).find((m) => m.id === "dlr_carry");
       const cob = (snap.monitors || []).find((m) => m.id === "dlr_cobertura");
+      const sint = (snap.monitors || []).find((m) => m.id === "dlr_sintetico");
       const carryPanel = document.querySelector(".panel[data-id='dlr_carry']");
       const cobPanel = document.querySelector(".panel[data-id='dlr_cobertura']");
+      const sintPanel = document.querySelector(".panel[data-id='dlr_sintetico']");
       if (carry && carryPanel) renderCarry(carryPanel, carry);
       if (cob && cobPanel) renderCobertura(cobPanel, cob);
+      if (sint && sintPanel) renderSintetico(sintPanel, sint);
       if (statusEl) {
         const ts = snap.ts ? new Date(snap.ts).toLocaleTimeString("es-AR") : "";
         statusEl.textContent = ts ? `Actualizado ${ts}` : "En vivo";
