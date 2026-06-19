@@ -1181,11 +1181,16 @@ def _refresh_dlr_synthetics(ctx: _RefreshContext, snapshot: Snapshot) -> None:
 
 
 def _refresh_panel_lider(ctx: _RefreshContext, snapshot: Snapshot) -> None:
-    """Acciones BYMA: mid + 5d/30d change + sparkline 30-trading-day."""
+    """Acciones BYMA: mid + 5d/30d change + sparkline 30-trading-day.
+
+    Sólo el Panel Líder (índice S&P Merval = PANEL_PRINCIPAL); excluye Panel
+    General. La lista PANEL_LIDER abarca ambos paneles y la usa el cierre.
+    """
     try:
-        stock_snaps = ctx.provider.fetch_snapshots(PANEL_LIDER)
+        tickers = sorted(PANEL_PRINCIPAL)
+        stock_snaps = ctx.provider.fetch_snapshots(tickers)
         rows_stocks = []
-        for t in PANEL_LIDER:
+        for t in tickers:
             s = stock_snaps.get(t)
             if s is None:
                 continue

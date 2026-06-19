@@ -3546,7 +3546,8 @@ function _injectColumnButtons() {
 
     // Botones de curva y columnas: solo para paneles tabulares (no charts).
     // El panel FCI maneja sus propias columnas/filtros → omitir el botón ▦.
-    if (!panel.classList.contains("panel-curva") && monitorId !== "fci") {
+    // El panel fx_strip son chips (no tabla) → tampoco lleva botón de columnas.
+    if (!panel.classList.contains("panel-curva") && monitorId !== "fci" && monitorId !== "fx_strip") {
       // Botón de curva: solo para paneles de bonos (tienen tir + duration).
       if (CURVE_POPUP_SOURCES.has(monitorId)) {
         const curveBtn = document.createElement("button");
@@ -4588,7 +4589,10 @@ function abmInit() {
 // Photoshop"). El vendor sólo trae CSS .gs-12 / .gs-1, así que inyectamos
 // las reglas .gs-60 en tiempo de init — sin eso los ítems quedan invisibles
 // con width:8.333% del default 12-col.
-const LAYOUT_STORAGE_KEY = "monitor.layout.v11";
+// v12: la tira de dólares pasó a ser un panel de Gridstack (gs-id="fx_strip").
+// Bump de versión → el layout de fábrica nuevo se aplica limpio (la tira arriba)
+// sin colisionar con layouts guardados de la versión anterior.
+const LAYOUT_STORAGE_KEY = "monitor.layout.v12";
 
 // Recorta la altura del .grid-stack al fondo del último ítem visible + un
 // margen visual. Sin esto, los paneles ocultos vía display:none siguen
@@ -4767,7 +4771,7 @@ function initGridstack() {
 // =====================================================================
 
 const STORAGE = {
-  LAYOUT:       "monitor.layout.v10",
+  LAYOUT:       "monitor.layout.v12",  // = LAYOUT_STORAGE_KEY (clave canónica de layout)
   HIDDEN_COLS:  "monitor.hiddenCols.v1",
   PANEL_VIS:    "monitor.panelVisibility.v3",
   USER_DEFAULT: "monitor.userDefault.v1",
@@ -4777,26 +4781,28 @@ const STORAGE = {
 // Se aplica cuando el usuario no tiene ningún layout guardado (primera carga o
 // tras "Layout original") y como destino de "Layout original".
 const FACTORY_LAYOUT = [
+  // Fila superior full-width – tira de dólares + macro (USD/ARS, reservas, RP).
+  { id: "fx_strip",     x: 0,  y: 0,   w: 60, h: 14  },
   // Columna 0 – Bonares + LECAPS
-  { id: "bonares",      x: 0,  y: 0,   w: 15, h: 105 },
-  { id: "tasa_fija",    x: 0,  y: 105, w: 15, h: 130 },
+  { id: "bonares",      x: 0,  y: 14,  w: 15, h: 105 },
+  { id: "tasa_fija",    x: 0,  y: 119, w: 15, h: 130 },
   // Columna 1 – BOPREALES + Futuros + BEI Sendero
-  { id: "bopreales",    x: 15, y: 0,   w: 15, h: 65  },
-  { id: "futuros",      x: 15, y: 65,  w: 15, h: 70  },
-  { id: "bei_sendero",  x: 15, y: 135, w: 15, h: 100 },
+  { id: "bopreales",    x: 15, y: 14,  w: 15, h: 65  },
+  { id: "futuros",      x: 15, y: 79,  w: 15, h: 70  },
+  { id: "bei_sendero",  x: 15, y: 149, w: 15, h: 100 },
   // Columna 2 – CER + Dolar Linked + BEI Pares
-  { id: "cer",          x: 30, y: 0,   w: 15, h: 80  },
-  { id: "dolar_linked", x: 30, y: 80,  w: 15, h: 40  },
-  { id: "bei_pares",    x: 30, y: 120, w: 15, h: 115 },
+  { id: "cer",          x: 30, y: 14,  w: 15, h: 80  },
+  { id: "dolar_linked", x: 30, y: 94,  w: 15, h: 40  },
+  { id: "bei_pares",    x: 30, y: 134, w: 15, h: 115 },
   // Columna 3 – Panel Líder + TAMAR
-  { id: "panel_lider",  x: 45, y: 0,   w: 15, h: 120 },
-  { id: "tamar",        x: 45, y: 120, w: 15, h: 115 },
+  { id: "panel_lider",  x: 45, y: 14,  w: 15, h: 120 },
+  { id: "tamar",        x: 45, y: 134, w: 15, h: 115 },
   // Fila inferior full-width – FCI (tabla ancha: filtros + 6 períodos)
-  { id: "fci",          x: 0,  y: 235, w: 60, h: 120 },
+  { id: "fci",          x: 0,  y: 249, w: 60, h: 120 },
   // ONs (Obligaciones Negociables) — dos paneles lado a lado, NY y AR.
   // Cada uno con muchas filas (~30 NY, ~90 AR), por eso h=110 y w=30.
-  { id: "ons_ny",       x: 0,  y: 355, w: 30, h: 110 },
-  { id: "ons_ar",       x: 30, y: 355, w: 30, h: 110 },
+  { id: "ons_ny",       x: 0,  y: 369, w: 30, h: 110 },
+  { id: "ons_ar",       x: 30, y: 369, w: 30, h: 110 },
 ];
 
 // Paneles ocultos por default (coincide con los no visibles en la foto de referencia).
@@ -4812,6 +4818,7 @@ const DEFAULT_HIDDEN_PANELS = new Set([
 
 // Todos los paneles del dashboard (orden para el popover).
 const ALL_PANELS = [
+  { id: "fx_strip",           label: "Dólares & Macro (tira USD)" },
   { id: "bonares",            label: "Bonares & Globales" },
   { id: "bopreales",          label: "BOPREALES" },
   { id: "curva_soberana",     label: "Curva Soberana (AL/GD + BPR)" },
@@ -4899,7 +4906,7 @@ function restoreUserDefault() {
   if (!raw) return false;
   try {
     const snap = JSON.parse(raw);
-    if (snap.layout) localStorage.setItem(STORAGE.LAYOUT, JSON.stringify(snap.layout));
+    if (snap.layout) localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(snap.layout));
     if (snap.hiddenCols) localStorage.setItem(STORAGE.HIDDEN_COLS, JSON.stringify(snap.hiddenCols));
     if (snap.panelVisibility) localStorage.setItem(STORAGE.PANEL_VIS, JSON.stringify(snap.panelVisibility));
     location.reload();
@@ -4919,7 +4926,7 @@ function restoreFactoryLayout() {
   // recarga lo encuentre ya listo (no depende de que no haya nada guardado).
   const vis = {};
   DEFAULT_HIDDEN_PANELS.forEach((id) => { vis[id] = false; });
-  localStorage.setItem(STORAGE.LAYOUT, JSON.stringify(FACTORY_LAYOUT));
+  localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(FACTORY_LAYOUT));
   localStorage.setItem(STORAGE.PANEL_VIS, JSON.stringify(vis));
   localStorage.removeItem(STORAGE.HIDDEN_COLS);
   location.reload();

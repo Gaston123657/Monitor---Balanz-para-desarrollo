@@ -4,6 +4,11 @@
    ===================================================================== */
 
 :root {
+  /* Ancho mínimo del lienzo del dashboard. Cuando el monitor es más angosto,
+     aparece scroll horizontal en vez de comprimir los paneles. Lo usan
+     main#monitors (min-width) y la barra superior al capturar. */
+  --canvas-min-width: 2560px;
+
   /* Paleta Balanz (idem mockup.py) */
   --navy:           #0a1d4a;
   --navy-dark:      #06143b;
@@ -250,7 +255,12 @@ button, a, input, select, .btn, [role="button"] {
   background: var(--navy);
   color: var(--text-white);
   position: sticky;
+  /* sticky en top Y left: con scroll horizontal el header queda pegado al
+     borde izquierdo del viewport y mantiene su ancho de pantalla (100vw),
+     en vez de irse de cuadro junto al lienzo ancho. */
   top: 0;
+  left: 0;
+  width: 100vw;
   z-index: 20;
 }
 
@@ -367,6 +377,11 @@ main#monitors {
   padding: 12px 8px 20px;
   max-width: none;
   margin: 0;
+  /* Ancho mínimo del lienzo: cuando el monitor es más angosto que esto,
+     el body muestra scroll horizontal en vez de comprimir los paneles a
+     la fuerza. Gridstack reparte las 60 columnas como % de ESTE ancho.
+     Editá --canvas-min-width en :root para agrandar/achicar el lienzo. */
+  min-width: var(--canvas-min-width);
 }
 
 /* Gridstack pone overflow:hidden por defecto en .grid-stack-item-content;
@@ -674,6 +689,18 @@ body.capturing .panel-cols-btn,
 body.capturing .panel-close-btn,
 body.capturing .cols-popover { visibility: hidden; }
 body.capturing .curve-popup-overlay { display: none !important; }
+
+/* Durante la captura, el header deja de estar pegado al viewport (sticky/100vw):
+   vuelve a fluir estático y al ancho COMPLETO del lienzo. Ojo: width:100% tomaría
+   el ancho del <body> (= viewport, ~1920px), no los 2560px del lienzo (main se
+   desborda pero el body no se ensancha) → la barra quedaría angosta y desfasada.
+   min-width al ancho del lienzo lo fija. (El strip FX ya no es sticky: es un
+   panel más de la grilla y se captura alineado con el resto.) */
+body.capturing .page-header {
+  position: static;
+  width: 100%;
+  min-width: var(--canvas-min-width);
+}
 
 /* =====================================================================
    SETTINGS POPOVER (⚙ Layout): paneles visibles + curvas + presets.
@@ -1208,11 +1235,15 @@ body.capturing .logo-balanz { visibility: hidden; }
 .fx-strip {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 6px;
   padding: 6px 10px;
   background: #0f1a47;
-  border-bottom: 1px solid #1f2a5a;
   font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Ahora vive dentro de un panel de Gridstack (.panel-fx): llena el body y
+     scrollea si los chips desbordan. Ya no es sticky/100vw. */
+  height: 100%;
+  overflow: auto;
 }
 
 /* Cartel "N ONs nuevas detectadas" — aparece bajo el fx-strip cuando
