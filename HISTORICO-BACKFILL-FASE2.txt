@@ -1,0 +1,156 @@
+================================================================================
+PROMPT DE CONTINUACIÓN — Histórico de curvas: backfill LSEG fase 2
+(pegar este archivo entero al inicio de una nueva conversación con Claude Code)
+================================================================================
+
+ROL Y OBJETIVO
+--------------
+Sos Claude Code trabajando en el "Monitor de renta fija Balanz" (este repo).
+Antes de tocar nada, leé el doc maestro `agents.md` y la memoria en
+`.claude/.../memory/MEMORY.md`. Respetá SIEMPRE los 4 pilares de arquitectura:
+(1) Excel único como verdad de definiciones, (2) matemática centralizada en
+`FinancialEngine`, (3) precios live de Data912, (4) panel == curva.
+
+Tu tarea en esta sesión: EXTENDER el backfill histórico (que hoy funciona solo
+para SOBERANOS USD) a las familias que faltan: BOPREALES, CER, TASA_FIJA,
+DOLAR_LINKED y ONs. Es un trabajo de DESCUBRIMIENTO de identificadores LSEG +
+unidad de precio por familia, NO de matemática nueva.
+
+REQUISITO OPERATIVO: necesitás LSEG Workspace Desktop ABIERTO y LOGUEADO en la
+máquina (Desktop Session, handshake localhost:9000). Sin eso no hay forma de
+iterar. El SDK `lseg-data` vive en un venv AISLADO `.venv-lseg` (choca pandas con
+el monitor). Lo corrés con `.venv-lseg/Scripts/python.exe <script>`.
+
+
+QUÉ YA ESTÁ CONSTRUIDO (NO reimplementar — reusar)
+--------------------------------------------------
+Feature "Histórico" ya entregada y funcionando para soberanos:
+
+- core/infrastructure/history_store.py
+    Store long/tidy en CSV mensual: data/history/snapshots/YYYY-MM.csv.
+    Una fila por (fecha, ticker) con columnas:
+      fecha, ticker, panel, price, technical_value, parity, tir, tna, tem,
+      tna_360, tem_360, duration, change_pct, volume, source
+    API: append_snapshot(fecha, rows, source), read_curve(panel, fechas),
+         read_series(ticker, metric), available_dates(panel), available_tickers(panel).
+    Upsert idempotente por (fecha, ticker) — backfill y captura live conviven.
+
+- apps/web/server.py
+    * Captura FORWARD: buffer del día por ticker (_history_capture) que se flushea
+      al store en el rollover de fecha y en shutdown (_history_flush). Solo persiste
+      días hábiles BYMA (core.holiday_engine.is_habil). Corre para TODOS los paneles.
+    * Endpoints: /api/history/curve, /api/history/instrument, /api/history/meta.
+    * Ruta de página /historico.
+
+- apps/web/static/historico.html
+    UI Chart.js: curva TIR vs MD superpuesta por fecha (calendario + chips) y
+    serie temporal por instrumento. Botón "Histórico" en index.html.
+
+- scripts/build_lseg_ric_map.py  (entorno principal, py 3.12)
+    Genera data/history/lseg_ric_map.json = { ticker: {panel, [universe_id]} }
+    para todos los bonos de los paneles. Reusa universe_id de las ONs ya resueltas
+    en data/lseg_ons_cache.json. DUAL omitidos a propósito (en panel live aparecen
+    como filas sintéticas _TAM/_TF).
+
+- scripts/lseg_fetch_history.py  (venv aislado .venv-lseg)
+    Baja precios diarios por RIC y vuelca data/history/_lseg_prices_raw.json.
+    Tiene --days/--start/--end y --panels (default "bonares").
+    resolve(ticker): search(query=root) en GovCorpInstruments, filtra emisor
+    "Argentina", prefiere USD, devuelve el RIC. fetch_series(ric): get_history
+    daily; precio = DIRTY_PRC si existe, sino MID_PRICE(clean) + ACCR_INT = dirty.
+
+- scripts/backfill_history.py  (entorno principal, py 3.12)
+    Lee el raw, y por cada (ticker, fecha, precio) RECALCULA as-of con:
+      FinancialEngine.tir_from_price(snap, close, indices, fx, settle_date=fecha)
+      FinancialEngine.calculate_technical_value(snap, indices, fx, ref_date=fecha)
+      FinancialEngine.calculate_duration(snap, tir, settle_date=fecha)
+    Arma la fila con apps.web.server._base_bond_row(m, today=fecha) para escala
+    idéntica a la captura live (TIR/paridad en %), setea row["panel"] y escribe al
+    store con source="lseg_backfill". Loguea filas salteadas (sin truncado silencioso).
+
+- tests/test_history_store.py — 7 tests, pasan.
+
+ESTADO ACTUAL DEL STORE: bonares con ~87 fechas (2026-02-19 → hoy), 14 tickers.
+El resto de las familias solo tienen lo que acumuló la captura forward.
+
+
+HALLAZGOS LSEG CLAVE (no re-descubrir)
+--------------------------------------
+1. get_history (time series) EXIGE un RIC de cotización. ISIN NO sirve
+   (falla "The universe is not found" / "Unable to resolve identifiers").
+2. El RIC se obtiene con search.Definition(view=GOV_CORP_INSTRUMENTS, query=<root>).
+   - Soberano local (BONAR): root = ticker sin "D" -> RIC "AR<root>=" (ej ARAE38=).
+   - Global (NY law): RIC distinto, derivado de ISIN US... (ej GD30D -> 040114HS2=).
+   - El search por query= devuelve la columna RIC directo; filtrar emisor
+     "Argentina, Republic of" y, entre líneas, la USD.
+3. Columnas de get_history para bonos USD: MID_PRICE (clean), BID, ASK, ACCR_INT,
+   MOD_DURTN, etc. NO trae volumen en general. dirty = MID_PRICE + ACCR_INT.
+4. get_data con TR.PriceClose + parameters{SDate,EDate,Frq} NO sirvió para series
+   de estos bonos (devolvió 1 fila NaT). Usar get_history.
+5. tir_from_price y los índices YA son "as-of": calculate_tir acepta settle_date y
+   BCRAIndicesProvider.get_cer/get_tamar/get_a3500(target_date) buscan por fecha.
+
+
+LO QUE FALTA = TU TAREA (por familia, en este orden de dificultad)
+------------------------------------------------------------------
+A) BOPREALES (USD, emisor BCRA — NO "Argentina, Republic of"):
+   - search(query=root) no los encuentra con el filtro actual. Investigar el
+     emisor/nombre real (probablemente "Banco Central de la República Argentina")
+     y/o el patrón de RIC (¿"ARBP...="?). Ajustar resolve() para aceptarlos.
+
+B) TASA_FIJA (LECAP/BONCAP, en ARS) y CER (en ARS):
+   - El RIC existe (ej ARDICP= para DICP). PERO el precio de get_history viene en
+     OTRA UNIDAD/ESCALA (vi ~52.000 para DICP, no per-100). Hay que descubrir qué
+     columna y factor da el precio per-100 comparable al de Data912 (dirty, pesos).
+     Para CER ojo: columnas REAL_YLD*, IDX_RATIO (venía 0), CLEAN_PRC/DIRTY_PRC
+     (venían NaN). Probar varias y validar contra el precio live de Data912 de HOY
+     (mismo ticker) para calibrar la escala.
+
+C) DOLAR_LINKED (ARS): similar a CER — descubrir RIC, columna y unidad.
+
+D) ONs (sufijo D): hoy resuelven a ISIN (de data/lseg_ons_cache.json) que NO sirve
+   para get_history. Buscar su RIC de cotización (BA-listada). Son ~150, escalar
+   solo si A-C salen bien.
+
+
+CÓMO ACTUAR (método recomendado)
+--------------------------------
+1. Escribí una SONDA descartable scripts/_lseg_probe_history.py (en .venv-lseg) que,
+   para 2-3 tickers representativos de la familia objetivo, pruebe:
+     - search(query=root) y muestre RIC/ISIN/Currency/DocumentTitle (top 10).
+     - get_history(RIC, interval="daily", count=6) y liste TODAS las columnas y las
+       últimas filas, para identificar la columna de precio y su escala.
+   Corré la sonda, leé la salida, decidí RIC + columna + factor por familia.
+2. Validá la ESCALA: comparar el último precio histórico de LSEG con el precio live
+   de Data912 de hoy para ese ticker (apps.web.server lo expone, o repo+provider).
+   Si difieren por un factor (x100, x1000) o por clean/dirty, ajustá.
+3. Extendé resolve()/fetch_series() en scripts/lseg_fetch_history.py con ramas por
+   panel/familia (no rompas el camino soberano que ya anda). Mantené el contrato:
+   raw = { ticker: {panel, universe_id, prices:[{fecha, close(dirty), ...}]} }.
+4. Corré el pipeline para la familia nueva:
+     .venv-lseg/Scripts/python.exe scripts/lseg_fetch_history.py --days 120 --panels <familia>
+     py -3.12 scripts/backfill_history.py
+5. SPOT-CHECK obligatorio: la TIR/paridad recalculada de un bono para una fecha
+   pasada debe ser razonable y coherente con la fuente (BYMA/IAMC) de ese día.
+   Revisá outliers (ej. TIR negativa en fechas tempranas = precio/escala mal).
+6. Borrá la sonda al terminar. Corré tests: py -3.12 -m pytest tests/test_history_store.py -q
+
+CAVEATS / TRAMPAS CONOCIDAS
+---------------------------
+- clean vs dirty: el monitor/Data912 usan DIRTY. Si LSEG da clean, sumá accrued.
+- CER en términos base: no doble-contar al deflactar por CER ratio (ver agents.md).
+- Profundidad del backfill CER/DL limitada por la profundidad de los CSV de índices
+  (data/history/cer_diario.csv ~65d, a3500_diario.csv ~42d): si falta el índice
+  as-of una fecha, tir sale None y backfill_history la saltea (y lo loguea). Para
+  ir más atrás habría que extender esos CSV primero.
+- DUAL (DUAL/DUAL_CER_TAMAR): NO mapear 1:1; en el panel live son _TAM/_TF
+  sintéticos. Decidir tratamiento aparte si se quiere.
+- No agregar dependencias nuevas (pyarrow no está; por eso el store es CSV).
+  Python 3.12 EXACTO, sin venv para el monitor (venv aislado solo para LSEG).
+
+ENTREGABLE ESPERADO
+-------------------
+resolve()/fetch_series() extendidos por familia, el store poblado con historia de
+las familias nuevas, spot-checks documentados, y este .txt actualizado con los RIC/
+columnas/escala descubiertos por familia (para que la fase 3 no re-investigue).
+================================================================================

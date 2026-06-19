@@ -1,0 +1,709 @@
+{
+  "AL29D": {
+    "panel": "bonares",
+    "universe_id": "ARAL29="
+  },
+  "AL30D": {
+    "panel": "bonares",
+    "universe_id": "ARAL30="
+  },
+  "AL35D": {
+    "panel": "bonares",
+    "universe_id": "ARAL35="
+  },
+  "AE38D": {
+    "panel": "bonares",
+    "universe_id": "ARAE38="
+  },
+  "AL41D": {
+    "panel": "bonares",
+    "universe_id": "ARAL41="
+  },
+  "GD29D": {
+    "panel": "bonares",
+    "universe_id": "040114HX1="
+  },
+  "GD30D": {
+    "panel": "bonares",
+    "universe_id": "040114HS2="
+  },
+  "GD35D": {
+    "panel": "bonares",
+    "universe_id": "040114HT0="
+  },
+  "GD38D": {
+    "panel": "bonares",
+    "universe_id": "040114HU7="
+  },
+  "GD41D": {
+    "panel": "bonares",
+    "universe_id": "040114HV5="
+  },
+  "GD46D": {
+    "panel": "bonares",
+    "universe_id": "040114HW3="
+  },
+  "AO27D": {
+    "panel": "bonares",
+    "universe_id": "ARAO27="
+  },
+  "AO28D": {
+    "panel": "bonares",
+    "universe_id": "ARAO28="
+  },
+  "AN29D": {
+    "panel": "bonares",
+    "universe_id": "ARAN29="
+  },
+  "BPA7D": {
+    "panel": "bopreales"
+  },
+  "BPB7D": {
+    "panel": "bopreales"
+  },
+  "BPC7D": {
+    "panel": "bopreales"
+  },
+  "BPD7D": {
+    "panel": "bopreales"
+  },
+  "BPB8D": {
+    "panel": "bopreales"
+  },
+  "BPA8D": {
+    "panel": "bopreales"
+  },
+  "TZX26": {
+    "panel": "cer"
+  },
+  "X31L6": {
+    "panel": "cer"
+  },
+  "X30S6": {
+    "panel": "cer"
+  },
+  "TZXO6": {
+    "panel": "cer"
+  },
+  "TX26": {
+    "panel": "cer"
+  },
+  "X30N6": {
+    "panel": "cer"
+  },
+  "TZXD6": {
+    "panel": "cer"
+  },
+  "TZXM7": {
+    "panel": "cer"
+  },
+  "TZXY7": {
+    "panel": "cer"
+  },
+  "TZX27": {
+    "panel": "cer"
+  },
+  "TZXD7": {
+    "panel": "cer"
+  },
+  "TZX28": {
+    "panel": "cer"
+  },
+  "TX28": {
+    "panel": "cer"
+  },
+  "TX31": {
+    "panel": "cer"
+  },
+  "DICP": {
+    "panel": "cer"
+  },
+  "PARP": {
+    "panel": "cer"
+  },
+  "CUAP": {
+    "panel": "cer"
+  },
+  "TZXA7": {
+    "panel": "cer"
+  },
+  "TZXS7": {
+    "panel": "cer"
+  },
+  "TZXS8": {
+    "panel": "cer"
+  },
+  "TZXM8": {
+    "panel": "cer"
+  },
+  "TZXM9": {
+    "panel": "cer"
+  },
+  "DIP0": {
+    "panel": "cer"
+  },
+  "PAP0": {
+    "panel": "cer"
+  },
+  "TXMJ8_CER": {
+    "panel": "cer"
+  },
+  "TXMJ9_CER": {
+    "panel": "cer"
+  },
+  "TXMD8_CER": {
+    "panel": "cer"
+  },
+  "TXMD9_CER": {
+    "panel": "cer"
+  },
+  "TXMJ0_CER": {
+    "panel": "cer"
+  },
+  "T30J6": {
+    "panel": "tasa_fija"
+  },
+  "S31L6": {
+    "panel": "tasa_fija"
+  },
+  "S31G6": {
+    "panel": "tasa_fija"
+  },
+  "S30S6": {
+    "panel": "tasa_fija"
+  },
+  "S30O6": {
+    "panel": "tasa_fija"
+  },
+  "S30N6": {
+    "panel": "tasa_fija"
+  },
+  "T15E7": {
+    "panel": "tasa_fija"
+  },
+  "T30A7": {
+    "panel": "tasa_fija"
+  },
+  "T31Y7": {
+    "panel": "tasa_fija"
+  },
+  "T30J7": {
+    "panel": "tasa_fija"
+  },
+  "S17L6": {
+    "panel": "tasa_fija"
+  },
+  "S14G6": {
+    "panel": "tasa_fija"
+  },
+  "TO26": {
+    "panel": "tasa_fija"
+  },
+  "TY30P": {
+    "panel": "tasa_fija"
+  },
+  "TY30PUT": {
+    "panel": "tasa_fija"
+  },
+  "S15S6": {
+    "panel": "tasa_fija"
+  },
+  "TZV26": {
+    "panel": "dolar_linked"
+  },
+  "D30S6": {
+    "panel": "dolar_linked"
+  },
+  "TZV27": {
+    "panel": "dolar_linked"
+  },
+  "TZV28": {
+    "panel": "dolar_linked"
+  },
+  "D31L6": {
+    "panel": "dolar_linked"
+  },
+  "D31G6": {
+    "panel": "dolar_linked"
+  },
+  "D31M7": {
+    "panel": "dolar_linked"
+  },
+  "TZVD8": {
+    "panel": "dolar_linked"
+  },
+  "M31G6": {
+    "panel": "tamar"
+  },
+  "TMF27": {
+    "panel": "tamar"
+  },
+  "TMF28": {
+    "panel": "tamar"
+  },
+  "TMG27": {
+    "panel": "tamar"
+  },
+  "TMG28": {
+    "panel": "tamar"
+  },
+  "ARC1D": {
+    "panel": "ons_ny"
+  },
+  "PNDCD": {
+    "panel": "ons_ny"
+  },
+  "CAC5D": {
+    "panel": "ons_ny"
+  },
+  "YMCID": {
+    "panel": "ons_ny"
+  },
+  "BYCHD": {
+    "panel": "ons_ny"
+  },
+  "BACGD": {
+    "panel": "ons_ny"
+  },
+  "DNC7D": {
+    "panel": "ons_ny"
+  },
+  "YMCXD": {
+    "panel": "ons_ny"
+  },
+  "PLC5D": {
+    "panel": "ons_ny"
+  },
+  "YFCJD": {
+    "panel": "ons_ny"
+  },
+  "TTCAD": {
+    "panel": "ons_ny"
+  },
+  "VSCVD": {
+    "panel": "ons_ny"
+  },
+  "YM34D": {
+    "panel": "ons_ny"
+  },
+  "MGCOD": {
+    "panel": "ons_ny"
+  },
+  "TSC4D": {
+    "panel": "ons_ny"
+  },
+  "MGCRD": {
+    "panel": "ons_ny"
+  },
+  "MTCGD": {
+    "panel": "ons_ny"
+  },
+  "YCAMD": {
+    "panel": "ons_ny"
+  },
+  "RUCDD": {
+    "panel": "ons_ny"
+  },
+  "TLCMD": {
+    "panel": "ons_ny"
+  },
+  "TTCDD": {
+    "panel": "ons_ny"
+  },
+  "PNXCD": {
+    "panel": "ons_ny"
+  },
+  "TSC3D": {
+    "panel": "ons_ny"
+  },
+  "MGCMD": {
+    "panel": "ons_ny"
+  },
+  "PLC4D": {
+    "panel": "ons_ny"
+  },
+  "YMCJD": {
+    "panel": "ons_ny"
+  },
+  "IRCPD": {
+    "panel": "ons_ny"
+  },
+  "VSCTD": {
+    "panel": "ons_ny"
+  },
+  "PN43D": {
+    "panel": "ons_ny"
+  },
+  "IRCFD": {
+    "panel": "ons_ny"
+  },
+  "TLCTD": {
+    "panel": "ons_ny"
+  },
+  "PNECD": {
+    "panel": "ons_ar"
+  },
+  "PNICD": {
+    "panel": "ons_ar"
+  },
+  "VSCDD": {
+    "panel": "ons_ar"
+  },
+  "CS44D": {
+    "panel": "ons_ar"
+  },
+  "CS48D": {
+    "panel": "ons_ar"
+  },
+  "CS49D": {
+    "panel": "ons_ar"
+  },
+  "IRCJD": {
+    "panel": "ons_ar"
+  },
+  "IRCND": {
+    "panel": "ons_ar"
+  },
+  "OT42D": {
+    "panel": "ons_ar"
+  },
+  "OTS2D": {
+    "panel": "ons_ar"
+  },
+  "OTS3D": {
+    "panel": "ons_ar"
+  },
+  "YFCGD": {
+    "panel": "ons_ar"
+  },
+  "YFCOD": {
+    "panel": "ons_ar"
+  },
+  "YMCZD": {
+    "panel": "ons_ar"
+  },
+  "AER5D": {
+    "panel": "ons_ar"
+  },
+  "LMS8D": {
+    "panel": "ons_ar"
+  },
+  "LMS6D": {
+    "panel": "ons_ar"
+  },
+  "LMS7D": {
+    "panel": "ons_ar"
+  },
+  "RCCRD": {
+    "panel": "ons_ar"
+  },
+  "RC2CD": {
+    "panel": "ons_ar"
+  },
+  "BF39D": {
+    "panel": "ons_ar"
+  },
+  "BYCXD": {
+    "panel": "ons_ar"
+  },
+  "BYCVD": {
+    "panel": "ons_ar"
+  },
+  "BYCWD": {
+    "panel": "ons_ar"
+  },
+  "ZZC1D": {
+    "panel": "ons_ar"
+  },
+  "CACAD": {
+    "panel": "ons_ar",
+    "universe_id": "AR0669378199"
+  },
+  "CACDD": {
+    "panel": "ons_ar"
+  },
+  "NPCCD": {
+    "panel": "ons_ar"
+  },
+  "CICAD": {
+    "panel": "ons_ar"
+  },
+  "CP40D": {
+    "panel": "ons_ar"
+  },
+  "CP36D": {
+    "panel": "ons_ar"
+  },
+  "CP27D": {
+    "panel": "ons_ar"
+  },
+  "CP39D": {
+    "panel": "ons_ar"
+  },
+  "CP28D": {
+    "panel": "ons_ar",
+    "universe_id": "ARCGCO5600T9"
+  },
+  "EMC1D": {
+    "panel": "ons_ar"
+  },
+  "CS47D": {
+    "panel": "ons_ar"
+  },
+  "CS50D": {
+    "panel": "ons_ar"
+  },
+  "DNC8D": {
+    "panel": "ons_ar"
+  },
+  "DNC5D": {
+    "panel": "ons_ar"
+  },
+  "DNC3D": {
+    "panel": "ons_ar"
+  },
+  "GN36D": {
+    "panel": "ons_ar"
+  },
+  "GN46D": {
+    "panel": "ons_ar"
+  },
+  "GN38D": {
+    "panel": "ons_ar"
+  },
+  "DMC7D": {
+    "panel": "ons_ar"
+  },
+  "IRCOD": {
+    "panel": "ons_ar"
+  },
+  "HJCHD": {
+    "panel": "ons_ar"
+  },
+  "HJCJD": {
+    "panel": "ons_ar"
+  },
+  "HJCID": {
+    "panel": "ons_ar"
+  },
+  "HJCKD": {
+    "panel": "ons_ar"
+  },
+  "LOC6D": {
+    "panel": "ons_ar"
+  },
+  "LOC5D": {
+    "panel": "ons_ar"
+  },
+  "LUC3D": {
+    "panel": "ons_ar"
+  },
+  "LUC4D": {
+    "panel": "ons_ar",
+    "universe_id": "ARLUZT560047"
+  },
+  "XMC1D": {
+    "panel": "ons_ar"
+  },
+  "RUCED": {
+    "panel": "ons_ar"
+  },
+  "EAC2D": {
+    "panel": "ons_ar"
+  },
+  "MSSDD": {
+    "panel": "ons_ar"
+  },
+  "OTS5D": {
+    "panel": "ons_ar"
+  },
+  "OTS6D": {
+    "panel": "ons_ar"
+  },
+  "OLC5D": {
+    "panel": "ons_ar"
+  },
+  "OLC3D": {
+    "panel": "ons_ar",
+    "universe_id": "AROLDV560039"
+  },
+  "OLC7D": {
+    "panel": "ons_ar"
+  },
+  "OLC6D": {
+    "panel": "ons_ar"
+  },
+  "MGCND": {
+    "panel": "ons_ar"
+  },
+  "MGCED": {
+    "panel": "ons_ar",
+    "universe_id": "ARPAMP5600G7"
+  },
+  "MGCQD": {
+    "panel": "ons_ar"
+  },
+  "MGCTD": {
+    "panel": "ons_ar"
+  },
+  "PN38D": {
+    "panel": "ons_ar"
+  },
+  "PNRCD": {
+    "panel": "ons_ar"
+  },
+  "PN35D": {
+    "panel": "ons_ar"
+  },
+  "PN40D": {
+    "panel": "ons_ar"
+  },
+  "PN42D": {
+    "panel": "ons_ar"
+  },
+  "PN37D": {
+    "panel": "ons_ar"
+  },
+  "PNZCD": {
+    "panel": "ons_ar"
+  },
+  "PN36D": {
+    "panel": "ons_ar"
+  },
+  "PN41D": {
+    "panel": "ons_ar"
+  },
+  "PQCOD": {
+    "panel": "ons_ar"
+  },
+  "PQCSD": {
+    "panel": "ons_ar"
+  },
+  "PQCKD": {
+    "panel": "ons_ar"
+  },
+  "PLC1D": {
+    "panel": "ons_ar"
+  },
+  "PLC3D": {
+    "panel": "ons_ar"
+  },
+  "PLC2D": {
+    "panel": "ons_ar"
+  },
+  "PLC6D": {
+    "panel": "ons_ar"
+  },
+  "PFC2D": {
+    "panel": "ons_ar"
+  },
+  "SPC2D": {
+    "panel": "ons_ar"
+  },
+  "T662D": {
+    "panel": "ons_ar"
+  },
+  "TTC8D": {
+    "panel": "ons_ar"
+  },
+  "TTC9D": {
+    "panel": "ons_ar"
+  },
+  "TTCBD": {
+    "panel": "ons_ar"
+  },
+  "TLCQD": {
+    "panel": "ons_ar"
+  },
+  "TLCFD": {
+    "panel": "ons_ar"
+  },
+  "TLCKD": {
+    "panel": "ons_ar"
+  },
+  "TLCOD": {
+    "panel": "ons_ar"
+  },
+  "TLCUD": {
+    "panel": "ons_ar"
+  },
+  "TLCDD": {
+    "panel": "ons_ar"
+  },
+  "VSCQD": {
+    "panel": "ons_ar"
+  },
+  "VSCMD": {
+    "panel": "ons_ar"
+  },
+  "VSCWD": {
+    "panel": "ons_ar"
+  },
+  "VSCOD": {
+    "panel": "ons_ar"
+  },
+  "VSCUD": {
+    "panel": "ons_ar"
+  },
+  "VSCJD": {
+    "panel": "ons_ar"
+  },
+  "VSCRD": {
+    "panel": "ons_ar"
+  },
+  "YFCLD": {
+    "panel": "ons_ar"
+  },
+  "YFCMD": {
+    "panel": "ons_ar"
+  },
+  "YFCAD": {
+    "panel": "ons_ar"
+  },
+  "YFCND": {
+    "panel": "ons_ar"
+  },
+  "YM40D": {
+    "panel": "ons_ar"
+  },
+  "YM41D": {
+    "panel": "ons_ar"
+  },
+  "YMCYD": {
+    "panel": "ons_ar"
+  },
+  "YMCTD": {
+    "panel": "ons_ar",
+    "universe_id": "AR0688075032"
+  },
+  "YM37D": {
+    "panel": "ons_ar"
+  },
+  "YM35D": {
+    "panel": "ons_ar"
+  },
+  "YM39D": {
+    "panel": "ons_ar"
+  },
+  "YM38D": {
+    "panel": "ons_ar"
+  },
+  "YM42D": {
+    "panel": "ons_ar"
+  },
+  "YMCWD": {
+    "panel": "ons_ar"
+  },
+  "YMCRD": {
+    "panel": "ons_ar"
+  },
+  "TLCPD": {
+    "panel": "ons_ar"
+  },
+  "YFCID": {
+    "panel": "ons_ar"
+  },
+  "YM43D": {
+    "panel": "ons_ar"
+  }
+}

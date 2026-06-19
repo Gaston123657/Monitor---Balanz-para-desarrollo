@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histórico de Curvas · Balanz</title>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("monitor-theme");
+        if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="/static/style.css?v=29" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body { background: var(--page-bg); color: var(--text-white); font-family: "Inter Tight", sans-serif; margin: 0; }
+    .hx-header {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--navy); padding: 10px 16px;
+      border-bottom: 1px solid #1f2a5a; position: sticky; top: 0; z-index: 10;
+    }
+    .hx-back {
+      background: var(--navy-light); border: 1px solid var(--accent-blue);
+      color: var(--text-white); border-radius: 4px; padding: 5px 12px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.8px; cursor: pointer;
+      text-decoration: none;
+    }
+    .hx-title { font-size: 15px; font-weight: 800; letter-spacing: 1px; }
+    .hx-sub   { font-size: 11px; color: #8899cc; }
+    .hx-spacer { flex: 1; }
+    .hx-body { padding: 16px; display: flex; flex-direction: column; gap: 24px; }
+    .hx-card {
+      background: var(--navy); border: 1px solid #1f2a5a; border-radius: 6px;
+      padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .hx-card h2 { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 0.8px; }
+    .hx-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .hx-field { display: flex; flex-direction: column; gap: 4px; }
+    .hx-field label { font-size: 10px; color: #8899cc; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+    .hx-field select, .hx-field input {
+      background: var(--navy-light); color: var(--text-white);
+      border: 1px solid var(--accent-blue); border-radius: 4px; padding: 5px 8px;
+      font-family: "JetBrains Mono", monospace; font-size: 12px; min-width: 130px;
+    }
+    .hx-field select[multiple] { min-height: 92px; }
+    .hx-btn {
+      background: var(--accent-blue); color: #fff; border: none; border-radius: 4px;
+      padding: 7px 16px; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; cursor: pointer;
+    }
+    .hx-btn:hover { filter: brightness(1.1); }
+    .hx-btn-add { background: var(--navy-light); border: 1px solid var(--accent-blue); }
+    .hx-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .hx-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--navy-light); border: 1px solid #1f2a5a; border-radius: 12px;
+      padding: 3px 6px 3px 10px; font-family: "JetBrains Mono", monospace; font-size: 11px;
+    }
+    .hx-chip .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .hx-chip button {
+      background: none; border: none; color: #8899cc; cursor: pointer;
+      font-size: 13px; line-height: 1; padding: 0 2px;
+    }
+    .hx-chip button:hover { color: var(--text-white); }
+    .hx-chart-wrap { position: relative; height: 440px; }
+    .hx-empty { color: #8899cc; font-size: 12px; padding: 8px 0; }
+  </style>
+</head>
+<body>
+  <header class="hx-header">
+    <a class="hx-back" href="/" >← VOLVER</a>
+    <div>
+      <div class="hx-title">HISTÓRICO DE CURVAS Y ANÁLISIS</div>
+      <div class="hx-sub">Curvas de rendimiento históricas · evolución de instrumentos</div>
+    </div>
+    <div class="hx-spacer"></div>
+  </header>
+
+  <div class="hx-body">
+    <!-- Vista 1: curva histórica TIR vs MD -->
+    <section class="hx-card">
+      <h2>CURVA HISTÓRICA · TIR vs Modified Duration</h2>
+      <div class="hx-controls">
+        <div class="hx-field">
+          <label for="curve-panel">Panel</label>
+          <select id="curve-panel"></select>
+        </div>
+        <div class="hx-field">
+          <label for="curve-date">Fecha</label>
+          <input type="date" id="curve-date" />
+        </div>
+        <button class="hx-btn hx-btn-add" id="curve-add" type="button">＋ Agregar fecha</button>
+        <button class="hx-btn" id="curve-go">Graficar curva</button>
+      </div>
+      <div class="hx-chips" id="curve-chips"></div>
+      <div class="hx-empty" id="curve-empty">Elegí un panel y agregá una o más fechas.</div>
+      <div class="hx-chart-wrap"><canvas id="curve-chart"></canvas></div>
+    </section>
+
+    <!-- Vista 2: evolución por instrumento -->
+    <section class="hx-card">
+      <h2>EVOLUCIÓN POR INSTRUMENTO</h2>
+      <div class="hx-controls">
+        <div class="hx-field">
+          <label for="inst-ticker">Ticker</label>
+          <select id="inst-ticker"></select>
+        </div>
+        <div class="hx-field">
+          <label for="inst-metric">Métrica</label>
+          <select id="inst-metric">
+            <option value="price">Precio</option>
+            <option value="tir">TIR</option>
+            <option value="parity">Paridad</option>
+            <option value="duration">Modified Duration</option>
+            <option value="volume">Volumen</option>
+          </select>
+        </div>
+        <button class="hx-btn" id="inst-go">Graficar serie</button>
+      </div>
+      <div class="hx-empty" id="inst-empty">Elegí un ticker y una métrica.</div>
+      <div class="hx-chart-wrap"><canvas id="inst-chart"></canvas></div>
+    </section>
+  </div>
+
+  <script>
+    const PANELS = [
+      ["bonares", "Bonares / Globales"],
+      ["bopreales", "BOPREALES"],
+      ["cer", "CER"],
+      ["tasa_fija", "Tasa Fija (LECAP/BONCAP)"],
+      ["dolar_linked", "Dólar Linked"],
+      ["tamar", "TAMAR"],
+      ["ons_ny", "ONs (NY)"],
+      ["ons_ar", "ONs (AR)"],
+    ];
+    // Paleta para distinguir fechas superpuestas en la curva.
+    const COLORS = ["#4f8cff", "#ff6b6b", "#37d67a", "#ffb020", "#b06bff", "#00c2c7", "#ff7ac2", "#9aa7d0"];
+    const GRID = "rgba(136,153,204,0.15)";
+    const TICK = "#8899cc";
+
+    let curveChart = null, instChart = null;
+    let selectedFechas = [];        // fechas elegidas para la curva (orden de agregado)
+    let availableFechas = [];       // fechas con data en el panel actual
+
+    async function getJSON(url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }
+
+    // ---- selectores ----
+    function fillPanelSelect() {
+      const sel = document.getElementById("curve-panel");
+      sel.innerHTML = PANELS.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+    }
+
+    async function refreshCurveFechas() {
+      const panel = document.getElementById("curve-panel").value;
+      const meta = await getJSON("/api/history/meta?panel=" + encodeURIComponent(panel));
+      availableFechas = (meta.fechas || []).slice().sort();
+      const input = document.getElementById("curve-date");
+      // Acota el calendario al rango con data y arranca en la fecha más reciente.
+      if (availableFechas.length) {
+        input.min = availableFechas[0];
+        input.max = availableFechas[availableFechas.length - 1];
+        input.value = availableFechas[availableFechas.length - 1];
+      } else {
+        input.removeAttribute("min"); input.removeAttribute("max"); input.value = "";
+      }
+      // Al cambiar de panel, las fechas elegidas pueden no tener data: limpiamos.
+      selectedFechas = [];
+      renderChips();
+    }
+
+    function colorFor(fecha) {
+      return COLORS[selectedFechas.indexOf(fecha) % COLORS.length];
+    }
+
+    function renderChips() {
+      const box = document.getElementById("curve-chips");
+      box.innerHTML = selectedFechas.map(f => `
+        <span class="hx-chip">
+          <span class="dot" style="background:${colorFor(f)}"></span>${f}
+          <button type="button" data-fecha="${f}" aria-label="Quitar ${f}">✕</button>
+        </span>`).join("");
+      box.querySelectorAll("button[data-fecha]").forEach(b => {
+        b.addEventListener("click", () => {
+          selectedFechas = selectedFechas.filter(x => x !== b.dataset.fecha);
+          renderChips();
+        });
+      });
+    }
+
+    function addCurveDate() {
+      const f = document.getElementById("curve-date").value;
+      const empty = document.getElementById("curve-empty");
+      if (!f) return;
+      if (selectedFechas.includes(f)) return;
+      selectedFechas.push(f);
+      renderChips();
+      // Aviso suave si la fecha elegida no es un día con data del panel.
+      if (availableFechas.length && !availableFechas.includes(f)) {
+        empty.textContent = `Ojo: ${f} no tiene datos en este panel (probá un día hábil con cierre).`;
+        empty.style.display = "";
+      }
+    }
+
+    async function fillTickers() {
+      const meta = await getJSON("/api/history/meta");
+      const sel = document.getElementById("inst-ticker");
+      sel.innerHTML = (meta.tickers || []).map(t => `<option value="${t}">${t}</option>`).join("");
+    }
+
+    // ---- vista curva ----
+    document.getElementById("curve-add").addEventListener("click", addCurveDate);
+
+    document.getElementById("curve-go").addEventListener("click", async () => {
+      const panel = document.getElementById("curve-panel").value;
+      const fechas = selectedFechas.slice();
+      const empty = document.getElementById("curve-empty");
+      if (!fechas.length) { empty.textContent = "Agregá al menos una fecha."; empty.style.display = ""; return; }
+      const data = await getJSON(`/api/history/curve?panel=${encodeURIComponent(panel)}&fechas=${fechas.join(",")}`);
+      const datasets = [];
+      let total = 0;
+      for (const f of fechas) {
+        const pts = (data.curvas && data.curvas[f]) || [];
+        total += pts.length;
+        datasets.push({
+          label: f,
+          data: pts.map(p => ({ x: p.md, y: p.tir, ticker: p.ticker })),
+          showLine: true,
+          borderColor: colorFor(f),
+          backgroundColor: colorFor(f),
+          pointRadius: 3, tension: 0.25,
+        });
+      }
+      empty.style.display = total ? "none" : "";
+      if (!total) empty.textContent = "No hay datos para esa selección.";
+      renderCurve(datasets);
+    });
+
+    function renderCurve(datasets) {
+      const ctx = document.getElementById("curve-chart");
+      if (curveChart) curveChart.destroy();
+      curveChart = new Chart(ctx, {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { title: { display: true, text: "Modified Duration (años)", color: TICK },
+                 grid: { color: GRID }, ticks: { color: TICK } },
+            y: { title: { display: true, text: "TIR (%)", color: TICK },
+                 grid: { color: GRID }, ticks: { color: TICK } },
+          },
+          plugins: {
+            legend: { labels: { color: TICK } },
+            tooltip: { callbacks: {
+              label: (c) => `${c.raw.ticker}: MD ${c.raw.x.toFixed(2)} · TIR ${c.raw.y.toFixed(2)}%`,
+            } },
+          },
+        },
+      });
+    }
+
+    // ---- vista instrumento ----
+    document.getElementById("inst-go").addEventListener("click", async () => {
+      const ticker = document.getElementById("inst-ticker").value;
+      const metric = document.getElementById("inst-metric").value;
+      const empty = document.getElementById("inst-empty");
+      if (!ticker) { empty.textContent = "Seleccioná un ticker."; empty.style.display = ""; return; }
+      const data = await getJSON(`/api/history/instrument?ticker=${encodeURIComponent(ticker)}&metric=${metric}`);
+      const serie = data.serie || [];
+      empty.style.display = serie.length ? "none" : "";
+      if (!serie.length) empty.textContent = "No hay datos para ese instrumento.";
+      renderSerie(ticker, metric, serie);
+    });
+
+    function renderSerie(ticker, metric, serie) {
+      const ctx = document.getElementById("inst-chart");
+      if (instChart) instChart.destroy();
+      instChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: serie.map(p => p.fecha),
+          datasets: [{
+            label: `${ticker} · ${metric}`,
+            data: serie.map(p => p.valor),
+            borderColor: COLORS[0], backgroundColor: COLORS[0],
+            pointRadius: 2, tension: 0.2, fill: false,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: GRID }, ticks: { color: TICK, maxRotation: 0, autoSkip: true } },
+            y: { grid: { color: GRID }, ticks: { color: TICK } },
+          },
+          plugins: { legend: { labels: { color: TICK } } },
+        },
+      });
+    }
+
+    // ---- init ----
+    (async function () {
+      fillPanelSelect();
+      document.getElementById("curve-panel").addEventListener("change", refreshCurveFechas);
+      try { await refreshCurveFechas(); } catch (e) {}
+      try { await fillTickers(); } catch (e) {}
+    })();
+  </script>
+</body>
+</html>

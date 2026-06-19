@@ -30,6 +30,11 @@ _load_dotenv()
 DATA_DIR = os.path.join(BASE_DIR, "data")
 MASTER_XLSX = os.path.join(DATA_DIR, "instruments_master.xlsx")
 
+# Histórico de mercado: snapshots diarios long/tidy, particionados por mes
+# (data/history/snapshots/YYYY-MM.csv). Ver core/infrastructure/history_store.py.
+HISTORY_DIR = os.path.join(DATA_DIR, "history")
+HISTORY_SNAPSHOTS_DIR = os.path.join(HISTORY_DIR, "snapshots")
+
 # Logging centralizado
 LOG_LEVEL = logging.INFO
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

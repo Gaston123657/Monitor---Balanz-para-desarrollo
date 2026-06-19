@@ -75,6 +75,13 @@ _bond_prices: dict = {}          # {"YYYY-MM-DD": {"TICKER": price}}
 _bond_prices_loaded: bool = False
 _bond_prices_lock = threading.Lock()
 
+# Histórico de mercado: buffer del snapshot del día (full row por ticker). Cada ciclo
+# upsertea (último valor = cierre); el flush al store (history_store) ocurre una vez al
+# rollover de fecha y en shutdown. Ver core/infrastructure/history_store.py.
+_history_buffer: dict = {}       # {"TICKER": {row con 'panel'}}
+_history_buffer_date: Optional[str] = None
+_history_buffer_lock = threading.Lock()
+
 # Precios diarios FX: variación diaria para dolarapi.com (no provee delta).
 _FX_PRICES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "history", "fx_prices_daily.json")
 _fx_prices: dict = {}            # {"YYYY-MM-DD": {"oficial": venta, ...}}
@@ -565,6 +572,51 @@ def _save_bond_prices(today_str: str, prices: dict) -> None:
             pass
 
 
+def _history_flush_locked() -> None:
+    """Vuelca el buffer del día al store y lo resetea. Debe llamarse con el lock tomado.
+    Solo persiste días hábiles BYMA (evita filas redundantes de fin de semana/feriado)."""
+    global _history_buffer
+    if not _history_buffer or not _history_buffer_date:
+        return
+    try:
+        from core.holiday_engine import is_habil
+        if not is_habil(_history_buffer_date):
+            _history_buffer = {}
+            return
+    except Exception:
+        pass  # si el calendario falla, persistimos igual (mejor data que nada)
+    try:
+        from core.infrastructure import history_store
+        history_store.append_snapshot(
+            _history_buffer_date, list(_history_buffer.values()), source="live")
+    except Exception:
+        logger.exception("history_store flush failed for %s", _history_buffer_date)
+    _history_buffer = {}
+
+
+def _history_flush() -> None:
+    """Flush thread-safe del buffer (usado en shutdown)."""
+    with _history_buffer_lock:
+        _history_flush_locked()
+
+
+def _history_capture(today_str: str, panel: str, rows: list) -> None:
+    """Upsertea las filas de un panel en el buffer del día. Al detectar rollover de
+    fecha, flushea el día anterior antes de empezar a acumular el nuevo."""
+    global _history_buffer_date
+    with _history_buffer_lock:
+        if _history_buffer_date and _history_buffer_date != today_str and _history_buffer:
+            _history_flush_locked()  # usa _history_buffer_date (aún el día anterior)
+        _history_buffer_date = today_str
+        for r in rows:
+            t = (r.get("ticker") or "")
+            if not t:
+                continue
+            rec = dict(r)
+            rec["panel"] = panel
+            _history_buffer[t] = rec
+
+
 def _base_bond_row(m, *, today: date, include_dias: bool = False,
                    include_category: bool = False, include_sector: bool = False,
                    include_nombre: bool = False, extra: Optional[dict] = None,
@@ -995,6 +1047,7 @@ def _refresh_bond_panels(ctx: _RefreshContext, snapshot: Snapshot, today: date) 
                 except Exception:
                     logger.debug("tasa_fija enrichment failed", exc_info=True)
             snapshot.update_monitor(mid, rows=rows, status="ok")
+            _history_capture(today_str, mid, rows)
         except Exception as e:
             logger.exception(f"Monitor '{mid}' refresh failed")
             snapshot.update_monitor(mid, status="error",
@@ -1445,6 +1498,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(HTTPStatus.OK, payload, "application/json; charset=utf-8")
         if path == "/api/bei_history":
             return self._serve_bei_history()
+        if path == "/api/history/meta":
+            return self._serve_history_meta()
+        if path == "/api/history/curve":
+            return self._serve_history_curve()
+        if path == "/api/history/instrument":
+            return self._serve_history_instrument()
         if path == "/api/supported_tickers":
             # Single source of truth: el frontend consume esta lista en vez
             # de tener una copia hardcoded en app.js (que terminaba en drift).
@@ -1524,6 +1583,7 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/bcra", "/bcra.html"): return self._serve_static("bcra.html")
         if path in ("/cierre", "/cierre.html"): return self._serve_static("cierre.html")
         if path in ("/detalle-futuros", "/detalle_futuros.html"): return self._serve_static("detalle_futuros.html")
+        if path in ("/historico", "/historico.html"): return self._serve_static("historico.html")
         if path.startswith("/static/"): return self._serve_static(path[len("/static/"):])
         self._send(HTTPStatus.NOT_FOUND, b"not found", "text/plain")
 
@@ -1639,6 +1699,67 @@ class Handler(BaseHTTPRequestHandler):
             logger.exception(f"BEI history serve failed: {e}")
             return self._send(HTTPStatus.INTERNAL_SERVER_ERROR, b'{"error":"history unreadable"}',
                               "application/json; charset=utf-8")
+    # ----------------------------------------------------------- histórico curvas
+    def _serve_history_meta(self):
+        """Panels + fechas + tickers disponibles en el store, para poblar selectores."""
+        from core.infrastructure import history_store
+        try:
+            qs = parse_qs(urlparse(self.path).query or "")
+            panel = (qs.get("panel", [None])[0] or None)
+            body = json.dumps({
+                "fechas": history_store.available_dates(panel),
+                "tickers": history_store.available_tickers(panel),
+            }).encode("utf-8")
+            return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+        except Exception as e:
+            logger.exception(f"history meta failed: {e}")
+            return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
+                              b'{"error":"history unreadable"}', "application/json; charset=utf-8")
+
+    def _serve_history_curve(self):
+        """Curva (TIR vs MD) de un panel para una o varias fechas.
+        GET /api/history/curve?panel=bonares&fechas=YYYY-MM-DD,YYYY-MM-DD"""
+        from core.infrastructure import history_store
+        qs = parse_qs(urlparse(self.path).query or "")
+        panel = (qs.get("panel", [""])[0] or "").strip()
+        fechas = [f.strip() for f in (qs.get("fechas", [""])[0] or "").split(",") if f.strip()]
+        if not panel or not fechas:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              b'{"error":"panel y fechas requeridos"}',
+                              "application/json; charset=utf-8")
+        try:
+            curve = history_store.read_curve(panel, fechas)
+            body = json.dumps({"panel": panel, "curvas": curve}).encode("utf-8")
+            return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+        except Exception as e:
+            logger.exception(f"history curve failed: {e}")
+            return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
+                              b'{"error":"history unreadable"}', "application/json; charset=utf-8")
+
+    def _serve_history_instrument(self):
+        """Serie temporal de una métrica para un ticker.
+        GET /api/history/instrument?ticker=AL30D&metric=tir"""
+        from core.infrastructure import history_store
+        qs = parse_qs(urlparse(self.path).query or "")
+        ticker = (qs.get("ticker", [""])[0] or "").strip()
+        metric = (qs.get("metric", ["price"])[0] or "price").strip()
+        if not ticker:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              b'{"error":"ticker requerido"}',
+                              "application/json; charset=utf-8")
+        try:
+            serie = history_store.read_series(ticker, metric)
+            body = json.dumps({"ticker": ticker, "metric": metric, "serie": serie}).encode("utf-8")
+            return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+        except ValueError as e:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              json.dumps({"error": str(e)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        except Exception as e:
+            logger.exception(f"history instrument failed: {e}")
+            return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
+                              b'{"error":"history unreadable"}', "application/json; charset=utf-8")
+
     def _serve_data912_history(
         self, ticker: str,
         ticker_re: re.Pattern,
@@ -2302,6 +2423,7 @@ def main():
         # ThreadPoolExecutor.submit) mientras el interpreter se desmonta y
         # tiran RuntimeError("cannot schedule new futures after shutdown").
         _SHUTDOWN_EVENT.set()
+        _history_flush()  # persiste el snapshot del día en curso antes de salir
         logger.info("Closing server socket.")
         server.server_close()
 
