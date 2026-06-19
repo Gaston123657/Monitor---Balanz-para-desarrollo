@@ -1,0 +1,734 @@
+[
+  {
+    "ticker": "CACAD",
+    "isin_local": "AR0669378199",
+    "short_name": "Capex SA",
+    "sector": "Petróleo y Gas"
+  },
+  {
+    "ticker": "CP28D",
+    "isin_local": "ARCGCO5600T9",
+    "short_name": "CGC",
+    "sector": "Petróleo y Gas"
+  },
+  {
+    "ticker": "LUC4D",
+    "isin_local": "ARLUZT560047",
+    "short_name": "Luz De Tres Picos SA",
+    "sector": "Servicios Públicos y Generación"
+  },
+  {
+    "ticker": "OLC3D",
+    "isin_local": "AROLDV560039",
+    "short_name": "Oleoductos del Valle SA",
+    "sector": "Petróleo y Gas"
+  },
+  {
+    "ticker": "MGCED",
+    "isin_local": "ARPAMP5600G7",
+    "short_name": "Pampa Energia SA",
+    "sector": "Servicios Públicos y Generación"
+  },
+  {
+    "ticker": "YMCTD",
+    "isin_local": "AR0688075032",
+    "short_name": "YPF SA",
+    "sector": "Petróleo y Gas"
+  },
+  {
+    "ticker": "AERBD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "AFCHD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "AFCID",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "AFCJD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "AFCKD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BACHD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BF37D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BF40D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BF45D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BGC4D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BPCSD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BPCUD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BPCVD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BVCPD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CACBD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CIC7D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CIC8D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CIC9D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CICBD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CLI1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CLSID",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CP37D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CP38D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CS45D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CS51D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CS52D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "CWC6D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "DEC2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "DNCAD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "EAC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "FO4AD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "FYC1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GN43D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GN47D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GN48D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GN49D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GOC4D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GYC4D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "GYC5D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HBCAD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HBCDD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HJCFD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HJCGD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HVS1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "JNC5D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "JNC6D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "LDCGD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "LIC6D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "LUC5D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MCC1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MCC2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MCC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MIC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MIC4D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MIC6D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MR39D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MSSED",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MSSFD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MSSGD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MU31D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MU32D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "NBS1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "NPCDD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "OT41D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "OZC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PECMD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PECND",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PFC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PN34D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PQCRD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PQCTD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PZCGD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RC1CD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RC3CD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RC5CD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RZ9BD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RZABD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SBC1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SBC2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SIC1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SNABD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SNEAD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SNEBD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SNSBD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SNSDD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "STCFD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SXC4D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "T641D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "T672D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "TLCVD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "TLCWD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "TTCED",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "VBC1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "VBC2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "VSCID",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "VSCPD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "VSCXD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "WBS1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "YFCKD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "ZPC2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "ZPC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "PUC2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "ICC6D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "MJC1D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BPCTD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BVCOD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BYY2D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HJCLD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RZBBD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RZBCD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "BF44D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "RZBAD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "EAC4D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "IRCQD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "SBC3D",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  },
+  {
+    "ticker": "HBCFD",
+    "isin_local": null,
+    "short_name": null,
+    "sector": null
+  }
+]

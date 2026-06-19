@@ -174,6 +174,57 @@ CONSIDERACIONES OPERATIVAS:
   - Verificar límites/permisos del producto Eikon Data API sobre los RICs que
     se quieran consultar (algunos contenidos requieren entitlements).
 
+--------------------------------------------------------------------------------
+8. PRIMERA INTEGRACIÓN CONCRETA — CALENDARIO DE PAGOS DE ONs (2026-06-19)
+--------------------------------------------------------------------------------
+
+OBJETIVO: completar las ONs que el calendario de pagos (/ons-calendar) marcaba
+como "sin datos suficientes" usando reference data + schedule de cashflows de
+LSEG, GUARDAR esos datos en el master Excel y NO depender más de la API en
+runtime (el monitor lee del Excel como siempre; LSEG es solo carga offline).
+
+PIPELINE (3 pasos, idempotente y re-ejecutable):
+
+  1) py -3.12 scripts/dump_missing_ons.py
+       Lee la hoja ONs del master y vuelca a data/_ons_missing.json las ONs sin
+       vto/cupón/frecuencia (mismo criterio que server._serve_ons_cashflows).
+       (Se corre con el py del monitor porque el venv aislado no tiene openpyxl.)
+
+  2) .venv-lseg\Scripts\python.exe scripts/lseg_fetch_ons.py   (Workspace ABIERTO)
+       Resuelve cada ticker local -> instrumento LSEG y baja datos a
+       data/lseg_ons_cache.json. Detalles de resolución:
+         - El ticker local Balanz (ej. AERBD) NO es identificador LSEG. La línea
+           BA-listada tiene RIC 'AR<root><clase>=...' con root = ticker sin el
+           sufijo de moneda (D). Se filtra startswith(RIC,'AR<root>') en la vista
+           GovCorpInstruments. El root de 4 chars devuelve la serie exacta.
+         - Reference data: vto, cupón, frecuencia, emisión, emisor, moneda, ISIN.
+         - SCHEDULE de cashflows EXACTO vía IPA (financial_contracts.bond,
+           notional=100). CLAVE: TR.FiAmortizationType viene vacío incluso para
+           bonos amortizing — NO es fiable. El schedule de IPA captura
+           amortización/zero-coupon/step-up sin adivinar. IPA precia a hoy =>
+           devuelve solo flujos FUTUROS (justo lo que el calendario necesita).
+         - No estimables: FRN/cupón variable y ARS se marcan "floating"; los que
+           no matchean ningún RIC quedan "no_match" (carga manual).
+
+  3) py -3.12 scripts/apply_lseg_ons.py [--apply]
+       Lee el cache y completa la hoja ONs + hoja Cashflows del master vía
+       instruments_abm (único escritor sancionado: atomic .tmp + os.replace).
+       Sin --apply es dry-run. Una sola transacción atómica (evita el churn de
+       N os.replace sobre el Excel en OneDrive, que gatilla PermissionError).
+       NO pisa sector/legislacion existentes. Lista al final las no aplicadas.
+
+RESULTADO (corrida 2026-06-19): de 122 ONs sin datos, 108 completadas con
+schedule exacto; estimables del calendario 152 -> 254; "sin datos" 116 -> 14
+(12 sin match en LSEG + 2 FRN en ARS) para carga manual.
+
+OJO OPERATIVO: el server carga el repo (Excel) UNA vez al startup y NO hace
+hot-reload. Tras correr el pipeline hay que REINICIAR el dashboard (run.bat)
+para que el calendario muestre los datos nuevos.
+
+LIMITACIÓN: el schedule guardado es un snapshot a la fecha de fetch (solo
+flujos futuros). Para refrescar (bonos que amortizan, ONs nuevas), re-correr
+el pipeline con Workspace abierto.
+
 ================================================================================
  FIN
 ================================================================================
