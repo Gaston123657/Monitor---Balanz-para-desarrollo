@@ -3726,16 +3726,55 @@ function todayStamp() {
   return `${fmt.dateV4(d)}_${fmt.timeHMS(d).replace(/:/g, "")}`;
 }
 
+// Calcula el rectángulo que realmente ocupa el contenido, para recortar el
+// espacio en blanco del grid de Gridstack. El ANCHO lo fija el panel
+// "Dólares & Macro" (fx_strip), que ocupa el ancho completo del grid y es el
+// borde derecho útil de referencia. El ALTO es el máximo de los paneles
+// visibles. Devuelve px CSS de documento con un pequeño margen.
+function captureContentBounds() {
+  const pad = 12;
+
+  // Ancho: borde derecho del panel fx_strip (Dólares & Macro).
+  const fxStrip = document.querySelector('#monitors .grid-stack-item[gs-id="fx_strip"]');
+  let width = document.documentElement.scrollWidth;
+  if (fxStrip) {
+    const r = fxStrip.getBoundingClientRect();
+    if (r.width > 0) width = Math.ceil(r.right + window.scrollX + pad);
+  }
+
+  // Alto: borde inferior más bajo entre header + paneles visibles.
+  const els = [
+    document.querySelector("header"),
+    ...document.querySelectorAll("#monitors .grid-stack-item"),
+  ].filter(Boolean);
+  let maxBottom = 0;
+  for (const el of els) {
+    if (el.offsetParent === null && el.tagName !== "HEADER") continue; // oculto
+    const r = el.getBoundingClientRect();
+    if (r.height === 0) continue;
+    maxBottom = Math.max(maxBottom, r.bottom + window.scrollY);
+  }
+
+  return { width, height: Math.ceil(maxBottom + pad) };
+}
+
 async function captureFiel() {
   const btn = document.getElementById("btn-capture");
   btn.disabled = true;
   document.body.classList.add("capturing");
   try {
+    const bounds = captureContentBounds();
     const canvas = await html2canvas(document.body, {
       backgroundColor: getComputedStyle(document.body).backgroundColor,
       scale: 4,
       useCORS: true,
       logging: false,
+      x: 0,
+      y: 0,
+      width: bounds.width,
+      height: bounds.height,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight,
     });
     downloadCanvas(canvas, `monitor_${todayStamp()}.png`);
   } catch (e) {
