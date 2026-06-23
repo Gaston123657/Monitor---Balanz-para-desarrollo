@@ -166,6 +166,16 @@ HISTORICAL_SUPPORTED_TICKERS = frozenset({
     "TX25", "TX26", "TX28",
 })
 
+# Canje (swap MEP↔CCL): pares de soberanos con pata MEP (sufijo D) + pata CABLE
+# (sufijo C) ambas soportadas por data912 historical. Canje% = D/C − 1 sobre
+# precios en USD (la pata cable cotiza más barata → el ratio mide cuánto cuesta
+# sacar dólares afuera vs. dejarlos local). KEEP base IN SYNC con CANJE_BASES
+# en app.js.
+CANJE_PAIRS = {
+    "AL30": ("AL30D", "AL30C"),
+    "GD30": ("GD30D", "GD30C"),
+}
+
 setup_logging()
 logger = logging.getLogger("monitor_web")
 
@@ -1517,6 +1527,8 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/api/stock_history/"):
             ticker = path[len("/api/stock_history/"):]
             return self._serve_stock_history(ticker)
+        if path.startswith("/api/canje_history/"):
+            return self._serve_canje_history(path[len("/api/canje_history/"):])
         if path.startswith("/api/bond_detail/"):
             ticker = path[len("/api/bond_detail/"):]
             qs = parse_qs(urlparse(self.path).query or "")
@@ -1821,6 +1833,58 @@ class Handler(BaseHTTPRequestHandler):
             _STOCK_HISTORY_CACHE, _STOCK_HISTORY_LOCK, _STOCK_HISTORY_TTL_S,
             _STOCK_HISTORY_BASE, "Data912/stock_hist",
         )
+
+    def _fetch_bond_hist_cached(self, ticker: str) -> list:
+        """Devuelve la lista OHLC histórica de data912 para `ticker`, usando el
+        mismo cache TTL que /api/bond_history (la serie es diaria). Lanza en
+        fallo de red — el caller lo traduce a 502."""
+        from core.infrastructure._http import http_get_json
+        t = ticker.upper()
+        now = time.time()
+        with _BOND_HISTORY_LOCK:
+            cached = _BOND_HISTORY_CACHE.get(t)
+            if cached and (now - cached[0]) < _BOND_HISTORY_TTL_S:
+                return cached[1]
+        data = http_get_json(f"{_BOND_HISTORY_BASE}/{t}", timeout=10, source="Data912/canje")
+        if not isinstance(data, list):
+            raise ValueError(f"unexpected response for {t}: {type(data).__name__}")
+        with _BOND_HISTORY_LOCK:
+            _BOND_HISTORY_CACHE[t] = (now, data)
+        return data
+
+    def _serve_canje_history(self, base: str):
+        """Serie diaria del canje MEP↔CCL para un par soberano (AL30, GD30).
+        Joinea pata MEP (D) y CABLE (C) por fecha y devuelve canje% = D/C − 1.
+        El frontend computa distribución + estacionalidad mensual sobre la serie."""
+        b = base.upper()
+        pair = CANJE_PAIRS.get(b)
+        if pair is None:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              json.dumps({"error": "base no soportada", "base": b,
+                                          "supported": sorted(CANJE_PAIRS)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        mep_t, cable_t = pair
+        try:
+            mep = self._fetch_bond_hist_cached(mep_t)
+            cable = self._fetch_bond_hist_cached(cable_t)
+        except Exception as e:
+            logger.warning(f"canje {b} fetch failed: {e}")
+            return self._send(HTTPStatus.BAD_GATEWAY,
+                              json.dumps({"error": str(e), "base": b}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        cable_close = {row.get("date"): row.get("c") for row in cable}
+        points = []
+        for row in mep:
+            d = row.get("date")
+            dc = row.get("c")
+            cc = cable_close.get(d)
+            if not d or not dc or not cc:
+                continue
+            points.append({"date": d, "canje": round((dc / cc - 1.0) * 100.0, 4)})
+        points.sort(key=lambda p: p["date"])
+        body = json.dumps({"base": b, "mep": mep_t, "cable": cable_t,
+                           "points": points}).encode("utf-8")
+        return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
 
     def _serve_bond_detail(self, ticker: str, settlement_lag: int = 1,
                            tamar_forecast: Optional[float] = None):

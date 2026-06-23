@@ -4126,6 +4126,10 @@ function renderBeiHistory(rows) {
   }
 }
 
+// NOTA: el panel de Canje MEP↔CCL (AL30/GD30) vive ahora en la página
+// "Detalle Dólar Futuro" (detalle_futuros.html / detalle_futuros.js), junto al
+// resto de gráficos de dólar. El endpoint backend es /api/canje_history/<base>.
+
 // =====================================================================
 // ABM modal — alta/baja/modificación de instrumentos
 // =====================================================================
