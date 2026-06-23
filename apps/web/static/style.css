@@ -1736,6 +1736,136 @@ a.btn {
   cursor: default;
 }
 
+/* Botón "Gráfico por sector" + menú de checkboxes (solo paneles de ONs). */
+.curve-sector-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+.curve-sector-wrap[hidden] { display: none; }
+.curve-sector-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.curve-sector-btn:hover,
+.curve-sector-btn[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+.curve-sector-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 210;
+  min-width: 200px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 4px 0;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(6, 20, 59, 0.28);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.curve-sector-menu[hidden] { display: none; }
+.curve-sector-actions {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--accent-light);
+  margin-bottom: 2px;
+}
+.curve-sector-actions button {
+  flex: 1 1 0;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--navy-dark);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.curve-sector-actions button:hover {
+  background: var(--accent-light);
+  border-color: var(--navy-band);
+}
+.curve-sector-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  color: var(--text);
+  font-size: 12px;
+}
+.curve-sector-item:hover { background: var(--accent-light); }
+.curve-sector-item input {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--navy-band);
+}
+.curve-sector-swatch {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+.curve-sector-label {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+/* Switch maestro: enciende/apaga la segmentación por sector. */
+.curve-sector-master {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy-dark);
+  border-bottom: 1px solid var(--accent-light);
+}
+.curve-sector-master input {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--navy-band);
+}
+/* Lista de sectores atenuada/inactiva cuando el switch maestro está apagado. */
+.curve-sector-list.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+/* Botón con estado activo cuando la segmentación está encendida. */
+.curve-sector-btn.is-active {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
 /* Tabla de instrumentos que componen la curva (debajo del gráfico). */
 .curve-popup-table-wrap {
   flex: 0 0 auto;
@@ -1789,6 +1919,7 @@ table.curve-popup-bonds td.heat-cell {
   overflow: visible;
 }
 .curve-popup.capturing-popup .curve-popup-capture,
+.curve-popup.capturing-popup .curve-sector-wrap,
 .curve-popup.capturing-popup .curve-popup-close {
   visibility: hidden;
 }
@@ -2582,6 +2713,8 @@ table.curve-popup-bonds td.heat-cell {
 /* --- Popover de columnas (▦) --- */
 [data-theme="dark"] .cols-popover-title,
 [data-theme="dark"] .cols-popover-reset { color: var(--text); }
+[data-theme="dark"] .curve-sector-actions button { color: var(--text); }
+[data-theme="dark"] .curve-sector-master { color: var(--text); }
 
 /* --- Settings popover --- */
 [data-theme="dark"] .settings-popover { background: var(--panel-bg); }

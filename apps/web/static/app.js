@@ -1257,6 +1257,12 @@ function _ensureCurvePopupDom() {
           </svg>
           <span>Capturar</span>
         </button>
+        <div class="curve-sector-wrap" data-role="sector-wrap" hidden>
+          <button class="curve-sector-btn" type="button" aria-haspopup="true" aria-expanded="false">
+            Gráfico por sector
+          </button>
+          <div class="curve-sector-menu" data-role="sector-menu" role="menu" hidden></div>
+        </div>
         <button class="curve-popup-close" type="button" aria-label="Cerrar">×</button>
       </header>
       <div class="curve-popup-body panel panel-curva" data-id="__curve_popup__">
@@ -1272,13 +1278,228 @@ function _ensureCurvePopupDom() {
   overlay.querySelector(".curve-popup-close").addEventListener("click", close);
   overlay.querySelector(".curve-popup-capture").addEventListener("click", (e) => {
     e.stopPropagation();
+    _closeCurveSectorMenu();
     captureCurvePopup();
   });
+
+  // Botón "Gráfico por sector": despliega/oculta el menú de checkboxes.
+  const sectorBtn = overlay.querySelector(".curve-sector-btn");
+  const sectorMenu = overlay.querySelector("[data-role='sector-menu']");
+  if (sectorBtn && sectorMenu) {
+    sectorBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = sectorMenu.hidden;
+      sectorMenu.hidden = !open;
+      sectorBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    // Click dentro del menú no lo cierra (deja tildar varios sin reabrir).
+    sectorMenu.addEventListener("click", (e) => e.stopPropagation());
+  }
+  // Click en cualquier parte del overlay (fuera del menú) cierra el menú.
+  overlay.addEventListener("click", () => _closeCurveSectorMenu());
   // Click en el backdrop (fuera de .curve-popup) cierra; click dentro no.
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) close();
   });
   return overlay;
+}
+
+// Etiqueta para las ONs sin sector cargado en el Excel maestro.
+const CURVE_SECTOR_NONE = "Sin sector";
+
+// Paleta de colores estable para segmentar la curva por sector. Se asigna por
+// orden alfabético del sector (ver _setupCurveSectorFilter) para que el color de
+// cada sector no cambie al tildar/destildar otros.
+const CURVE_SECTOR_PALETTE = [
+  "#2f7ed8", "#e0762d", "#27a567", "#c0392b", "#8e44ad",
+  "#16a085", "#d4ac0d", "#5d6d7e", "#e84393", "#2c3e50",
+  "#0097a7", "#7f8c8d",
+];
+
+// Sector normalizado de una fila (string no vacío) o la etiqueta "Sin sector".
+function _normSector(row) {
+  const s = row && row.sector != null ? String(row.sector).trim() : "";
+  return s || CURVE_SECTOR_NONE;
+}
+
+// Cierra el menú de sectores si está abierto (no borra el filtro, solo la UI).
+function _closeCurveSectorMenu() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  const menu = overlay.querySelector("[data-role='sector-menu']");
+  const btn = overlay.querySelector(".curve-sector-btn");
+  if (menu) menu.hidden = true;
+  if (btn) btn.setAttribute("aria-expanded", "false");
+}
+
+// Inicializa el filtro de sectores para un monitor de ONs: descubre los sectores
+// presentes (incluyendo "Sin sector"), les asigna color estable, deja todos
+// tildados por default y arma el menú de checkboxes.
+function _setupCurveSectorFilter(body, monitor) {
+  const sectors = Array.from(
+    new Set((monitor.rows || []).map((r) => _normSector(r))),
+  ).sort((a, b) => {
+    // "Sin sector" siempre al final; el resto alfabético.
+    if (a === CURVE_SECTOR_NONE) return 1;
+    if (b === CURVE_SECTOR_NONE) return -1;
+    return a.localeCompare(b, "es");
+  });
+
+  const colors = new Map();
+  sectors.forEach((sec, i) => {
+    colors.set(sec, sec === CURVE_SECTOR_NONE
+      ? "#95a5a6"
+      : CURVE_SECTOR_PALETTE[i % CURVE_SECTOR_PALETTE.length]);
+  });
+
+  body._sectorColors = colors;
+  body._sectorFilter = new Set(sectors);   // todos seleccionados por default
+  body._sectorMode = false;                // segmentación apagada por default
+  _buildCurveSectorMenu(sectors, colors);
+}
+
+// Construye el contenido del menú: acciones rápidas (Todos / Ninguno) + una fila
+// por sector con su swatch de color y checkbox. Cada cambio re-renderiza curva+tabla.
+function _buildCurveSectorMenu(sectors, colors) {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  const menu = overlay.querySelector("[data-role='sector-menu']");
+  if (!menu) return;
+  menu.innerHTML = "";
+
+  // Switch maestro: activa/desactiva la segmentación. Apagado = curva uniforme.
+  const master = document.createElement("label");
+  master.className = "curve-sector-master";
+  const masterCb = document.createElement("input");
+  masterCb.type = "checkbox";
+  masterCb.checked = false;
+  masterCb.addEventListener("change", () => _onCurveSectorModeChange());
+  const masterTxt = document.createElement("span");
+  masterTxt.textContent = "Separar por sector";
+  master.appendChild(masterCb);
+  master.appendChild(masterTxt);
+  menu.appendChild(master);
+
+  // Lista de sectores (filtro). Solo tiene efecto con el switch encendido; se
+  // atenúa/deshabilita cuando está apagado (ver _onCurveSectorModeChange).
+  const list = document.createElement("div");
+  list.className = "curve-sector-list is-disabled";
+
+  const actions = document.createElement("div");
+  actions.className = "curve-sector-actions";
+  const allBtn = document.createElement("button");
+  allBtn.type = "button";
+  allBtn.textContent = "Todos";
+  allBtn.disabled = true;
+  const noneBtn = document.createElement("button");
+  noneBtn.type = "button";
+  noneBtn.textContent = "Ninguno";
+  noneBtn.disabled = true;
+  actions.appendChild(allBtn);
+  actions.appendChild(noneBtn);
+  list.appendChild(actions);
+
+  for (const sec of sectors) {
+    const item = document.createElement("label");
+    item.className = "curve-sector-item";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = true;
+    cb.value = sec;
+    cb.disabled = true;
+    cb.addEventListener("change", () => _onCurveSectorToggle());
+
+    const swatch = document.createElement("span");
+    swatch.className = "curve-sector-swatch";
+    swatch.style.background = colors.get(sec) || "#888";
+
+    const txt = document.createElement("span");
+    txt.className = "curve-sector-label";
+    txt.textContent = sec;
+
+    item.appendChild(cb);
+    item.appendChild(swatch);
+    item.appendChild(txt);
+    list.appendChild(item);
+  }
+
+  menu.appendChild(list);
+
+  allBtn.addEventListener("click", () => _setAllCurveSectors(true));
+  noneBtn.addEventListener("click", () => _setAllCurveSectors(false));
+}
+
+// Activa/desactiva el modo "separar por sector". Reconstruye el chart porque
+// leyenda y tooltip se fijan al construir (el path cacheado solo refresca datos).
+function _onCurveSectorModeChange() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  const body = overlay.querySelector(".curve-popup-body");
+  if (!body) return;
+  const masterCb = overlay.querySelector(".curve-sector-master input");
+  const on = !!(masterCb && masterCb.checked);
+  body._sectorMode = on;
+
+  const btn = overlay.querySelector(".curve-sector-btn");
+  if (btn) btn.classList.toggle("is-active", on);
+
+  const list = overlay.querySelector(".curve-sector-list");
+  if (list) {
+    list.classList.toggle("is-disabled", !on);
+    list.querySelectorAll("input, button").forEach((el) => { el.disabled = !on; });
+  }
+
+  // Forzar rebuild del chart del popup para que leyenda/tooltip cambien con el modo.
+  const sourceId = body.getAttribute("data-source");
+  if (sourceId && bondCurveCharts[sourceId]) {
+    try { bondCurveCharts[sourceId].destroy(); } catch {}
+    delete bondCurveCharts[sourceId];
+  }
+  _rerenderCurvePopup();
+  if (sourceId) _curvePopupChart = bondCurveCharts[sourceId] || null;
+  if (_curvePopupChart) requestAnimationFrame(() => _curvePopupChart.resize());
+}
+
+function _setAllCurveSectors(checked) {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  overlay.querySelectorAll("[data-role='sector-menu'] input[type=checkbox]")
+    .forEach((cb) => { cb.checked = checked; });
+  _onCurveSectorToggle();
+}
+
+// Recalcula el Set de sectores seleccionados desde los checkboxes y re-renderiza.
+function _onCurveSectorToggle() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  const body = overlay.querySelector(".curve-popup-body");
+  if (!body || !body._sectorColors) return;
+  const selected = new Set();
+  overlay.querySelectorAll("[data-role='sector-menu'] input[type=checkbox]")
+    .forEach((cb) => { if (cb.checked) selected.add(cb.value); });
+  body._sectorFilter = selected;
+  _rerenderCurvePopup();
+}
+
+// Re-renderiza el gráfico y la tabla del popup con el filtro de sector vigente.
+function _rerenderCurvePopup() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay || overlay.hidden) return;
+  const body = overlay.querySelector(".curve-popup-body");
+  const monitor = body && body._curveMonitor;
+  if (!monitor) return;
+  const render = body._curveRender || renderBondCurve;
+  render(body, monitor);
+  _renderCurvePopupTable(monitor, body._curveTickers || []);
+  // Espejar subtitle/ts al header visible.
+  const sub = overlay.querySelector(".curve-popup-sub");
+  const ts = overlay.querySelector(".curve-popup-ts");
+  const bSub = body.querySelector("[data-role='subtitle']");
+  const bTs = body.querySelector("[data-role='ts']");
+  if (sub && bSub) sub.textContent = bSub.textContent;
+  if (ts && bTs) ts.textContent = bTs.textContent;
+  if (_curvePopupChart) requestAnimationFrame(() => _curvePopupChart.resize());
 }
 
 function openCurvePopup(monitorId, label, renderFn) {
@@ -1303,6 +1524,24 @@ function openCurvePopup(monitorId, label, renderFn) {
   let bTs = body.querySelector("[data-role='ts']");
   if (!bSub) { bSub = document.createElement("span"); bSub.setAttribute("data-role", "subtitle"); bSub.style.display = "none"; body.appendChild(bSub); }
   if (!bTs) { bTs = document.createElement("span"); bTs.setAttribute("data-role", "ts"); bTs.style.display = "none"; body.appendChild(bTs); }
+
+  // Refs para re-render al tildar sectores (el handler de los checkboxes los lee).
+  body._curveMonitor = monitor;
+  body._curveRender = render;
+
+  // Segmentación por sector: solo para los paneles de ONs. Para el resto se
+  // limpia el estado y se oculta el botón.
+  const sectorWrap = overlay.querySelector("[data-role='sector-wrap']");
+  const isOns = monitorId === "ons_ny" || monitorId === "ons_ar";
+  _closeCurveSectorMenu();
+  if (isOns) {
+    _setupCurveSectorFilter(body, monitor);
+    if (sectorWrap) sectorWrap.hidden = false;
+  } else {
+    body._sectorFilter = null;
+    body._sectorColors = null;
+    if (sectorWrap) sectorWrap.hidden = true;
+  }
 
   overlay.hidden = false;
   trapFocusIn(overlay);
@@ -1466,6 +1705,9 @@ function closeCurvePopup() {
   const overlay = document.getElementById("curve-popup-overlay");
   if (!overlay || overlay.hidden) return;
   overlay.hidden = true;
+  _closeCurveSectorMenu();
+  const body = overlay.querySelector(".curve-popup-body");
+  if (body) { body._sectorFilter = null; body._sectorColors = null; body._sectorMode = false; }
   releaseFocusTrap();
   // Destruir el Chart.js para liberar el canvas (sino al reabrir con otro
   // monitor el chart anterior interferiría).
@@ -5134,7 +5376,7 @@ function renderBondCurve(panel, sourceMonitor) {
   const yLabel = yField.toUpperCase();
 
   const points = (sourceMonitor.rows || [])
-    .map((r) => ({ ticker: r.ticker, x: r.duration, y: r[yField] }))
+    .map((r) => ({ ticker: r.ticker, x: r.duration, y: r[yField], sector: _normSector(r) }))
     .filter((p) => p.x != null && p.y != null
                  && Number.isFinite(p.x) && Number.isFinite(p.y) && p.x > 0
                  // Sanity filter: TIRs en [-10%, 500%]. Excluye Pesos variants
@@ -5147,28 +5389,54 @@ function renderBondCurve(panel, sourceMonitor) {
   // (y el eje Y). El sanity filter de arriba solo corta valores absurdos; este
   // es relativo a la forma de la propia curva.
   const { kept, dropped } = rejectCurveOutliers(points);
+
+  // Segmentación por sector: solo en el popup de ONs y solo si el switch maestro
+  // está encendido (panel._sectorMode). Apagado → curva uniforme (sectorFilter null).
+  // Segmenta tanto los puntos graficados como — vía panel._curveTickers — la tabla.
+  const sectorFilter = (panel._sectorMode && panel._sectorFilter) ? panel._sectorFilter : null;
+  const view = sectorFilter ? kept.filter((p) => sectorFilter.has(p.sector)) : kept;
+
   // Tickers efectivamente graficados (en orden de DM) — los lee el popup para
   // armar la tabla de instrumentos que componen la curva.
-  panel._curveTickers = kept.map((p) => p.ticker);
+  panel._curveTickers = view.map((p) => p.ticker);
 
   const subOut = dropped.length
     ? ` · ${dropped.length} fuera de curva (${dropped.map((p) => p.ticker).join(", ")})`
     : "";
-  if (sub) sub.textContent = `${kept.length} bonos · regresión logarítmica · ${yLabel} vs DM${subOut}`;
+  if (sub) {
+    const secOut = sectorFilter
+      ? ` · ${sectorFilter.size} sector(es)`
+      : "";
+    sub.textContent = `${view.length} bonos · regresión logarítmica · ${yLabel} vs DM${secOut}${subOut}`;
+  }
   if (ts) ts.textContent = sourceMonitor.ts
     ? `Act. ${fmt.timeHMS(new Date(sourceMonitor.ts))}`
     : "—";
 
   const sourceId = panel.getAttribute("data-source") || panel.getAttribute("data-id");
   let datasets;
-  if (sourceMonitor.id === "bonares") {
-    const { al, gd } = splitBySeries(kept);
+  if (sectorFilter) {
+    // Una serie de puntos + su regresión logarítmica por cada sector, con color
+    // estable (panel._sectorColors). Sectores con un solo bono no dibujan línea.
+    const colors = panel._sectorColors || new Map();
+    const bySector = new Map();
+    for (const p of view) {
+      if (!bySector.has(p.sector)) bySector.set(p.sector, []);
+      bySector.get(p.sector).push(p);
+    }
+    datasets = [];
+    for (const [sec, pts] of bySector) {
+      pts.sort((a, b) => a.x - b.x);
+      datasets.push(...curvaDatasets(pts, colors.get(sec) || CHART.ACCENT_BLUE, sec, "top"));
+    }
+  } else if (sourceMonitor.id === "bonares") {
+    const { al, gd } = splitBySeries(view);
     datasets = [
       ...curvaDatasets(al, "#6ab4f7", "BONARES (AL/AO)", "top"),
       ...curvaDatasets(gd, "#f0c040", "GLOBALES (GD/AE)", "bottom"),
     ];
   } else {
-    datasets = curvaDatasets(kept, CHART.ACCENT_BLUE, sourceMonitor.title || sourceId, "top");
+    datasets = curvaDatasets(view, CHART.ACCENT_BLUE, sourceMonitor.title || sourceId, "top");
   }
 
   if (bondCurveCharts[sourceId]) {
@@ -5187,7 +5455,9 @@ function renderBondCurve(panel, sourceMonitor) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: 24, right: 16, bottom: 8, left: 8 } },
+      // En modo sector reservamos más banda arriba (la leyenda de sectores ocupa
+      // 1-2 filas) para que no se solape con los labels de los tickers altos.
+      layout: { padding: { top: sectorFilter ? 56 : 24, right: 16, bottom: 8, left: 8 } },
       scales: {
         x: {
           title: { display: true, text: "Duration Modificada (años)", color: CHART.TEXT_DIM, font: { weight: 700, size: 12 } },
@@ -5198,11 +5468,14 @@ function renderBondCurve(panel, sourceMonitor) {
           title: { display: true, text: `Rendimiento (${yLabel} %)`, color: CHART.TEXT_DIM, font: { weight: 700, size: 12 } },
           ticks: { color: CHART.TEXT_DIM, font: { size: 11 }, callback: (v) => `${fmt.number(v, 1)}%` },
           grid: { color: CHART.GRID },
+          // Aire arriba/abajo para que los puntos extremos no peguen al borde y
+          // sus etiquetas (ancladas arriba) entren sin chocar con la leyenda.
+          grace: sectorFilter ? "18%" : 0,
         },
       },
       plugins: {
         legend: {
-          display: sourceMonitor.id === "bonares",
+          display: sourceMonitor.id === "bonares" || !!sectorFilter,
           position: "top", align: "end",
           labels: {
             color: CHART.NAVY_DARK, font: { weight: 700, size: 11 },
@@ -5216,6 +5489,8 @@ function renderBondCurve(panel, sourceMonitor) {
           callbacks: {
             title: (items) => items[0].raw.ticker,
             label: (item) => `${yLabel} ${fmt.number(item.raw.y, 2)}%  ·  DM ${fmt.number(item.raw.x, 2)} años`,
+            afterLabel: (item) => (sectorFilter && item.raw.sector)
+              ? `Sector: ${item.raw.sector}` : undefined,
           },
         },
         datalabels: { padding: 4 },
