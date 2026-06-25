@@ -152,6 +152,45 @@
       return r.json();
     }
 
+    // ---- ajuste de curva (mismo criterio que el dashboard principal) ----
+    // Regresión logarítmica y = a + b·ln(x) por mínimos cuadrados. {a,b} o null.
+    function fitLogCurve(points) {
+      if (!points || points.length < 2) return null;
+      const lnXs = [], ys = [];
+      for (const p of points) {
+        if (!(p.x > 0) || !Number.isFinite(p.y)) return null;
+        lnXs.push(Math.log(p.x));
+        ys.push(p.y);
+      }
+      const n = points.length;
+      const meanLnX = lnXs.reduce((a, b) => a + b, 0) / n;
+      const meanY = ys.reduce((a, b) => a + b, 0) / n;
+      let num = 0, den = 0;
+      for (let i = 0; i < n; i++) {
+        num += (lnXs[i] - meanLnX) * (ys[i] - meanY);
+        den += (lnXs[i] - meanLnX) ** 2;
+      }
+      if (den === 0) return null;
+      const b = num / den;
+      return { a: meanY - b * meanLnX, b };
+    }
+
+    // Genera N puntos a lo largo de la curva log entre min y max de xs.
+    function logCurvePoints(points, n = 100) {
+      const fit = fitLogCurve(points);
+      if (!fit) return [];
+      const xs = points.map((p) => p.x);
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      if (!(xMax > xMin)) return [];
+      const step = (xMax - xMin) / (n - 1);
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const x = xMin + i * step;
+        out.push({ x, y: fit.a + fit.b * Math.log(x) });
+      }
+      return out;
+    }
+
     // ---- selectores ----
     function fillPanelSelect() {
       const sel = document.getElementById("curve-panel");
@@ -229,14 +268,32 @@
       for (const f of fechas) {
         const pts = (data.curvas && data.curvas[f]) || [];
         total += pts.length;
+        const series = pts.map(p => ({ x: p.md, y: p.tir, ticker: p.ticker }));
+        // Puntos reales (sin línea que los una).
         datasets.push({
           label: f,
-          data: pts.map(p => ({ x: p.md, y: p.tir, ticker: p.ticker })),
-          showLine: true,
+          data: series,
+          showLine: false,
           borderColor: colorFor(f),
           backgroundColor: colorFor(f),
-          pointRadius: 3, tension: 0.25,
+          pointRadius: 3,
         });
+        // Curva ajustada (regresión log), punteada como en los otros dashboards.
+        const fitted = logCurvePoints(series);
+        if (fitted.length) {
+          datasets.push({
+            label: `_fit_${f}`,
+            data: fitted,
+            showLine: true,
+            borderColor: colorFor(f),
+            backgroundColor: "transparent",
+            borderWidth: 2,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+          });
+        }
       }
       empty.style.display = total ? "none" : "";
       if (!total) empty.textContent = "No hay datos para esa selección.";
@@ -258,10 +315,18 @@
                  grid: { color: GRID }, ticks: { color: TICK } },
           },
           plugins: {
-            legend: { labels: { color: TICK } },
-            tooltip: { callbacks: {
-              label: (c) => `${c.raw.ticker}: MD ${c.raw.x.toFixed(2)} · TIR ${c.raw.y.toFixed(2)}%`,
+            legend: { labels: {
+              color: TICK,
+              // Oculta las curvas ajustadas (prefijo "_fit_") del legend.
+              filter: (item, chart) => !String(chart.datasets[item.datasetIndex].label || "").startsWith("_fit_"),
             } },
+            tooltip: {
+              // Sólo los puntos reales tienen ticker; la curva ajustada no.
+              filter: (c) => c.raw && c.raw.ticker != null,
+              callbacks: {
+                label: (c) => `${c.raw.ticker}: MD ${c.raw.x.toFixed(2)} · TIR ${c.raw.y.toFixed(2)}%`,
+              },
+            },
           },
         },
       });

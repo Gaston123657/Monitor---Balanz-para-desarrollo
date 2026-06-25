@@ -565,6 +565,41 @@
     });
   }
 
+  // ── Cotización live BID/ASK del canje ──────────────────────────────────
+  // Endpoint /api/canje_quote/<base>: combina el book vivo de ambas patas
+  // (Data912) en el ratio D/C−1. BID = traer dólares; ASK = sacarlos. Se
+  // pollea cada 6s (el provider cachea live 3s, así que cada poll trae fresco).
+  async function fetchCanjeQuote() {
+    const box = document.getElementById("canje-quote");
+    const base = canjeState.base;
+    try {
+      const r = await fetch(`/api/canje_quote/${base}`, { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const q = await r.json();
+      if (base !== canjeState.base) return;   // el usuario cambió de base mientras volaba el request
+      renderCanjeQuote(q);
+    } catch (e) {
+      if (box) box.classList.add("error");
+      console.warn("canje quote fetch falló:", e);
+    }
+  }
+
+  function renderCanjeQuote(q) {
+    const box = document.getElementById("canje-quote");
+    const bidEl = document.getElementById("canje-q-bid");
+    const askEl = document.getElementById("canje-q-ask");
+    if (!box || !bidEl || !askEl) return;
+    const set = (el, v) => { el.textContent = v == null ? "–" : `${fmt.number(v, 2)}%`; };
+    set(bidEl, q.bid);
+    set(askEl, q.ask);
+    box.classList.remove("loading");
+    box.classList.toggle("error", q.bid == null && q.ask == null);
+    if (q.mid != null) box.title =
+      `Canje ${q.base} en tiempo real (Data912) · mid ${fmt.number(q.mid, 2)}%.\n` +
+      `BID = traer dólares al país (vendés ${q.mep} al bid, comprás ${q.cable} al ask).\n` +
+      `ASK = sacar dólares al exterior (comprás ${q.mep} al ask, vendés ${q.cable} al bid).`;
+  }
+
   function initCanje() {
     const setActive = (group, btn) => group.forEach((b) => {
       const on = b === btn;
@@ -578,6 +613,9 @@
       canjeState.base = base;
       setActive(baseBtns, btn);
       if (canjeState.cache[base]) renderCanje(); else fetchCanje(base);
+      const box = document.getElementById("canje-quote");
+      if (box) box.classList.add("loading");
+      fetchCanjeQuote();
     }));
     const rangeBtns = [...document.querySelectorAll(".canje-btn[data-range]")];
     rangeBtns.forEach((btn) => btn.addEventListener("click", () => {
@@ -590,6 +628,9 @@
     fetchCanje(canjeState.base);
     // Cada 10 min refresca el cierre del día (la serie es diaria).
     setInterval(() => fetchCanje(canjeState.base), 10 * 60 * 1000);
+    // Cotización BID/ASK: tiempo real (~6s, el provider cachea live 3s).
+    fetchCanjeQuote();
+    setInterval(fetchCanjeQuote, 6 * 1000);
   }
 
   async function refresh() {

@@ -1529,6 +1529,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._serve_stock_history(ticker)
         if path.startswith("/api/canje_history/"):
             return self._serve_canje_history(path[len("/api/canje_history/"):])
+        if path.startswith("/api/canje_quote/"):
+            return self._serve_canje_quote(path[len("/api/canje_quote/"):])
         if path.startswith("/api/bond_detail/"):
             ticker = path[len("/api/bond_detail/"):]
             qs = parse_qs(urlparse(self.path).query or "")
@@ -1884,6 +1886,64 @@ class Handler(BaseHTTPRequestHandler):
         points.sort(key=lambda p: p["date"])
         body = json.dumps({"base": b, "mep": mep_t, "cable": cable_t,
                            "points": points}).encode("utf-8")
+        return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+
+    def _serve_canje_quote(self, base: str):
+        """Cotización live (BID/ASK) del canje MEP↔CCL para un par soberano.
+
+        Combina el book vivo de ambas patas (Data912 live, mismo provider con
+        cache TTL 3s que el resto del dashboard) en el ratio D/C − 1:
+          · BID = bid_D / ask_C − 1  → traer dólares al país (vendés la pata
+            local D al bid, comprás la cable C al ask). Es el lado más barato.
+          · ASK = ask_D / bid_C − 1  → sacar dólares al exterior (comprás D al
+            ask, vendés C al bid). Es el lado más caro.
+          · MID = mid_D / mid_C − 1  (mid de cada pata; fallback al last si no
+            hay book de un lado).
+        Como bid_x ≤ ask_x, siempre BID ≤ ASK. Cualquier lado sin book completo
+        vuelve null (la pata cable suele tener book fino)."""
+        b = base.upper()
+        pair = CANJE_PAIRS.get(b)
+        if pair is None:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              json.dumps({"error": "base no soportada", "base": b,
+                                          "supported": sorted(CANJE_PAIRS)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        mep_t, cable_t = pair
+        try:
+            snaps = self.bond_provider.fetch_snapshots([mep_t, cable_t])
+        except Exception as e:
+            logger.warning(f"canje quote {b} fetch failed: {e}")
+            return self._send(HTTPStatus.BAD_GATEWAY,
+                              json.dumps({"error": str(e), "base": b}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+
+        def leg(t):
+            s = snaps.get(t)
+            if s is None:
+                return None
+            return {"bid": s.bid, "ask": s.ask, "last": s.price or None}
+
+        def ratio(num, den):
+            if num and den and num > 0 and den > 0:
+                return round((num / den - 1.0) * 100.0, 4)
+            return None
+
+        def mid_of(d):
+            if d is None:
+                return None
+            if d["bid"] and d["ask"]:
+                return (d["bid"] + d["ask"]) / 2.0
+            return d["last"]
+
+        mep, cable = leg(mep_t), leg(cable_t)
+        bid = ask = mid = None
+        if mep and cable:
+            bid = ratio(mep["bid"], cable["ask"])
+            ask = ratio(mep["ask"], cable["bid"])
+            mid = ratio(mid_of(mep), mid_of(cable))
+        body = json.dumps({"base": b, "mep": mep_t, "cable": cable_t,
+                           "legs": {"mep": mep, "cable": cable},
+                           "bid": bid, "ask": ask, "mid": mid}).encode("utf-8")
         return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
 
     def _serve_bond_detail(self, ticker: str, settlement_lag: int = 1,

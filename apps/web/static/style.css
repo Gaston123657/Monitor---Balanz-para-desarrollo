@@ -1219,6 +1219,56 @@ td.sparkline-cell svg.sparkline {
   border-color: var(--accent-blue);
 }
 
+/* Cotización live (BID/ASK) del canje. Flota a la derecha de la toolbar
+   (margin-left:auto) → queda arriba a la derecha del panel. */
+.canje-quote {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 3px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: rgba(127, 127, 127, 0.06);
+  font-variant-numeric: tabular-nums;
+}
+
+.canje-quote-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.canje-quote .live-dot { width: 7px; height: 7px; }
+
+.canje-quote-side {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.canje-quote-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+.canje-quote-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.canje-quote.loading .canje-quote-val { color: var(--text-dim); opacity: 0.6; }
+.canje-quote.error   .live-dot { background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.6); }
+.canje-quote.error   .canje-quote-tag::after { content: " · sin book"; opacity: 0.8; }
+
 /* Grilla de los 3 charts. La fila superior (evol + distribución) es
    redimensionable en altura por el usuario (resize: vertical). */
 .canje-grid {
