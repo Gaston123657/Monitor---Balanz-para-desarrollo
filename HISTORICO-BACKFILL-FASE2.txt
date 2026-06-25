@@ -154,3 +154,90 @@ resolve()/fetch_series() extendidos por familia, el store poblado con historia d
 las familias nuevas, spot-checks documentados, y este .txt actualizado con los RIC/
 columnas/escala descubiertos por familia (para que la fase 3 no re-investigue).
 ================================================================================
+
+
+================================================================================
+HALLAZGOS FASE 2 — RESUELTO (2026-06-25)  · NO re-investigar
+================================================================================
+
+RIC / COLUMNA / ESCALA POR FAMILIA (validado vs Data912 live de hoy)
+--------------------------------------------------------------------
+BOPREALES  ✅  (USD, igual que soberanos)
+  - Emisor LSEG = "Central Bank Of Argentina". search(query=root) NO sirve
+    (devuelve un bono coreano). search(query="BOPREAL") los trae todos.
+  - RIC CONSTRUIDO (no hace falta search): ticker BPx7D -> "ARBPO" + <x7> + "=".
+    Ej: BPA7D->ARBPOA7=, BPB8D->ARBPOB8=, BPC7D->ARBPOC7=. (insertar 'O' tras 'BP',
+    sacar la 'D', prefijo AR, sufijo '='). En resolve(): t[2:-1] da el medio "A7".
+  - Columna/escala: MID_PRICE = USD per-100, FACTOR 1. NO traen DIRTY_PRC ni
+    ACCR_INT, así que close=MID_PRICE (clean≈dirty, cupón bajo). Sin FX.
+  - Spot-check: BPA7D 2026-02-27 TIR 7.8% px 98.1 par 96.5 -> 2026-06-25 TIR 4.0%
+    px 101.9 par 101.1. Rango TIR 3.6–9.6% en las 6. PERFECTO.
+
+CER  ✅  (PESOS, real yield)
+  - RIC CONSTRUIDO: "AR" + <ticker> + "=" (cotización *evaluated*). Ej ARTZX26=,
+    ARTX26=, ARDICP=, ARPARP=. ~24 resuelven con 55–79 barras.
+  - Columna/escala: MID_PRICE = dirty per-100 en PESOS, FACTOR 1 (matchea Data912
+    al centavo: TZX26 393.46 vs 393.9; TX26 702.26 vs 702.4). CLEAN_PRC/DIRTY_PRC
+    vienen NaN; IDX_RATIO=0; ignorarlas. Usar MID_PRICE directo.
+  - Los tickers tipo LECER que SOLO tienen listado de bolsa "AR..Z=BA" (X30N6,
+    X30S6, X31L6) y los alias duales "...._CER" NO tienen RIC evaluated AR<ticker>=
+    ("universe not found") -> se saltean (la cotización Z=BA da TRDPRC_1 en escala
+    basura ~0.07 y stale; por eso fetch_series exige MID_PRICE y rechaza OHLC-only).
+  - Spot-check: DICP real 7.5–13% par 102–118 ✅; PARP 8–10% par 58–65 ✅;
+    TZX26 (zero corto) oscila -20%..+51% real con paridad sana 86–100% = REAL, no
+    bug (yield real del tramo corto CER es muy volátil/negativo).
+
+TASA_FIJA  ✅  (PESOS, TEA)
+  - Idéntico a CER: RIC CONSTRUIDO "AR"+<ticker>+"=", MID_PRICE dirty per-100 pesos
+    FACTOR 1 (T30J6 144.41 vs 144.51; S30S6 110.63 vs 110.53). Los T* (BONCAP) y
+    varios S* evaluated resuelven; los S* que solo tienen "AR..Z=BA" dan 0 y se
+    saltean. OJO: estos RIC traen ACCR_INT (~37 en T30J6) pero NO sumarlo: el
+    MID_PRICE ya es el all-in comparable a Data912 (capitalizable).
+  - Spot-check: T30J6 17–50% par 98–100 ✅; T31Y7 25–34% ✅; TO26 18–29% ✅.
+
+DOLAR_LINKED  ⚠️  (USD en LSEG -> PESOS ×FX; cobertura POBRE)
+  - RIC vía search(query=ticker), preferir "AR"+<ticker>+"=" si existe, si no el 1er
+    USD. TZV26->ARTZV26= (NaN, sin data); D30S6->AR0245811739= (=AR+ISIN, 6 barras).
+    Los D31*->AR..Z=BA (OHLC, rechazados). En la práctica SOLO D30S6 trae data (~6d).
+  - Columna/escala: MID_PRICE viene en USD per-100 (~99). Data912 da DL en PESOS
+    (~146460). Ratio = FX mayorista (~1477). CONVERSIÓN: close = MID_PRICE × FX_asof,
+    FX = serie "ARS=" (MID_PRICE, USD/ARS) que main() prefetchea a {fecha:fx} y pasa
+    a fetch_series. Sin FX as-of esa fecha -> se saltea la fila.
+  - CAVEAT residual: backfill_history deflacta con FX LIVE (DolarAPIProvider), no
+    as-of -> hay drift FX mínimo en la TIR (irrelevante con 6d de profundidad).
+  - Spot-check: D30S6 TIR 2.8–12.5% par 96–99 px ~143k–146k pesos ✅ (escala OK).
+
+ONs (ons_ny / ons_ar)  ❌  NO FACTIBLE por ahora
+  - El RIC se resuelve por ISIN (ARCP28O=, ARCACAZ=BA, ARMGCEO=) PERO get_history
+    devuelve VACÍO en todos -> LSEG no tiene serie diaria para estas ONs locales.
+  - resolve() devuelve (None, "ons_sin_historico_lseg") y se saltean. Fase 3: probar
+    otra fuente (Data912 historical? BYMA?) o un RIC de cotización distinto.
+
+CAMBIOS DE CÓDIGO (ya commiteables)
+-----------------------------------
+- scripts/lseg_fetch_history.py: resolve(ticker, isin_local, PANEL) con dispatch por
+  familia (+ helpers _search/_resolve_soberano); fetch_series(ric, start, end, PANEL,
+  fx_by_date) con _fetch_evaluated() para pesos/DL (exige MID_PRICE, ×FX para DL);
+  main() prefetchea ARS= si hay dolar_linked y solo cachea el RIC en el mapa si trajo
+  data. El camino soberano (bonares) quedó intacto.
+- scripts/backfill_history.py: guard de sanidad — saltea (y loguea) filas con
+  |TIR|>1000% (XIRR degenerado por amortización/vto; ej. TX26 2026-05-08 daba 3.4M%).
+  Máximo legítimo observado ~51%.
+
+ESTADO DEL STORE TRAS FASE 2
+----------------------------
+  bonares       89 fechas · 14 tickers   (sin cambios)
+  bopreales     80 fechas ·  6 tickers   (NUEVO: Feb–Jun)
+  cer           80 fechas · 29 tickers   (NUEVO backfill en ~24; resto forward)
+  tasa_fija     80 fechas · 18 tickers   (NUEVO backfill; resto forward)
+  dolar_linked   7 fechas ·  8 tickers   (LSEG aporta solo D30S6 ~6d; resto forward)
+  Backfill: 2475 filas en 79 fechas, 0 outliers tras el guard. tests 7/7 OK.
+
+PENDIENTE FASE 3
+----------------
+- ONs: encontrar fuente de histórico diario (LSEG no la tiene por estos RIC).
+- DL: profundizar (LSEG evaluated es muy fino); evaluar usar FX as-of en
+  backfill_history para anular el drift si se quiere historia DL más larga.
+- CER/TASA_FIJA tramo "Z=BA": los LECER/LECAP sin RIC evaluated quedan solo con
+  captura forward; ver si BYMA/otra vista LSEG expone su serie en escala usable.
+================================================================================

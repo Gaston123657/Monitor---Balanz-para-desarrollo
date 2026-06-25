@@ -80,6 +80,15 @@ def main():
             if tir is None:
                 skipped["tir_none (sin índice as-of / no converge)"] += 1
                 continue
+            # Guard de sanidad: una TIR absurda (|TIR| > 1000% = 10.0 decimal) es un XIRR
+            # degenerado, no un punto de curva válido. Pasa cuando el precio choca contra
+            # un valor técnico inconsistente: cerca del vencimiento o en una transición de
+            # amortización cuyo timing en el Excel no coincide con el rebase de LSEG
+            # (ej. TX26 2026-05-08 post-amort: 3.4M%). El máximo legítimo observado es ~51%.
+            if abs(tir) > 10.0:
+                skipped["tir_absurda (>1000%, XIRR degenerado)"] += 1
+                print(f"  {ticker} {fecha}: TIR absurda {tir*100:.1f}% (px={close}) — salteado")
+                continue
             try:
                 tvalue = FinancialEngine.calculate_technical_value(snap, indices, fx, ref_date=fdate)
             except Exception:
