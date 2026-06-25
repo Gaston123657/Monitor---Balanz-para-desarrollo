@@ -207,11 +207,49 @@ DOLAR_LINKED  ⚠️  (USD en LSEG -> PESOS ×FX; cobertura POBRE)
     as-of -> hay drift FX mínimo en la TIR (irrelevante con 6d de profundidad).
   - Spot-check: D30S6 TIR 2.8–12.5% par 96–99 px ~143k–146k pesos ✅ (escala OK).
 
-ONs (ons_ny / ons_ar)  ❌  NO FACTIBLE por ahora
-  - El RIC se resuelve por ISIN (ARCP28O=, ARCACAZ=BA, ARMGCEO=) PERO get_history
-    devuelve VACÍO en todos -> LSEG no tiene serie diaria para estas ONs locales.
-  - resolve() devuelve (None, "ons_sin_historico_lseg") y se saltean. Fase 3: probar
-    otra fuente (Data912 historical? BYMA?) o un RIC de cotización distinto.
+ONs (ons_ny / ons_ar)  ❌  SIN FUENTE DE HISTÓRICO PASADO -> FORWARD-ONLY
+  - LSEG: investigado a fondo (2026-06-25). El RIC se resuelve por ISIN
+    (ARCP28O=, ARMGCEO=) o por línea de bolsa (ARxxxZ=BA), PERO get_history da:
+      · ARxxxO= / ARxxx= / por-ISIN  -> VACÍO
+      · ARxxxZ=BA (bolsa)            -> 1-2 barras STALE (MGCE 1 barra 2026-05-06;
+                                         LUC4 2 barras… ¡de 2024!)
+      · get_data TR.PriceClose c/SDate-EDate -> NaT (sin datos)
+    No existe serie diaria de estas ONs locales en LSEG. resolve() devuelve
+    (None, "ons_sin_historico_lseg") y se saltean.
+  - Data912 historical: tampoco las tiene. /historical/bonds/<ON> (sufijos D/O/C)
+    devuelve {"Error":"Nahh no tengo ese ticker"} para TODAS; no hay /historical/corp
+    (404). Solo cubre soberanos/CER (control: AL30D -> 1157 barras OK).
+  - precio_historico.csv: 0 columnas de ONs (solo 18 soberanos).
+  => CONCLUSIÓN: no hay fuente de histórico PASADO de ONs en el stack actual.
+     El histórico ON se construye SOLO hacia adelante con la captura FORWARD del
+     server (ya activa: graba ons_ar 89 + ons_ny 31 tickers cada día hábil; la UI
+     historico.html ya expone los paneles "ONs (NY)" y "ONs (AR)"; endpoints
+     /api/history/* son agnósticos de panel). Verificado: la curva ON (md,tir) y las
+     series por ticker se leen OK. No requiere código nuevo: ya queda "en línea".
+  - Fase 3 (si se quiere el PASADO): única vía sería una fuente NUEVA fuera de
+     Data912 (IAMC/BYMA/Bolsar) -> rompe el pilar #4, es un scraper frágil; evaluar
+     costo/beneficio. OJO: CP28D no captura porque Data912 no cotiza su línea D
+     (solo CP28C/CP28O) -> mismatch de símbolo en el master, no de histórico.
+
+CAPTURA DIARIA INDEPENDIENTE DEL MONITOR (para no perder días hacia adelante)
+-----------------------------------------------------------------------------
+Como el histórico ON (y de cualquier panel) solo crece forward y no hay backfill del
+pasado, se agregó un registro diario que NO depende de tener el web server abierto:
+
+  - scripts/capture_daily_snapshot.py (py 3.12): reusa la maquinaria del server
+    (_build_refresh_context + _refresh_bond_panels + _history_flush) para computar y
+    persistir el snapshot del día de TODOS los paneles de bonos al history_store con
+    source="live". Idempotente vs la captura del server (upsert por fecha+ticker).
+    Sólo escribe en días hábiles BYMA (is_habil); si no, sale 0. Cero matemática nueva.
+  - capture_daily.bat: wrapper que loguea a data/history/capture_daily.log (append).
+  - Windows Task Scheduler: tarea "Monitor Captura Diaria Historico", Lun–Vie 18:30
+    (post-cierre), con StartWhenAvailable (si la PC estaba apagada, corre al prender).
+    Los feriados AR los filtra el script (schtasks no los conoce).
+      Ver:    schtasks /Query /TN "Monitor Captura Diaria Historico" /V /FO LIST
+      Correr: schtasks /Run   /TN "Monitor Captura Diaria Historico"
+      Borrar: schtasks /Delete /TN "Monitor Captura Diaria Historico" /F
+  LÍMITE: registra el snapshot del MOMENTO en que corre (~cierre). Si un día hábil la
+  PC está apagada todo el día, ese día se pierde igual (no hay fuente para recuperarlo).
 
 CAMBIOS DE CÓDIGO (ya commiteables)
 -----------------------------------
