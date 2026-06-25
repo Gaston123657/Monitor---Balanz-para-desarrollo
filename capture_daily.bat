@@ -21,15 +21,19 @@ py -3.12 scripts\capture_daily_snapshot.py >> "%LOG%" 2>&1
 set "RC=%errorlevel%"
 echo [%date% %time%] captura exit %RC% >> "%LOG%"
 
-REM --- 2) Commit + push de los datos nuevos (solo si hubo cambios) ---
-git add data/history >> "%LOG%" 2>&1
-git diff --cached --quiet
+REM --- 2) Commit + push SOLO de los datos capturados (snapshots), nunca otros
+REM     archivos en progreso. Stage acotado a data/history/snapshots/ a proposito:
+REM     no toca scripts, ni otros CSV de data/history (lseg_ric_map, cer_diario, etc).
+git add data/history/snapshots >> "%LOG%" 2>&1
+git diff --cached --quiet -- data/history/snapshots
 if errorlevel 1 (
-  git -c user.name="updater de historico" -c user.email="updater@historico.local" commit -m "datos historicos automaticos %date%" >> "%LOG%" 2>&1
+  REM commit ACOTADO por pathspec: solo data/history/snapshots, aunque el usuario
+  REM tenga otros cambios staged/sin terminar (esos quedan intactos, sin commitear).
+  git -c user.name="updater de historico" -c user.email="updater@historico.local" commit -m "datos historicos automaticos %date%" -- data/history/snapshots >> "%LOG%" 2>&1
   git push >> "%LOG%" 2>&1
-  echo [%date% %time%] commit+push hecho >> "%LOG%"
+  echo [%date% %time%] commit+push de snapshots hecho >> "%LOG%"
 ) else (
-  echo [%date% %time%] sin cambios en data/history, no se commitea >> "%LOG%"
+  echo [%date% %time%] sin cambios en snapshots, no se commitea >> "%LOG%"
 )
 
 echo [%date% %time%] capture_daily END >> "%LOG%"
