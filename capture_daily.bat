@@ -25,7 +25,7 @@ REM --- 2) Commit + push de los datos nuevos (solo si hubo cambios) ---
 git add data/history >> "%LOG%" 2>&1
 git diff --cached --quiet
 if errorlevel 1 (
-  git commit -m "datos historicos automaticos %date%" >> "%LOG%" 2>&1
+  git -c user.name="updater de historico" -c user.email="updater@historico.local" commit -m "datos historicos automaticos %date%" >> "%LOG%" 2>&1
   git push >> "%LOG%" 2>&1
   echo [%date% %time%] commit+push hecho >> "%LOG%"
 ) else (
