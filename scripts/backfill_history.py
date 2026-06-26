@@ -64,6 +64,16 @@ def main():
             skipped["instrumento_no_encontrado"] += len(info.get("prices", []))
             print(f"  {ticker}: instrumento no está en el master — salteado")
             continue
+        # Globales NY-law que resuelven a un RIC por CUSIP (universe_id arranca con
+        # dígito, ej GD30D -> "040114HS2=") cotizan en convención INTERNACIONAL:
+        # precio per-100 de CAPITAL RESIDUAL VIGENTE (outstanding), no per-100 de VN
+        # original como la escala "D" de Data912. Para los que ya amortizaron capital
+        # (GD30D residual 72, GD29D 70) hay que reescalar por el pool factor as-of la
+        # fecha; si no, la paridad da >100% y la TIR NEGATIVA (imposible en hard-dollar).
+        # No-op mientras el bono está en gracia/bullet (residual=100: GD35D/38/41/46).
+        # Los AL* (Bonares) usan RIC "AR<root>=" evaluated, ya per-original: NO tocar.
+        uid = info.get("universe_id")
+        cusip_global = panel == "bonares" and bool(uid) and uid[0].isdigit()
         for p in info.get("prices", []):
             fecha = p["fecha"]
             close = p.get("close")
@@ -71,6 +81,8 @@ def main():
                 skipped["precio_invalido"] += 1
                 continue
             fdate = date.fromisoformat(fecha)
+            if cusip_global:
+                close = float(close) * FinancialEngine.residual_nominal(inst, fdate) / 100.0
             snap = MarketSnapshot(instrument=inst, price=float(close),
                                   last_update=fdate, volume=p.get("volume"))
             try:
@@ -88,6 +100,13 @@ def main():
             if abs(tir) > 10.0:
                 skipped["tir_absurda (>1000%, XIRR degenerado)"] += 1
                 print(f"  {ticker} {fecha}: TIR absurda {tir*100:.1f}% (px={close}) — salteado")
+                continue
+            # Guard de escala: un hard-dollar (bonares/globales) NO puede rendir
+            # negativo. Si sale tir<0 es señal de precio en escala equivocada
+            # (per-outstanding sin reescalar, RIC mal resuelto, etc.): no persistir.
+            if panel == "bonares" and tir < 0:
+                skipped["tir_negativa_bonares (escala de precio sospechosa)"] += 1
+                print(f"  {ticker} {fecha}: TIR negativa {tir*100:.1f}% en hard-dollar (px={close}) — salteado")
                 continue
             try:
                 tvalue = FinancialEngine.calculate_technical_value(snap, indices, fx, ref_date=fdate)
