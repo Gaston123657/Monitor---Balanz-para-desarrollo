@@ -339,6 +339,300 @@
     });
   }
 
+  // ── Canje MEP↔CCL (AL30 / GD30) ────────────────────────────────────────
+  // Serie diaria desde /api/canje_history/<base>. 3 sub-charts: evolución
+  // (filtrada por el rango elegido), distribución de niveles (mismo rango) y
+  // promedio mensual estacional (barras 2022-2024 + puntos 2025/2026, sobre
+  // toda la historia). Default de rango: "este año" (YTD).
+  const CANJE = {
+    LINE: "#1aa094", MEAN: "#cf3a5f", LAST: "#e0a93b", Y2025: "#e0a93b", Y2026: "#a045cf",
+  };
+  const CANJE_BASELINE_YEARS = [2022, 2023, 2024];
+  const CANJE_DOT_YEARS = [2025, 2026];
+  const MONTH_LABELS = ["ene", "feb", "mar", "abr", "may", "jun",
+                        "jul", "ago", "sep", "oct", "nov", "dic"];
+
+  const canjeState = { base: "AL30", range: "ytd", cache: {} };
+
+  function niceStep(range) {
+    const raw = range / 25 || 0.01;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    const nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+    return nice * mag;
+  }
+
+  // Filtra los puntos por el rango elegido (sobre la serie completa ordenada
+  // ascendente). "ytd" = año en curso; "365"/"730" = últimos N días respecto
+  // del último dato; "all" = todo.
+  function filterByRange(points, range) {
+    if (!points.length || range === "all") return points;
+    if (range === "ytd") {
+      const lastYear = points[points.length - 1].date.slice(0, 4);
+      return points.filter((p) => p.date.slice(0, 4) === lastYear);
+    }
+    const days = parseInt(range, 10);
+    if (!Number.isFinite(days)) return points;
+    const lastMs = Date.parse(points[points.length - 1].date + "T00:00:00");
+    const cutoff = lastMs - days * 86400000;
+    return points.filter((p) => Date.parse(p.date + "T00:00:00") >= cutoff);
+  }
+
+  async function fetchCanje(base) {
+    try {
+      const r = await fetch(`/api/canje_history/${base}`, { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const j = await r.json();
+      canjeState.cache[base] = j.points || [];
+      if (base === canjeState.base) renderCanje();
+    } catch (e) {
+      console.warn("canje fetch falló:", e);
+    }
+  }
+
+  function renderCanje() {
+    const base = canjeState.base;
+    const all = canjeState.cache[base] || [];
+    const titleEl = document.getElementById("canje-title");
+    if (titleEl) titleEl.textContent = base === "GD30" ? "GD30D / GD30C" : "AL30D / AL30C";
+    if (!all.length) return;
+
+    const win = filterByRange(all, canjeState.range);
+    const vals = win.map((p) => p.canje);
+    const dates = win.map((p) => p.date);
+    const mean = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
+    const last = vals.length ? vals[vals.length - 1] : null;
+
+    const subEl = document.getElementById("canje-sub");
+    if (subEl) subEl.textContent = `${win.length} ruedas · media ${fmt.number(mean, 2)}%`;
+    const evolSub = document.getElementById("canje-evol-sub");
+    if (evolSub && last != null) {
+      evolSub.textContent = `· último ${fmt.number(last, 2)}% (${dates[dates.length - 1]})`;
+    }
+
+    renderCanjeEvol(dates, vals, mean, last);
+    renderCanjeDist(vals, mean, last);
+    renderCanjeMonth(all);   // estacionalidad: siempre toda la historia
+  }
+
+  function renderCanjeEvol(dates, vals, mean, last) {
+    const canvas = document.getElementById("canje-evol-chart");
+    if (!canvas || !vals.length) return;
+    const P = palette();
+    const lastIdx = vals.length - 1;
+    const datasets = [
+      { label: "Canje", data: vals, borderColor: CANJE.LINE, backgroundColor: CANJE.LINE,
+        borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.1, order: 3,
+        datalabels: { display: false } },
+      { label: `Media: ${fmt.number(mean, 2)}%`, data: dates.map(() => mean),
+        borderColor: CANJE.MEAN, borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0,
+        pointHoverRadius: 0, tension: 0, order: 2, datalabels: { display: false } },
+      { label: "Último", data: dates.map((_, i) => (i === lastIdx ? last : null)),
+        borderColor: CANJE.LAST, backgroundColor: CANJE.LAST, showLine: false,
+        pointRadius: dates.map((_, i) => (i === lastIdx ? 5 : 0)), pointHoverRadius: 6,
+        order: 1, datalabels: { display: false } },
+    ];
+    if (charts.canjeEvol) {
+      charts.canjeEvol.data.labels = dates;
+      charts.canjeEvol.data.datasets = datasets;
+      charts.canjeEvol.update("none");
+      return;
+    }
+    charts.canjeEvol = new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: { labels: dates, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { labels: { color: P.TEXT_DIM, font: { size: 11 }, filter: (i) => i.text !== "Canje" } },
+          datalabels: { display: false },
+          tooltip: {
+            backgroundColor: P.NAVY, titleColor: "#fff", bodyColor: "#fff", padding: 10,
+            filter: (item) => item.dataset.label === "Canje",
+            callbacks: { title: (items) => items[0]?.label || "", label: (ctx) => `Canje: ${fmt.number(ctx.parsed.y, 2)}%` },
+          },
+        },
+        scales: {
+          x: axis(P, "", { ticks: { color: P.TEXT_DIM, font: { size: 10 }, maxTicksLimit: 10, autoSkip: true } }),
+          y: axis(P, "", { ticks: { color: P.TEXT_DIM, font: { size: 10 }, callback: (v) => `${fmt.number(v, 1)}%` } }),
+        },
+      },
+    });
+  }
+
+  function renderCanjeDist(vals, mean, last) {
+    const canvas = document.getElementById("canje-dist-chart");
+    if (!canvas || !vals.length) return;
+    const P = palette();
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const step = niceStep(max - min);
+    const start = Math.floor(min / step) * step;
+    const nBins = Math.max(1, Math.ceil((max - start) / step) + 1);
+    const counts = new Array(nBins).fill(0);
+    for (const v of vals) {
+      let idx = Math.floor((v - start) / step);
+      counts[Math.min(Math.max(idx, 0), nBins - 1)]++;
+    }
+    const labels = counts.map((_, i) => fmt.number(start + i * step, 2));
+    const binOf = (v) => Math.min(Math.max(Math.floor((v - start) / step), 0), nBins - 1);
+    const meanBin = binOf(mean), lastBin = last != null ? binOf(last) : -1;
+    const colors = counts.map((_, i) => (i === lastBin ? CANJE.LAST : i === meanBin ? CANJE.MEAN : P.BLUE));
+    if (charts.canjeDist) {
+      charts.canjeDist.data.labels = labels;
+      charts.canjeDist.data.datasets[0].data = counts;
+      charts.canjeDist.data.datasets[0].backgroundColor = colors;
+      charts.canjeDist.options.plugins.tooltip.callbacks.title =
+        (items) => `${items[0]?.label}% – ${fmt.number(parseFloat(items[0]?.label) + step, 2)}%`;
+      charts.canjeDist.update("none");
+      return;
+    }
+    charts.canjeDist = new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Días", data: counts, backgroundColor: colors, borderWidth: 0 }] },
+      options: {
+        indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: false,
+        plugins: {
+          legend: { display: false }, datalabels: { display: false },
+          tooltip: {
+            backgroundColor: P.NAVY, titleColor: "#fff", bodyColor: "#fff", padding: 10,
+            callbacks: {
+              title: (items) => `${items[0]?.label}% – ${fmt.number(parseFloat(items[0]?.label) + step, 2)}%`,
+              label: (ctx) => `${ctx.parsed.x} días`,
+            },
+          },
+        },
+        scales: {
+          x: axis(P, "", { ticks: { color: P.TEXT_DIM, font: { size: 10 }, precision: 0 } }),
+          y: axis(P, "", { reverse: true, grid: { display: false },
+            ticks: { color: P.TEXT_DIM, font: { size: 10 }, autoSkip: true, maxTicksLimit: 14, callback: (v, i) => `${labels[i]}%` } }),
+        },
+      },
+    });
+  }
+
+  function renderCanjeMonth(points) {
+    const canvas = document.getElementById("canje-month-chart");
+    if (!canvas || !points.length) return;
+    const P = palette();
+    const acc = {};
+    for (const p of points) {
+      const y = +p.date.slice(0, 4), m = +p.date.slice(5, 7) - 1;
+      (acc[y] = acc[y] || {})[m] = acc[y][m] || { sum: 0, n: 0 };
+      acc[y][m].sum += p.canje; acc[y][m].n += 1;
+    }
+    const avgFor = (y, m) => { const c = acc[y] && acc[y][m]; return c && c.n ? c.sum / c.n : null; };
+    const baseline = MONTH_LABELS.map((_, m) => {
+      const ys = CANJE_BASELINE_YEARS.map((y) => avgFor(y, m)).filter((v) => v != null);
+      return ys.length ? ys.reduce((a, b) => a + b, 0) / ys.length : null;
+    });
+    const datasets = [
+      { type: "bar", label: `Promedio ${CANJE_BASELINE_YEARS[0]}-${CANJE_BASELINE_YEARS[CANJE_BASELINE_YEARS.length - 1]}`,
+        data: baseline, backgroundColor: P.BLUE, borderWidth: 0, order: 3, datalabels: { display: false } },
+    ];
+    const dotColors = [CANJE.Y2025, CANJE.Y2026];
+    CANJE_DOT_YEARS.forEach((y, k) => {
+      datasets.push({
+        type: "line", label: String(y), data: MONTH_LABELS.map((_, m) => avgFor(y, m)),
+        borderColor: dotColors[k] || "#888", backgroundColor: dotColors[k] || "#888",
+        showLine: false, pointRadius: 4, pointHoverRadius: 6, spanGaps: true, order: 1,
+        datalabels: { display: false },
+      });
+    });
+    if (charts.canjeMonth) {
+      charts.canjeMonth.data.datasets = datasets;
+      charts.canjeMonth.update("none");
+      return;
+    }
+    charts.canjeMonth = new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: { labels: MONTH_LABELS, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        plugins: {
+          legend: { labels: { color: P.TEXT_DIM, font: { size: 11 }, usePointStyle: true } },
+          datalabels: { display: false },
+          tooltip: {
+            backgroundColor: P.NAVY, titleColor: "#fff", bodyColor: "#fff", padding: 10,
+            callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y == null ? "–" : fmt.number(ctx.parsed.y, 2) + "%"}` },
+          },
+        },
+        scales: {
+          x: axis(P, "", { grid: { display: false } }),
+          y: axis(P, "", { beginAtZero: true, ticks: { color: P.TEXT_DIM, font: { size: 10 }, callback: (v) => `${fmt.number(v, 1)}%` } }),
+        },
+      },
+    });
+  }
+
+  // ── Cotización live BID/ASK del canje ──────────────────────────────────
+  // Endpoint /api/canje_quote/<base>: combina el book vivo de ambas patas
+  // (Data912) en el ratio D/C−1. BID = traer dólares; ASK = sacarlos. Se
+  // pollea cada 6s (el provider cachea live 3s, así que cada poll trae fresco).
+  async function fetchCanjeQuote() {
+    const box = document.getElementById("canje-quote");
+    const base = canjeState.base;
+    try {
+      const r = await fetch(`/api/canje_quote/${base}`, { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const q = await r.json();
+      if (base !== canjeState.base) return;   // el usuario cambió de base mientras volaba el request
+      renderCanjeQuote(q);
+    } catch (e) {
+      if (box) box.classList.add("error");
+      console.warn("canje quote fetch falló:", e);
+    }
+  }
+
+  function renderCanjeQuote(q) {
+    const box = document.getElementById("canje-quote");
+    const bidEl = document.getElementById("canje-q-bid");
+    const askEl = document.getElementById("canje-q-ask");
+    if (!box || !bidEl || !askEl) return;
+    const set = (el, v) => { el.textContent = v == null ? "–" : `${fmt.number(v, 2)}%`; };
+    set(bidEl, q.bid);
+    set(askEl, q.ask);
+    box.classList.remove("loading");
+    box.classList.toggle("error", q.bid == null && q.ask == null);
+    if (q.mid != null) box.title =
+      `Canje ${q.base} en tiempo real (Data912) · mid ${fmt.number(q.mid, 2)}%.\n` +
+      `BID = traer dólares al país (vendés ${q.mep} al bid, comprás ${q.cable} al ask).\n` +
+      `ASK = sacar dólares al exterior (comprás ${q.mep} al ask, vendés ${q.cable} al bid).`;
+  }
+
+  function initCanje() {
+    const setActive = (group, btn) => group.forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle("is-active", on);
+      if (b.hasAttribute("role")) b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    const baseBtns = [...document.querySelectorAll(".canje-btn[data-base]")];
+    baseBtns.forEach((btn) => btn.addEventListener("click", () => {
+      const base = btn.getAttribute("data-base");
+      if (base === canjeState.base) return;
+      canjeState.base = base;
+      setActive(baseBtns, btn);
+      if (canjeState.cache[base]) renderCanje(); else fetchCanje(base);
+      const box = document.getElementById("canje-quote");
+      if (box) box.classList.add("loading");
+      fetchCanjeQuote();
+    }));
+    const rangeBtns = [...document.querySelectorAll(".canje-btn[data-range]")];
+    rangeBtns.forEach((btn) => btn.addEventListener("click", () => {
+      const range = btn.getAttribute("data-range");
+      if (range === canjeState.range) return;
+      canjeState.range = range;
+      setActive(rangeBtns, btn);
+      renderCanje();
+    }));
+    fetchCanje(canjeState.base);
+    // Cada 10 min refresca el cierre del día (la serie es diaria).
+    setInterval(() => fetchCanje(canjeState.base), 10 * 60 * 1000);
+    // Cotización BID/ASK: tiempo real (~6s, el provider cachea live 3s).
+    fetchCanjeQuote();
+    setInterval(fetchCanjeQuote, 6 * 1000);
+  }
+
   async function refresh() {
     const statusEl = document.getElementById("df-status");
     try {
@@ -407,4 +701,5 @@
 
   refresh();
   setInterval(refresh, REFRESH_MS);
+  initCanje();
 })();

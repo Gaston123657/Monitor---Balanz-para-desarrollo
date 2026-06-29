@@ -68,6 +68,21 @@
     .hx-chip button:hover { color: var(--text-white); }
     .hx-chart-wrap { position: relative; height: 440px; }
     .hx-empty { color: #8899cc; font-size: 12px; padding: 8px 0; }
+    .hx-excluded {
+      border-top: 1px solid #1f2a5a; padding-top: 12px; margin-top: 4px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .hx-excluded h3 {
+      margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 0.6px;
+      color: #ffb020; text-transform: uppercase;
+    }
+    .hx-excluded .hx-exhint { font-size: 10px; color: #8899cc; font-weight: 500; letter-spacing: 0; text-transform: none; }
+    .hx-extable { width: 100%; border-collapse: collapse; font-family: "JetBrains Mono", monospace; font-size: 11px; }
+    .hx-extable th, .hx-extable td { text-align: right; padding: 4px 10px; border-bottom: 1px solid rgba(31,42,90,0.6); }
+    .hx-extable th { color: #8899cc; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .hx-extable th:first-child, .hx-extable td:first-child { text-align: left; }
+    .hx-extable td.tk { color: var(--text-white); font-weight: 600; }
+    .hx-extable .exdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -99,6 +114,7 @@
       <div class="hx-chips" id="curve-chips"></div>
       <div class="hx-empty" id="curve-empty">Elegí un panel y agregá una o más fechas.</div>
       <div class="hx-chart-wrap"><canvas id="curve-chart"></canvas></div>
+      <div class="hx-excluded" id="curve-excluded" style="display:none"></div>
     </section>
 
     <!-- Vista 2: evolución por instrumento -->
@@ -150,6 +166,82 @@
       const r = await fetch(url);
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
+    }
+
+    // ---- ajuste de curva (mismo criterio que el dashboard principal) ----
+    // Regresión logarítmica y = a + b·ln(x) por mínimos cuadrados. {a,b} o null.
+    function fitLogCurve(points) {
+      if (!points || points.length < 2) return null;
+      const lnXs = [], ys = [];
+      for (const p of points) {
+        if (!(p.x > 0) || !Number.isFinite(p.y)) return null;
+        lnXs.push(Math.log(p.x));
+        ys.push(p.y);
+      }
+      const n = points.length;
+      const meanLnX = lnXs.reduce((a, b) => a + b, 0) / n;
+      const meanY = ys.reduce((a, b) => a + b, 0) / n;
+      let num = 0, den = 0;
+      for (let i = 0; i < n; i++) {
+        num += (lnXs[i] - meanLnX) * (ys[i] - meanY);
+        den += (lnXs[i] - meanLnX) ** 2;
+      }
+      if (den === 0) return null;
+      const b = num / den;
+      return { a: meanY - b * meanLnX, b };
+    }
+
+    // Mediana de un array numérico (helper de rejectCurveOutliers).
+    function _median(arr) {
+      if (!arr.length) return 0;
+      const s = arr.slice().sort((a, b) => a - b);
+      const m = Math.floor(s.length / 2);
+      return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+    }
+
+    // Descarta outliers que deforman la regresión log (mismo criterio que el
+    // dashboard principal: modified z-score Iglewicz-Hampel sobre los residuos
+    // del ajuste). Típicamente saca instrumentos próximos a vencer con MD≈0 y
+    // TIR extrema (ej. TZX26 MD 0.01 TIR -57%). Devuelve {kept, dropped}.
+    function rejectCurveOutliers(points, { minPoints = 6, threshold = 3.5 } = {}) {
+      if (!points || points.length < minPoints) return { kept: points || [], dropped: [] };
+      const fit = fitLogCurve(points);
+      if (!fit) return { kept: points, dropped: [] };
+      const residuals = points.map((p) => p.y - (fit.a + fit.b * Math.log(p.x)));
+      const med = _median(residuals);
+      const mad = _median(residuals.map((r) => Math.abs(r - med)));
+      let scoreOf;
+      if (mad > 1e-9) {
+        scoreOf = (r) => 0.6745 * (r - med) / mad;
+      } else {
+        const mean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+        const sd = Math.sqrt(residuals.reduce((a, r) => a + (r - mean) ** 2, 0) / residuals.length);
+        if (!(sd > 1e-9)) return { kept: points, dropped: [] };
+        scoreOf = (r) => (r - mean) / sd;
+      }
+      const kept = [], dropped = [];
+      points.forEach((p, i) => {
+        (Math.abs(scoreOf(residuals[i])) > threshold ? dropped : kept).push(p);
+      });
+      // Nunca dejar la curva sin forma: si descartaría demasiados, se preserva todo.
+      if (kept.length < minPoints) return { kept: points, dropped: [] };
+      return { kept, dropped };
+    }
+
+    // Genera N puntos a lo largo de la curva log entre min y max de xs.
+    function logCurvePoints(points, n = 100) {
+      const fit = fitLogCurve(points);
+      if (!fit) return [];
+      const xs = points.map((p) => p.x);
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      if (!(xMax > xMin)) return [];
+      const step = (xMax - xMin) / (n - 1);
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const x = xMin + i * step;
+        out.push({ x, y: fit.a + fit.b * Math.log(x) });
+      }
+      return out;
     }
 
     // ---- selectores ----
@@ -225,23 +317,72 @@
       if (!fechas.length) { empty.textContent = "Agregá al menos una fecha."; empty.style.display = ""; return; }
       const data = await getJSON(`/api/history/curve?panel=${encodeURIComponent(panel)}&fechas=${fechas.join(",")}`);
       const datasets = [];
+      const excluded = [];   // { fecha, color, ticker, x, y } de los outliers descartados
       let total = 0;
       for (const f of fechas) {
         const pts = (data.curvas && data.curvas[f]) || [];
         total += pts.length;
+        const series = pts.map(p => ({ x: p.md, y: p.tir, ticker: p.ticker }));
+        // Filtra outliers (próximos a vencer / TIR extrema) que deforman la curva.
+        const { kept, dropped } = rejectCurveOutliers(series);
+        dropped.forEach(p => excluded.push({ fecha: f, color: colorFor(f), ticker: p.ticker, x: p.x, y: p.y }));
+        // Puntos reales (sin línea que los una), ya sin outliers.
         datasets.push({
           label: f,
-          data: pts.map(p => ({ x: p.md, y: p.tir, ticker: p.ticker })),
-          showLine: true,
+          data: kept,
+          showLine: false,
           borderColor: colorFor(f),
           backgroundColor: colorFor(f),
-          pointRadius: 3, tension: 0.25,
+          pointRadius: 3,
         });
+        // Curva ajustada (regresión log) sobre los puntos depurados, punteada.
+        const fitted = logCurvePoints(kept);
+        if (fitted.length) {
+          datasets.push({
+            label: `_fit_${f}`,
+            data: fitted,
+            showLine: true,
+            borderColor: colorFor(f),
+            backgroundColor: "transparent",
+            borderWidth: 2,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+          });
+        }
       }
       empty.style.display = total ? "none" : "";
       if (!total) empty.textContent = "No hay datos para esa selección.";
       renderCurve(datasets);
+      renderExcluded(excluded);
     });
+
+    // Lista los instrumentos excluidos de la curva (no se grafican, pero se
+    // muestran sus datos para no perderlos de vista).
+    function renderExcluded(excluded) {
+      const box = document.getElementById("curve-excluded");
+      if (!excluded.length) { box.style.display = "none"; box.innerHTML = ""; return; }
+      // Orden estable: por fecha (orden de selección) y luego por MD.
+      excluded.sort((a, b) =>
+        selectedFechas.indexOf(a.fecha) - selectedFechas.indexOf(b.fecha) || a.x - b.x);
+      const rows = excluded.map(e => `
+        <tr>
+          <td class="tk"><span class="exdot" style="background:${e.color}"></span>${e.ticker}</td>
+          <td>${e.fecha}</td>
+          <td>${e.x.toFixed(2)}</td>
+          <td>${e.y.toFixed(2)}%</td>
+        </tr>`).join("");
+      box.innerHTML = `
+        <h3>Excluidos de la curva
+          <span class="hx-exhint">— ${excluded.length} outlier(s) fuera del ajuste (no graficados)</span>
+        </h3>
+        <table class="hx-extable">
+          <thead><tr><th>Ticker</th><th>Fecha</th><th>MD</th><th>TIR</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+      box.style.display = "";
+    }
 
     function renderCurve(datasets) {
       const ctx = document.getElementById("curve-chart");
@@ -258,10 +399,18 @@
                  grid: { color: GRID }, ticks: { color: TICK } },
           },
           plugins: {
-            legend: { labels: { color: TICK } },
-            tooltip: { callbacks: {
-              label: (c) => `${c.raw.ticker}: MD ${c.raw.x.toFixed(2)} · TIR ${c.raw.y.toFixed(2)}%`,
+            legend: { labels: {
+              color: TICK,
+              // Oculta las curvas ajustadas (prefijo "_fit_") del legend.
+              filter: (item, chart) => !String(chart.datasets[item.datasetIndex].label || "").startsWith("_fit_"),
             } },
+            tooltip: {
+              // Sólo los puntos reales tienen ticker; la curva ajustada no.
+              filter: (c) => c.raw && c.raw.ticker != null,
+              callbacks: {
+                label: (c) => `${c.raw.ticker}: MD ${c.raw.x.toFixed(2)} · TIR ${c.raw.y.toFixed(2)}%`,
+              },
+            },
           },
         },
       });

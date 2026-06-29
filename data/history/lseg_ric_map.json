@@ -56,25 +56,32 @@
     "universe_id": "ARAN29="
   },
   "BPA7D": {
-    "panel": "bopreales"
+    "panel": "bopreales",
+    "universe_id": "ARBPOA7="
   },
   "BPB7D": {
-    "panel": "bopreales"
+    "panel": "bopreales",
+    "universe_id": "ARBPOB7="
   },
   "BPC7D": {
-    "panel": "bopreales"
+    "panel": "bopreales",
+    "universe_id": "ARBPOC7="
   },
   "BPD7D": {
-    "panel": "bopreales"
+    "panel": "bopreales",
+    "universe_id": "ARBPOD7="
   },
   "BPB8D": {
-    "panel": "bopreales"
+    "panel": "bopreales",
+    "universe_id": "ARBPOB8="
   },
   "BPA8D": {
-    "panel": "bopreales"
+    "panel": "bopreales",
+    "universe_id": "ARBPOA8="
   },
   "TZX26": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZX26="
   },
   "X31L6": {
     "panel": "cer"
@@ -83,67 +90,87 @@
     "panel": "cer"
   },
   "TZXO6": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXO6="
   },
   "TX26": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTX26="
   },
   "X30N6": {
     "panel": "cer"
   },
   "TZXD6": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXD6="
   },
   "TZXM7": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXM7="
   },
   "TZXY7": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXY7="
   },
   "TZX27": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZX27="
   },
   "TZXD7": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXD7="
   },
   "TZX28": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZX28="
   },
   "TX28": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTX28="
   },
   "TX31": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTX31="
   },
   "DICP": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARDICP="
   },
   "PARP": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARPARP="
   },
   "CUAP": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARCUAP="
   },
   "TZXA7": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXA7="
   },
   "TZXS7": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXS7="
   },
   "TZXS8": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXS8="
   },
   "TZXM8": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXM8="
   },
   "TZXM9": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARTZXM9="
   },
   "DIP0": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARDIP0="
   },
   "PAP0": {
-    "panel": "cer"
+    "panel": "cer",
+    "universe_id": "ARPAP0="
   },
   "TXMJ8_CER": {
     "panel": "cer"
@@ -161,7 +188,8 @@
     "panel": "cer"
   },
   "T30J6": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ART30J6="
   },
   "S31L6": {
     "panel": "tasa_fija"
@@ -170,7 +198,8 @@
     "panel": "tasa_fija"
   },
   "S30S6": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ARS30S6="
   },
   "S30O6": {
     "panel": "tasa_fija"
@@ -179,28 +208,34 @@
     "panel": "tasa_fija"
   },
   "T15E7": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ART15E7="
   },
   "T30A7": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ART30A7="
   },
   "T31Y7": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ART31Y7="
   },
   "T30J7": {
     "panel": "tasa_fija"
   },
   "S17L6": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ARS17L6="
   },
   "S14G6": {
     "panel": "tasa_fija"
   },
   "TO26": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ARTO26="
   },
   "TY30P": {
-    "panel": "tasa_fija"
+    "panel": "tasa_fija",
+    "universe_id": "ARTY30P="
   },
   "TY30PUT": {
     "panel": "tasa_fija"
@@ -212,7 +247,8 @@
     "panel": "dolar_linked"
   },
   "D30S6": {
-    "panel": "dolar_linked"
+    "panel": "dolar_linked",
+    "universe_id": "AR0245811739="
   },
   "TZV27": {
     "panel": "dolar_linked"

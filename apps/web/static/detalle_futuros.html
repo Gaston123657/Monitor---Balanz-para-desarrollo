@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
-  <link rel="stylesheet" href="/static/style.css?v=45" />
+  <link rel="stylesheet" href="/static/style.css?v=54" />
   <style>
     /* Layout propio de la página (los paneles reusan estilos de style.css). */
     .df-page { padding: 16px; max-width: 1600px; margin: 0 auto; }
@@ -96,6 +96,63 @@
         </div>
       </section>
 
+      <section class="panel panel-synth df-wide" data-id="canje">
+        <div class="panel-header">
+          <h2>CANJE · <span id="canje-title">AL30D / AL30C</span></h2>
+          <span class="panel-sub" id="canje-sub"></span>
+        </div>
+        <div class="canje-toolbar">
+          <div class="canje-group" role="tablist" aria-label="Base del canje">
+            <span class="canje-group-label">Base</span>
+            <button type="button" class="canje-btn is-active" data-base="AL30" role="tab" aria-selected="true">AL30</button>
+            <button type="button" class="canje-btn" data-base="GD30" role="tab" aria-selected="false">GD30</button>
+          </div>
+          <div class="canje-group" role="tablist" aria-label="Rango temporal">
+            <span class="canje-group-label">Rango</span>
+            <button type="button" class="canje-btn is-active" data-range="ytd">Este año</button>
+            <button type="button" class="canje-btn" data-range="365">1 año</button>
+            <button type="button" class="canje-btn" data-range="730">2 años</button>
+            <button type="button" class="canje-btn" data-range="all">Todo</button>
+          </div>
+          <div class="canje-quote loading" id="canje-quote"
+               title="Canje en tiempo real (Data912). BID = traer dólares al país (vendés la pata local D al bid, comprás la cable C al ask). ASK = sacar dólares al exterior (comprás D al ask, vendés C al bid).">
+            <span class="canje-quote-tag"><span class="live-dot"></span>En vivo</span>
+            <span class="canje-quote-side">
+              <span class="canje-quote-lbl">BID</span>
+              <span class="canje-quote-val" id="canje-q-bid">–</span>
+            </span>
+            <span class="canje-quote-side">
+              <span class="canje-quote-lbl">ASK</span>
+              <span class="canje-quote-val" id="canje-q-ask">–</span>
+            </span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="canje-grid">
+            <div class="canje-top">
+              <div class="canje-cell canje-evol">
+                <div class="canje-cell-title">Evolución <span id="canje-evol-sub" class="canje-cell-sub"></span></div>
+                <div class="chart-container">
+                  <canvas id="canje-evol-chart" role="img" aria-label="Evolución diaria del canje"></canvas>
+                </div>
+              </div>
+              <div class="canje-cell canje-dist">
+                <div class="canje-cell-title">Distribución <span class="canje-cell-sub">días por nivel</span></div>
+                <div class="chart-container">
+                  <canvas id="canje-dist-chart" role="img" aria-label="Distribución de niveles del canje"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="canje-bottom canje-cell canje-month">
+              <div class="canje-cell-title">Promedio mensual <span class="canje-cell-sub">barras 2022-2024 · puntos 2025/2026</span></div>
+              <div class="chart-container">
+                <canvas id="canje-month-chart" role="img" aria-label="Promedio mensual del canje por año"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="panel panel-synth df-wide" data-id="dlr_sintetico">
         <div class="panel-header">
           <h2>SINTÉTICO DE TASA EN PESOS · DL + SHORT FUTURO</h2>
@@ -133,6 +190,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="/static/detalle_futuros.js?v=5"></script>
+  <script src="/static/detalle_futuros.js?v=7"></script>
 </body>
 </html>

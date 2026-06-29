@@ -55,41 +55,109 @@ def _num(v):
         return None
 
 
-def resolve(ticker, isin_local):
-    """ticker local Balanz -> RIC de cotización LSEG (para get_history).
-
-    Camino validado para SOBERANOS USD (BONAR/GLOBAL, sufijo D): buscar por el
-    root (ticker sin la D) en GovCorpInstruments con `query=`, quedarse con líneas
-    del emisor 'Argentina' y, entre ellas, la USD. Devuelve el RIC (ej. ARAE38=,
-    040114HS2= para globales). get_history necesita RIC, NO ISIN.
-    """
-    root = ticker[:-1] if ticker.upper().endswith("D") else ticker
+def _search(query, top=10):
+    """Wrapper de search en GOV_CORP_INSTRUMENTS -> lista de records con RIC válido."""
     try:
         r = search.Definition(
             view=search.Views.GOV_CORP_INSTRUMENTS,
-            query=root,
+            query=query,
             select="DocumentTitle,RIC,ISIN,Currency",
-            top=10,
+            top=top,
         ).get_data()
         df = r.data.df
     except Exception as e:
         return None, f"search_error:{type(e).__name__}"
     if df is None or not len(df) or "RIC" not in df.columns:
-        return None, "no_match"
+        return [], "no_match"
     rows = [x for x in df.to_dict("records") if x.get("RIC") and str(x["RIC"]) != "<NA>"]
-    # Solo emisor soberano argentino (descarta CCGMF/Citi que matchean por ticker).
+    return rows, "ok"
+
+
+def _resolve_soberano(ticker):
+    """SOBERANOS USD (BONAR/GLOBAL, sufijo D): buscar por root, emisor 'Argentina',
+    preferir USD. Devuelve RIC (ej. ARAE38=, 040114HS2=). [camino original validado]"""
+    root = ticker[:-1] if ticker.upper().endswith("D") else ticker
+    rows, note = _search(root)
+    if not rows:
+        return None, note if isinstance(note, str) else "no_match"
     arg = [x for x in rows if "Argentina" in str(x.get("DocumentTitle", ""))]
     rows = arg or rows
     usd = [x for x in rows if str(x.get("Currency")) == "USD"]
     rows = usd or rows
-    if not rows:
-        return None, "no_match"
-    return str(rows[0]["RIC"]), "resolved"
+    return (str(rows[0]["RIC"]), "resolved") if rows else (None, "no_match")
 
 
-def fetch_series(ric, start, end):
-    """[{fecha, close, clean, accrued, volume}] o []. `close` es DIRTY (= clean +
-    accrued) para alinear con el precio dirty que usa Data912/el monitor."""
+def resolve(ticker, isin_local, panel):
+    """ticker local Balanz -> RIC de cotización LSEG (para get_history), por familia.
+
+    Hallazgos fase 2 (ver HISTORICO-BACKFILL-FASE2.txt §RIC descubiertos):
+      - bonares    : search por root, emisor Argentina, USD  -> ARxxx= / ISIN= (globales)
+      - bopreales  : emisor BCRA. RIC CONSTRUIDO: BPA7D -> ARBPOA7= (insertar 'O' tras
+                     'BP', sacar 'D'). MID_PRICE USD per-100, factor 1 (como soberanos).
+      - cer/tasa_fija: RIC CONSTRUIDO AR<ticker>= (cotización *evaluated*). MID_PRICE =
+                     dirty per-100 en PESOS, factor 1 (validado vs Data912). Los que solo
+                     tienen listado de bolsa AR..Z=BA (OHLC, escala basura/stale) NO
+                     resuelven acá y quedan sin data (se saltean, se loguea).
+      - dolar_linked: search por ticker, preferir AR<ticker>=, quedarse con USD evaluated.
+                     MID_PRICE viene en USD -> se convierte a pesos ×FX (ARS=) en fetch.
+      - ons_*      : sus RIC (AR<ticker>O= / AR..Z=BA) NO tienen serie diaria en LSEG
+                     (get_history vacío). No factible por ahora -> None.
+    """
+    t = ticker.upper()
+    if panel == "bonares":
+        return _resolve_soberano(ticker)
+    if panel == "bopreales":
+        mid = t[2:-1] if t.endswith("D") else t[2:]   # BPA7D -> A7
+        return f"ARBPO{mid}=", "bopreal_constructed"
+    if panel in ("cer", "tasa_fija"):
+        return f"AR{t}=", "ars_constructed"
+    if panel == "dolar_linked":
+        rows, note = _search(t)
+        if not rows:
+            return None, note if isinstance(note, str) else "no_match"
+        prefer = f"AR{t}="
+        exact = [x for x in rows if str(x["RIC"]) == prefer]
+        if exact:
+            return prefer, "dl_resolved_exact"
+        usd = [x for x in rows if str(x.get("Currency")) == "USD"]
+        rows = usd or rows
+        return str(rows[0]["RIC"]), "dl_resolved_search"
+    if panel in ("ons_ny", "ons_ar"):
+        return None, "ons_sin_historico_lseg"
+    return None, f"panel_desconocido:{panel}"
+
+
+def _fetch_evaluated(df, panel, fx_by_date):
+    """Familias en PESOS/DL sobre cotización *evaluated*: exige MID_PRICE (rechaza
+    listados de bolsa OHLC-only cuya escala es basura). Para dolar_linked convierte
+    USD->pesos con FX as-of (ARS= MID). `close` queda en la misma moneda que Data912:
+    pesos per-100 dirty (CER/tasa fija = MID_PRICE directo; DL = MID_PRICE × FX)."""
+    cols = list(df.columns)
+    if "MID_PRICE" not in cols:
+        print(f"    sin MID_PRICE (evaluated) — cols={cols[:8]} — salteado")
+        return []
+    out = []
+    for idx, row in df.iterrows():
+        fecha = str(idx)[:10]
+        mid = _num(row.get("MID_PRICE"))
+        if mid is None or mid <= 0:
+            continue
+        if panel == "dolar_linked":
+            fx = (fx_by_date or {}).get(fecha)
+            if fx is None or fx <= 0:
+                continue  # sin FX as-of esa fecha -> no se puede pasar a pesos
+            close = mid * fx
+            out.append({"fecha": fecha, "close": close, "clean": mid, "fx": fx})
+        else:
+            out.append({"fecha": fecha, "close": mid, "clean": mid})
+    return out
+
+
+def fetch_series(ric, start, end, panel="bonares", fx_by_date=None):
+    """[{fecha, close, clean, ...}] o []. `close` es el precio DIRTY en la MISMA
+    moneda/escala que Data912 (soberanos/bopreales = USD per-100; CER/tasa fija = pesos
+    per-100; DL = pesos per-100 vía ×FX). El recálculo de TIR/paridad lo hace
+    backfill_history reusando FinancialEngine."""
     try:
         df = ld.get_history(universe=ric, interval="daily", start=start, end=end)
     except Exception as e:
@@ -97,8 +165,13 @@ def fetch_series(ric, start, end):
         return []
     if df is None or not len(df):
         return []
+    # Familias en pesos / dólar-linked: cotización evaluated, solo MID_PRICE.
+    if panel in ("cer", "tasa_fija", "dolar_linked"):
+        return _fetch_evaluated(df, panel, fx_by_date)
+
+    # Soberanos + bopreales (hard-dollar USD): DIRTY_PRC si está; si no MID_PRICE
+    # (clean) + ACCR_INT. Bopreales no traen DIRTY_PRC ni ACCR_INT -> MID_PRICE.
     cols = list(df.columns)
-    # Precio: preferimos DIRTY_PRC; si no, MID_PRICE (clean) + ACCR_INT.
     has_dirty = "DIRTY_PRC" in cols
     price_col = next((c for c in ["MID_PRICE", "TRTN_PRICE", "BID"] if c in cols), None)
     if not has_dirty and price_col is None:
@@ -151,23 +224,41 @@ def main():
     sess.open()
     print(f"LSEG session OPEN · rango {start}..{end} · paneles={sorted(panels)} · {len(ric_map)} tickers")
 
+    # FX as-of para dólar-linked: serie USD/ARS (ARS= MID) -> {fecha: fx}. DL viene en
+    # USD en LSEG y Data912 lo da en pesos, así que pasamos a pesos = MID_PRICE × FX.
+    fx_by_date = {}
+    if "dolar_linked" in panels:
+        try:
+            dfx = ld.get_history(universe="ARS=", interval="daily", start=start, end=end)
+            if dfx is not None and "MID_PRICE" in dfx.columns:
+                for idx, row in dfx.iterrows():
+                    v = _num(row.get("MID_PRICE"))
+                    if v:
+                        fx_by_date[str(idx)[:10]] = v
+            print(f"FX ARS= cargado: {len(fx_by_date)} fechas")
+        except Exception as e:
+            print(f"FX ARS= error {type(e).__name__}: {e} — dólar-linked quedará sin convertir")
+
     result = {}
     map_dirty = False
     for i, (ticker, info) in enumerate(sorted(ric_map.items()), 1):
+        panel = info.get("panel")
         uid = info.get("universe_id")
+        note = "cached"
         if not uid:
-            uid, note = resolve(ticker, info.get("isin_local"))
-            if uid:
+            uid, note = resolve(ticker, info.get("isin_local"), panel)
+        if not uid:
+            print(f"[{i}/{len(ric_map)}] {ticker} ({panel}): NO RESUELTO ({note})")
+            continue
+        series = fetch_series(uid, start, end, panel, fx_by_date)
+        print(f"[{i}/{len(ric_map)}] {ticker} ({panel}): {uid} [{note}] -> {len(series)} barras")
+        if series:
+            # Cachear el RIC solo si trajo data (no persistir RICs muertos).
+            if info.get("universe_id") != uid:
                 info["universe_id"] = uid
                 map_dirty = True
-            else:
-                print(f"[{i}/{len(ric_map)}] {ticker}: NO RESUELTO ({note})")
-                continue
-        series = fetch_series(uid, start, end)
-        print(f"[{i}/{len(ric_map)}] {ticker} ({info.get('panel')}): {uid} -> {len(series)} barras")
-        if series:
             result[ticker] = {
-                "panel": info.get("panel"),
+                "panel": panel,
                 "universe_id": uid,
                 "prices": series,
             }

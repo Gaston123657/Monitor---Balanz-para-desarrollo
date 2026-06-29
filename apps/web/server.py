@@ -166,6 +166,16 @@ HISTORICAL_SUPPORTED_TICKERS = frozenset({
     "TX25", "TX26", "TX28",
 })
 
+# Canje (swap MEP↔CCL): pares de soberanos con pata MEP (sufijo D) + pata CABLE
+# (sufijo C) ambas soportadas por data912 historical. Canje% = D/C − 1 sobre
+# precios en USD (la pata cable cotiza más barata → el ratio mide cuánto cuesta
+# sacar dólares afuera vs. dejarlos local). KEEP base IN SYNC con CANJE_BASES
+# en app.js.
+CANJE_PAIRS = {
+    "AL30": ("AL30D", "AL30C"),
+    "GD30": ("GD30D", "GD30C"),
+}
+
 setup_logging()
 logger = logging.getLogger("monitor_web")
 
@@ -1517,6 +1527,10 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/api/stock_history/"):
             ticker = path[len("/api/stock_history/"):]
             return self._serve_stock_history(ticker)
+        if path.startswith("/api/canje_history/"):
+            return self._serve_canje_history(path[len("/api/canje_history/"):])
+        if path.startswith("/api/canje_quote/"):
+            return self._serve_canje_quote(path[len("/api/canje_quote/"):])
         if path.startswith("/api/bond_detail/"):
             ticker = path[len("/api/bond_detail/"):]
             qs = parse_qs(urlparse(self.path).query or "")
@@ -1821,6 +1835,116 @@ class Handler(BaseHTTPRequestHandler):
             _STOCK_HISTORY_CACHE, _STOCK_HISTORY_LOCK, _STOCK_HISTORY_TTL_S,
             _STOCK_HISTORY_BASE, "Data912/stock_hist",
         )
+
+    def _fetch_bond_hist_cached(self, ticker: str) -> list:
+        """Devuelve la lista OHLC histórica de data912 para `ticker`, usando el
+        mismo cache TTL que /api/bond_history (la serie es diaria). Lanza en
+        fallo de red — el caller lo traduce a 502."""
+        from core.infrastructure._http import http_get_json
+        t = ticker.upper()
+        now = time.time()
+        with _BOND_HISTORY_LOCK:
+            cached = _BOND_HISTORY_CACHE.get(t)
+            if cached and (now - cached[0]) < _BOND_HISTORY_TTL_S:
+                return cached[1]
+        data = http_get_json(f"{_BOND_HISTORY_BASE}/{t}", timeout=10, source="Data912/canje")
+        if not isinstance(data, list):
+            raise ValueError(f"unexpected response for {t}: {type(data).__name__}")
+        with _BOND_HISTORY_LOCK:
+            _BOND_HISTORY_CACHE[t] = (now, data)
+        return data
+
+    def _serve_canje_history(self, base: str):
+        """Serie diaria del canje MEP↔CCL para un par soberano (AL30, GD30).
+        Joinea pata MEP (D) y CABLE (C) por fecha y devuelve canje% = D/C − 1.
+        El frontend computa distribución + estacionalidad mensual sobre la serie."""
+        b = base.upper()
+        pair = CANJE_PAIRS.get(b)
+        if pair is None:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              json.dumps({"error": "base no soportada", "base": b,
+                                          "supported": sorted(CANJE_PAIRS)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        mep_t, cable_t = pair
+        try:
+            mep = self._fetch_bond_hist_cached(mep_t)
+            cable = self._fetch_bond_hist_cached(cable_t)
+        except Exception as e:
+            logger.warning(f"canje {b} fetch failed: {e}")
+            return self._send(HTTPStatus.BAD_GATEWAY,
+                              json.dumps({"error": str(e), "base": b}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        cable_close = {row.get("date"): row.get("c") for row in cable}
+        points = []
+        for row in mep:
+            d = row.get("date")
+            dc = row.get("c")
+            cc = cable_close.get(d)
+            if not d or not dc or not cc:
+                continue
+            points.append({"date": d, "canje": round((dc / cc - 1.0) * 100.0, 4)})
+        points.sort(key=lambda p: p["date"])
+        body = json.dumps({"base": b, "mep": mep_t, "cable": cable_t,
+                           "points": points}).encode("utf-8")
+        return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+
+    def _serve_canje_quote(self, base: str):
+        """Cotización live (BID/ASK) del canje MEP↔CCL para un par soberano.
+
+        Combina el book vivo de ambas patas (Data912 live, mismo provider con
+        cache TTL 3s que el resto del dashboard) en el ratio D/C − 1:
+          · BID = bid_D / ask_C − 1  → traer dólares al país (vendés la pata
+            local D al bid, comprás la cable C al ask). Es el lado más barato.
+          · ASK = ask_D / bid_C − 1  → sacar dólares al exterior (comprás D al
+            ask, vendés C al bid). Es el lado más caro.
+          · MID = mid_D / mid_C − 1  (mid de cada pata; fallback al last si no
+            hay book de un lado).
+        Como bid_x ≤ ask_x, siempre BID ≤ ASK. Cualquier lado sin book completo
+        vuelve null (la pata cable suele tener book fino)."""
+        b = base.upper()
+        pair = CANJE_PAIRS.get(b)
+        if pair is None:
+            return self._send(HTTPStatus.BAD_REQUEST,
+                              json.dumps({"error": "base no soportada", "base": b,
+                                          "supported": sorted(CANJE_PAIRS)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+        mep_t, cable_t = pair
+        try:
+            snaps = self.bond_provider.fetch_snapshots([mep_t, cable_t])
+        except Exception as e:
+            logger.warning(f"canje quote {b} fetch failed: {e}")
+            return self._send(HTTPStatus.BAD_GATEWAY,
+                              json.dumps({"error": str(e), "base": b}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+
+        def leg(t):
+            s = snaps.get(t)
+            if s is None:
+                return None
+            return {"bid": s.bid, "ask": s.ask, "last": s.price or None}
+
+        def ratio(num, den):
+            if num and den and num > 0 and den > 0:
+                return round((num / den - 1.0) * 100.0, 4)
+            return None
+
+        def mid_of(d):
+            if d is None:
+                return None
+            if d["bid"] and d["ask"]:
+                return (d["bid"] + d["ask"]) / 2.0
+            return d["last"]
+
+        mep, cable = leg(mep_t), leg(cable_t)
+        bid = ask = mid = None
+        if mep and cable:
+            bid = ratio(mep["bid"], cable["ask"])
+            ask = ratio(mep["ask"], cable["bid"])
+            mid = ratio(mid_of(mep), mid_of(cable))
+        body = json.dumps({"base": b, "mep": mep_t, "cable": cable_t,
+                           "legs": {"mep": mep, "cable": cable},
+                           "bid": bid, "ask": ask, "mid": mid}).encode("utf-8")
+        return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
 
     def _serve_bond_detail(self, ticker: str, settlement_lag: int = 1,
                            tamar_forecast: Optional[float] = None):
