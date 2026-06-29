@@ -1736,6 +1736,167 @@ a.btn {
   cursor: default;
 }
 
+/* Controles de orden de la tabla del popup (TIR / Paridad asc·desc). */
+.curve-popup-sortbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+.curve-popup-sortbar[hidden] { display: none; }
+.curve-sort-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.curve-sort-btn {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s, border-color 0.15s;
+}
+.curve-sort-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+.curve-sort-btn.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+.curve-sort-btn[hidden] { display: none; }
+
+/* Botón "+ ON" — abre la barra para cargar una ON a mano (solo paneles de ONs). */
+.curve-popup-manual-btn {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.curve-popup-manual-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+.curve-popup-manual-btn[hidden] { display: none; }
+
+/* Barra de carga manual de ONs (entre el header y el gráfico). */
+.curve-popup-manual {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--accent-light);
+  border-bottom: 1px solid var(--panel-border);
+}
+.curve-popup-manual[hidden] { display: none; }
+
+.curve-manual-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.curve-manual-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e11d2a;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 2px rgba(225, 29, 42, 0.25);
+}
+.curve-manual-form input {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+}
+.curve-manual-form input[data-role="m-ticker"] {
+  width: 110px;
+  text-transform: uppercase;
+}
+.curve-manual-form input[data-role="m-tir"],
+.curve-manual-form input[data-role="m-dur"] {
+  width: 130px;
+}
+.curve-manual-add {
+  height: 28px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: #e11d2a;
+  border: 1px solid #c4121e;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.curve-manual-add:hover { background: #c4121e; }
+.curve-manual-form.invalid input {
+  border-color: #e11d2a;
+  box-shadow: 0 0 0 2px rgba(225, 29, 42, 0.2);
+}
+
+.curve-manual-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.curve-manual-list:empty { display: none; }
+.curve-manual-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(225, 29, 42, 0.12);
+  border: 1px solid rgba(225, 29, 42, 0.4);
+  border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.curve-manual-chip b { font-weight: 800; }
+.curve-manual-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: #c4121e;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.curve-manual-chip-x:hover { background: rgba(225, 29, 42, 0.25); }
+
 /* Tabla de instrumentos que componen la curva (debajo del gráfico). */
 .curve-popup-table-wrap {
   flex: 0 0 auto;
@@ -1789,8 +1950,13 @@ table.curve-popup-bonds td.heat-cell {
   overflow: visible;
 }
 .curve-popup.capturing-popup .curve-popup-capture,
+.curve-popup.capturing-popup .curve-popup-manual-btn,
+.curve-popup.capturing-popup .curve-popup-sortbar,
 .curve-popup.capturing-popup .curve-popup-close {
   visibility: hidden;
+}
+.curve-popup.capturing-popup .curve-popup-manual {
+  display: none;
 }
 
 /* =====================================================================

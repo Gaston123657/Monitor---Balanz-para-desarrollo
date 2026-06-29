@@ -1233,9 +1233,54 @@ function heatmapColor(key, t) {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
+// =====================================================================
+// Puntos manuales de curva — para comparar una ON nueva (a punto de salir)
+// contra la curva existente. El usuario carga ticker + TIR + duration a mano
+// y se grafican como un punto ROJO. Persisten en localStorage por monitor
+// (sobreviven refresh y reapertura del popup). Solo se habilitan en los
+// paneles de ONs (ver MANUAL_CURVE_MONITORS). NO entran en la regresión:
+// son hipotéticos, no deben deformar la curva real.
+// =====================================================================
+const MANUAL_CURVE_MONITORS = new Set(["ons_ny", "ons_ar"]);
+const MANUAL_CURVE_COLOR = "#e11d2a";
+const MANUAL_CURVE_KEY = "monitor.manualCurvePoints.v1";
+
+let manualCurvePoints = _loadManualCurvePoints();
+
+function _loadManualCurvePoints() {
+  try { return JSON.parse(localStorage.getItem(MANUAL_CURVE_KEY)) || {}; }
+  catch { return {}; }
+}
+function _saveManualCurvePoints() {
+  try { localStorage.setItem(MANUAL_CURVE_KEY, JSON.stringify(manualCurvePoints)); }
+  catch {}
+}
+function getManualPoints(monitorId) {
+  return manualCurvePoints[monitorId] || [];
+}
+function addManualPoint(monitorId, pt) {
+  if (!manualCurvePoints[monitorId]) manualCurvePoints[monitorId] = [];
+  manualCurvePoints[monitorId].push(pt);
+  _saveManualCurvePoints();
+}
+function removeManualPoint(monitorId, idx) {
+  const arr = manualCurvePoints[monitorId];
+  if (!arr) return;
+  arr.splice(idx, 1);
+  if (!arr.length) delete manualCurvePoints[monitorId];
+  _saveManualCurvePoints();
+}
+
 // Singleton del popup: una sola instancia DOM reutilizada — al cerrar se
 // destruye el Chart.js pero el contenedor queda en el body para próxima vez.
 let _curvePopupChart = null;
+// Monitor y render fn del popup abierto — para re-renderizar in-place al
+// agregar/quitar puntos manuales sin reabrir el popup.
+let _curvePopupMonitor = null;
+let _curvePopupRenderFn = null;
+// Orden de la TABLA del popup (TIR / Paridad, asc/desc). null → orden de curva
+// (por DM, como vienen los tickers graficados).
+let _curvePopupSort = null;
 function _ensureCurvePopupDom() {
   let overlay = document.getElementById("curve-popup-overlay");
   if (overlay) return overlay;
@@ -1249,6 +1294,13 @@ function _ensureCurvePopupDom() {
         <h3 id="curve-popup-title">Curva</h3>
         <span class="curve-popup-sub" data-role="subtitle"></span>
         <span class="curve-popup-ts" data-role="ts">—</span>
+        <div class="curve-popup-sortbar" data-role="sortbar" hidden>
+          <span class="curve-sort-label">Ordenar:</span>
+          <button class="curve-sort-btn" type="button" data-sort-key="tir"
+                  data-sort-label="TIR" aria-pressed="false">TIR</button>
+          <button class="curve-sort-btn" type="button" data-sort-key="parity"
+                  data-sort-label="Paridad" aria-pressed="false">Paridad</button>
+        </div>
         <button class="curve-popup-capture" type="button" title="Capturar curva + tabla" aria-label="Capturar curva">
           <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1257,8 +1309,23 @@ function _ensureCurvePopupDom() {
           </svg>
           <span>Capturar</span>
         </button>
+        <button class="curve-popup-manual-btn" type="button" data-role="manual-toggle"
+                title="Agregar una ON a mano para comparar" hidden>+ ON</button>
         <button class="curve-popup-close" type="button" aria-label="Cerrar">×</button>
       </header>
+      <div class="curve-popup-manual" data-role="manual-bar" hidden>
+        <form class="curve-manual-form" data-role="manual-form">
+          <span class="curve-manual-dot" aria-hidden="true"></span>
+          <input type="text" data-role="m-ticker" placeholder="Ticker" maxlength="14"
+                 autocomplete="off" aria-label="Ticker de la ON" />
+          <input type="number" step="any" inputmode="decimal" data-role="m-tir"
+                 placeholder="TIR %" aria-label="TIR en porcentaje" />
+          <input type="number" step="any" inputmode="decimal" data-role="m-dur"
+                 placeholder="Duration (años)" aria-label="Duration modificada en años" />
+          <button type="submit" class="curve-manual-add">Agregar</button>
+        </form>
+        <div class="curve-manual-list" data-role="manual-list"></div>
+      </div>
       <div class="curve-popup-body panel panel-curva" data-id="__curve_popup__">
         <div class="chart-container">
           <canvas data-role="canvas" role="img" aria-label="Curva TIR vs Duration Modificada"></canvas>
@@ -1274,11 +1341,132 @@ function _ensureCurvePopupDom() {
     e.stopPropagation();
     captureCurvePopup();
   });
+
+  // Botón "+ ON": despliega/colapsa la barra para cargar ONs a mano.
+  const manualToggle = overlay.querySelector("[data-role='manual-toggle']");
+  const manualBar = overlay.querySelector("[data-role='manual-bar']");
+  if (manualToggle && manualBar) {
+    manualToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      manualBar.hidden = !manualBar.hidden;
+      if (!manualBar.hidden) {
+        const t = manualBar.querySelector("[data-role='m-ticker']");
+        if (t) t.focus();
+      }
+    });
+  }
+  // Botones de orden de la tabla (TIR / Paridad). Ciclo asc → desc → sin orden
+  // (vuelve al orden de curva), igual criterio que los headers del panel principal.
+  overlay.querySelectorAll(".curve-sort-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const key = btn.getAttribute("data-sort-key");
+      const cur = _curvePopupSort;
+      let dir = "asc";
+      if (cur && cur.key === key) {
+        dir = cur.dir === "asc" ? "desc" : (cur.dir === "desc" ? null : "asc");
+      }
+      _curvePopupSort = dir ? { key, dir } : null;
+      _updateCurveSortButtons();
+      _rerenderCurvePopupTable();
+    });
+  });
+
+  // Submit del formulario: valida, agrega el punto manual y re-renderiza.
+  const manualForm = overlay.querySelector("[data-role='manual-form']");
+  if (manualForm) {
+    manualForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const mid = overlay.dataset.curveMonitorId;
+      if (!mid) return;
+      const tEl = manualForm.querySelector("[data-role='m-ticker']");
+      const yEl = manualForm.querySelector("[data-role='m-tir']");
+      const xEl = manualForm.querySelector("[data-role='m-dur']");
+      const ticker = (tEl.value || "").trim().toUpperCase();
+      const tir = Number(yEl.value);
+      const duration = Number(xEl.value);
+      if (!ticker || !Number.isFinite(tir) || !Number.isFinite(duration) || duration <= 0) {
+        manualForm.classList.add("invalid");
+        setTimeout(() => manualForm.classList.remove("invalid"), 1200);
+        return;
+      }
+      addManualPoint(mid, { ticker, tir, duration });
+      tEl.value = ""; yEl.value = ""; xEl.value = "";
+      tEl.focus();
+      _renderManualList();
+      _rerenderCurvePopup();
+    });
+  }
   // Click en el backdrop (fuera de .curve-popup) cierra; click dentro no.
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) close();
   });
   return overlay;
+}
+
+// Re-renderiza el chart del popup in-place (reusa la instancia Chart.js
+// cacheada → solo actualiza datasets). Lo llaman add/remove de puntos manuales.
+function _rerenderCurvePopup() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay || overlay.hidden || !_curvePopupMonitor) return;
+  const body = overlay.querySelector(".curve-popup-body");
+  if (body) (_curvePopupRenderFn || renderBondCurve)(body, _curvePopupMonitor);
+}
+
+// Re-renderiza solo la tabla del popup (al cambiar el orden TIR/Paridad).
+function _rerenderCurvePopupTable() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay || overlay.hidden || !_curvePopupMonitor) return;
+  const body = overlay.querySelector(".curve-popup-body");
+  _renderCurvePopupTable(_curvePopupMonitor, (body && body._curveTickers) || []);
+}
+
+// Refleja el estado de orden en los botones (flecha ↑/↓ + resaltado del activo).
+function _updateCurveSortButtons() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  overlay.querySelectorAll(".curve-sort-btn").forEach((btn) => {
+    const key = btn.getAttribute("data-sort-key");
+    const label = btn.getAttribute("data-sort-label");
+    const active = _curvePopupSort && _curvePopupSort.key === key;
+    btn.classList.toggle("active", !!active);
+    btn.textContent = label + (active ? (_curvePopupSort.dir === "asc" ? " ↑" : " ↓") : "");
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+}
+
+// Pinta los chips de puntos manuales cargados (con botón × para quitar c/u).
+function _renderManualList() {
+  const overlay = document.getElementById("curve-popup-overlay");
+  if (!overlay) return;
+  const list = overlay.querySelector("[data-role='manual-list']");
+  const mid = overlay.dataset.curveMonitorId;
+  if (!list || !mid) return;
+  list.innerHTML = "";
+  getManualPoints(mid).forEach((p, i) => {
+    const chip = document.createElement("span");
+    chip.className = "curve-manual-chip";
+    const txt = document.createElement("span");
+    const b = document.createElement("b");
+    b.textContent = p.ticker;
+    txt.appendChild(b);
+    txt.appendChild(document.createTextNode(
+      ` · TIR ${fmt.number(p.tir, 2)}% · DM ${fmt.number(p.duration, 2)}`));
+    chip.appendChild(txt);
+    const x = document.createElement("button");
+    x.type = "button";
+    x.className = "curve-manual-chip-x";
+    x.textContent = "×";
+    x.title = `Quitar ${p.ticker}`;
+    x.setAttribute("aria-label", `Quitar ${p.ticker}`);
+    x.addEventListener("click", () => {
+      removeManualPoint(mid, i);
+      _renderManualList();
+      _rerenderCurvePopup();
+    });
+    chip.appendChild(x);
+    list.appendChild(chip);
+  });
 }
 
 function openCurvePopup(monitorId, label, renderFn) {
@@ -1288,6 +1476,34 @@ function openCurvePopup(monitorId, label, renderFn) {
   const render = renderFn || renderBondCurve;
   const overlay = _ensureCurvePopupDom();
   overlay.querySelector("#curve-popup-title").textContent = `Curva — ${label}`;
+
+  // Estado para puntos manuales: recordar monitor/render y mostrar el botón
+  // "+ ON" solo en los paneles donde tiene sentido (ONs). La barra arranca
+  // colapsada salvo que ya haya puntos cargados (así el usuario los ve).
+  overlay.dataset.curveMonitorId = monitorId;
+  _curvePopupMonitor = monitor;
+  _curvePopupRenderFn = render;
+  const allowManual = MANUAL_CURVE_MONITORS.has(monitorId);
+  const manualBtn = overlay.querySelector("[data-role='manual-toggle']");
+  const manualBar = overlay.querySelector("[data-role='manual-bar']");
+  if (manualBtn) manualBtn.hidden = !allowManual;
+  if (manualBar) manualBar.hidden = !(allowManual && getManualPoints(monitorId).length);
+  if (allowManual) _renderManualList();
+
+  // Barra de orden de la tabla (TIR / Paridad). Cada botón aparece solo si el
+  // monitor tiene esa columna; la barra solo si hay al menos uno. Reset al abrir.
+  _curvePopupSort = null;
+  const sortbar = overlay.querySelector("[data-role='sortbar']");
+  if (sortbar) {
+    let anySort = false;
+    sortbar.querySelectorAll(".curve-sort-btn").forEach((btn) => {
+      const has = monitor.columns.some((c) => c.key === btn.getAttribute("data-sort-key"));
+      btn.hidden = !has;
+      if (has) anySort = true;
+    });
+    sortbar.hidden = !anySort;
+  }
+  _updateCurveSortButtons();
 
   const body = overlay.querySelector(".curve-popup-body");
   // Cache key único por panel para no chocar con los charts de los paneles
@@ -1350,6 +1566,13 @@ function _renderCurvePopupTable(monitor, tickers) {
   if (!rows.length) {
     wrap.hidden = true;
     return;
+  }
+
+  // Orden activo del popup (TIR / Paridad asc o desc). Sin orden → se respeta
+  // el de la curva (por DM). Reusa el comparador de las tablas del dashboard.
+  if (_curvePopupSort) {
+    const sc = monitor.columns.find((c) => c.key === _curvePopupSort.key);
+    if (sc) rows.sort((a, b) => compareRows(sc, a, b, _curvePopupSort.dir));
   }
 
   // Mismas columnas visibles que el panel (drop redundantes + las que el
@@ -1422,6 +1645,11 @@ function _renderCurvePopupTable(monitor, tickers) {
   wrap.hidden = false;
 }
 
+// Monitores cuya tabla se recorta SOLO en la foto a las filas con volumen alto
+// (la AR tiene ~90 ONs y la captura queda larguísima). En el monitor se sigue
+// viendo todo; el recorte es exclusivo de la captura y se revierte al terminar.
+const CAPTURE_VOL_FILTER = { ons_ar: 33000 };
+
 // Captura el popup de curva completo (header + gráfico + tabla) a PNG de alta
 // resolución. Congela la altura del chart para no estirar el canvas al expandir
 // el popup a su tamaño natural durante la captura.
@@ -1432,6 +1660,27 @@ async function captureCurvePopup() {
   const body = overlay.querySelector(".curve-popup-body");
   const btn = overlay.querySelector(".curve-popup-capture");
   if (!popup) return;
+
+  // Recorte de tabla solo-foto (ej. Ley Argentina: solo ONs con vol ≥ 20k).
+  // Re-renderiza la tabla con los tickers filtrados; se restaura en el finally.
+  const monitor = _curvePopupMonitor;
+  const volMin = monitor ? CAPTURE_VOL_FILTER[monitor.id] : undefined;
+  const fullTickers = (body && body._curveTickers) ? body._curveTickers.slice() : null;
+  let filteredForCapture = false;
+  if (volMin != null && monitor && fullTickers) {
+    const volByTicker = new Map(
+      monitor.rows.map((r) => [String(r.ticker).toUpperCase(), Number(r.volume)]),
+    );
+    const kept = fullTickers.filter((t) => {
+      const v = volByTicker.get(String(t).toUpperCase());
+      return Number.isFinite(v) && v >= volMin;
+    });
+    // Solo recorto si queda al menos una fila (no dejar la tabla vacía).
+    if (kept.length) {
+      _renderCurvePopupTable(monitor, kept);
+      filteredForCapture = true;
+    }
+  }
 
   const bodyH = body ? body.offsetHeight : 0;
   if (btn) btn.disabled = true;
@@ -1457,6 +1706,8 @@ async function captureCurvePopup() {
       body.style.flex = "";
       body.style.height = "";
     }
+    // Restaurar la tabla completa tras la foto (el monitor muestra todo).
+    if (filteredForCapture) _renderCurvePopupTable(monitor, fullTickers);
     if (btn) btn.disabled = false;
     if (_curvePopupChart) requestAnimationFrame(() => _curvePopupChart.resize());
   }
@@ -5169,6 +5420,29 @@ function renderBondCurve(panel, sourceMonitor) {
     ];
   } else {
     datasets = curvaDatasets(kept, CHART.ACCENT_BLUE, sourceMonitor.title || sourceId, "top");
+  }
+
+  // Puntos manuales (ONs nuevas cargadas a mano para comparar). Van en ROJO,
+  // como dataset aparte que NO entra en la regresión (kept ya quedó fijada).
+  const manualPts = getManualPoints(sourceMonitor.id)
+    .map((p) => ({ ticker: p.ticker, x: Number(p.duration), y: Number(p.tir) }))
+    .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y) && p.x > 0);
+  if (manualPts.length) {
+    datasets.push({
+      label: "Manual (comparación)",
+      data: manualPts,
+      showLine: false,
+      borderColor: MANUAL_CURVE_COLOR,
+      backgroundColor: MANUAL_CURVE_COLOR,
+      pointRadius: 7,
+      pointHoverRadius: 10,
+      datalabels: {
+        align: "top", anchor: "center", offset: 8,
+        color: MANUAL_CURVE_COLOR,
+        font: { weight: 800, size: 11 },
+        formatter: (v) => v.ticker,
+      },
+    });
   }
 
   if (bondCurveCharts[sourceId]) {
