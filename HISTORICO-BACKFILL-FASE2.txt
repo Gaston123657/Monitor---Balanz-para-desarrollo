@@ -279,3 +279,34 @@ PENDIENTE FASE 3
 - CER/TASA_FIJA tramo "Z=BA": los LECER/LECAP sin RIC evaluated quedan solo con
   captura forward; ver si BYMA/otra vista LSEG expone su serie en escala usable.
 ================================================================================
+
+
+================================================================================
+FIX SOBERANOS — Globales amortizantes mal escalados (2026-06-26)  · NO re-investigar
+================================================================================
+SÍNTOMA: GD30D y GD29D mostraban TIR NEGATIVA y paridad >100% en TODO el histórico
+backfilleado (Feb–Jun), p.ej. GD30D 2026-06-01 TIR -7.38% px 87.55. Imposible en un
+hard-dollar.
+
+CAUSA RAÍZ: los GLOBALES NY-law resuelven a un RIC por CUSIP (GD30D->040114HS2=,
+GD29D->040114HX1=, GD35D->...HT0=, etc.). Ese RIC cotiza en convención INTERNACIONAL:
+precio per-100 de CAPITAL RESIDUAL VIGENTE (outstanding), NO per-100 de VN ORIGINAL
+como la escala "D"/MEP de Data912. Mientras el bono está en gracia/bullet (residual
+~100: GD35D/GD38D/GD41D/GD46D en 2026) ambas escalas coinciden y backfilleó bien.
+Pero los que YA AMORTIZARON (GD30D residual 72, GD29D 70) traían precio per-outstanding
+(~87) que, recalculado contra un valor técnico per-original (~72), daba paridad 121%
+y TIR < 0. Los AL* (Bonares) NO sufren: su RIC es "AR<root>=" evaluated, ya per-original.
+
+CONVERSIÓN: precio_per_original = precio_per_outstanding × residual_nominal/100
+(FinancialEngine.residual_nominal = Σ amortizaciones futuras = pool factor ×100).
+No-op si residual=100, así que es seguro para todos los globales CUSIP.
+
+FIX APLICADO:
+- scripts/fix_globales_outstanding_scale.py: reescaló el histórico existente y
+  RECALCULÓ TIR/V.Téc/paridad/duration (171 filas, 86 fechas). Idempotente (dispara
+  solo sobre tir<0). Quedó GD30D ~8% / par ~87%, GD29D ~8% / par ~90% (sanos).
+- scripts/backfill_history.py: ahora detecta CUSIP global (universe_id[0].isdigit()
+  en panel bonares) y reescala close por residual_nominal/100 ANTES de recalcular, +
+  guard que saltea cualquier fila bonares con tir<0 (escala sospechosa). Re-backfill
+  ya no reintroduce el bug.
+================================================================================
