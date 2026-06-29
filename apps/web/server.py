@@ -24,6 +24,7 @@ from core.domain.instrument_groups import (
     SOBERANOS, TAMAR, TASA_FIJA,
 )
 from core.infrastructure.repositories import ExcelInstrumentsRepository, Data912MarketDataProvider
+from core.infrastructure import ons_ratings
 from core.use_cases.generate_report import GenerateMonitorReport
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -288,6 +289,7 @@ def _get_columns(monitor_id: str):
             {"key": "ticker", "label": "Ticker", "kind": "text"},
             {"key": "nombre", "label": "Emisor", "kind": "text"},
             {"key": "sector", "label": "Sector", "kind": "text"},
+            {"key": "calificacion", "label": "Calif.", "kind": "text"},
             {"key": "vto", "label": "Vto", "kind": "date"},
             {"key": "dias", "label": "Días", "kind": "number", "decimals": 0},
             {"key": "price", "label": "Px MEP", "kind": "number", "decimals": 2},
@@ -668,6 +670,10 @@ def _base_bond_row(m, *, today: date, include_dias: bool = False,
         row["sector"] = getattr(inst, "sector", None)
     if include_nombre:
         row["nombre"] = inst.short_name
+    # Calificación crediticia FIXscr (largo plazo, nivel emisor) — sólo ONs.
+    if (inst.instrument_type or "").upper() == "ON":
+        rating = ons_ratings.get_rating(inst.short_name)
+        row["calificacion"] = rating["rating"] if rating else None
     if extra:
         row.update(extra)
     return row
@@ -698,6 +704,28 @@ class _RefreshContext:
     all_bond_types: List[str]
 
 
+def _build_data_hub():
+    """Arma el DataHub: precios Data912 + providers complementarios opcionales.
+
+    BYMADATA y LSEG se registran solo si su módulo importa y degradan elegante vía
+    is_available() (BYMADATA sin credenciales/Add-in, LSEG sin Workspace abierto).
+    Si algo falla al construirlos, el hub sigue con solo Data912 (sin romper).
+    """
+    from core.infrastructure.data_hub import DataHub
+    hub = DataHub(price_provider=Data912MarketDataProvider())
+    try:
+        from core.infrastructure.bymadata_provider import BYMADATAProvider
+        hub.register(BYMADATAProvider())
+    except Exception as e:
+        logger.info("BYMADATA no registrado en el hub: %s: %s", type(e).__name__, e)
+    try:
+        from core.infrastructure.lseg_provider import LSEGWorkspaceProvider
+        hub.register(LSEGWorkspaceProvider())
+    except Exception as e:
+        logger.info("LSEG no registrado en el hub: %s: %s", type(e).__name__, e)
+    return hub
+
+
 def _build_refresh_context() -> _RefreshContext:
     from core.infrastructure.fx_provider import DolarAPIProvider
     from core.infrastructure.futures_provider import (
@@ -707,7 +735,10 @@ def _build_refresh_context() -> _RefreshContext:
     from core.infrastructure.indices_provider import BCRAIndicesProvider
     from core.infrastructure.rem_provider import REMProvider
     repo = ExcelInstrumentsRepository(MASTER_XLSX)
-    provider = Data912MarketDataProvider()
+    # HUB de datos: precios = Data912 (Pilar 4), complementos opcionales (BYMADATA,
+    # LSEG) detrás del facade. El hub es drop-in del provider de precios (delega
+    # fetch_snapshots/fetch_historical_prices/fetch_stock_history/invalidate_cache).
+    provider = _build_data_hub()
     bond_panels = (
         ("bonares", SOBERANOS, {}),
         ("cer", CER, {"include_category": True}),
@@ -1580,6 +1611,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._serve_all_cashflows()
         if path == "/api/ons_cashflows":
             return self._serve_ons_cashflows()
+        if path == "/api/ons_run":
+            return self._serve_ons_run()
         if path == "/api/bcra_data":
             return self._serve_bcra_data()
         if path == "/api/merval":
@@ -1594,6 +1627,7 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/", "/index.html"): return self._serve_static("index.html")
         if path in ("/cashflows", "/cashflows.html"): return self._serve_static("cashflows.html")
         if path in ("/ons-calendar", "/ons_calendar.html"): return self._serve_static("ons_calendar.html")
+        if path in ("/ons-run", "/ons_run.html"): return self._serve_static("ons_run.html")
         if path in ("/bcra", "/bcra.html"): return self._serve_static("bcra.html")
         if path in ("/cierre", "/cierre.html"): return self._serve_static("cierre.html")
         if path in ("/detalle-futuros", "/detalle_futuros.html"): return self._serve_static("detalle_futuros.html")
@@ -2261,6 +2295,141 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
         except Exception as e:
             logger.exception("ons_cashflows failed")
+            return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
+                              json.dumps({"error": str(e)}).encode("utf-8"),
+                              "application/json; charset=utf-8")
+
+    def _serve_ons_run(self):
+        """Dataset del "Run" de cotizaciones de ONs, agrupado por sector → emisor.
+
+        Reusa las filas ya computadas de los paneles `ons_ny`/`ons_ar` del
+        snapshot (TIR/MD/Paridad/precio/%día/vol — sin recomputar) y las
+        enriquece con metadata estática del master (emisión, cupón, frecuencia,
+        legislación) + CY y Convexidad vía FinancialEngine. La página
+        `/ons-run` consume este JSON y lo renderiza en formato imprimible.
+        """
+        from collections import defaultdict
+        try:
+            from core.domain.services import FinancialEngine
+            repo = self.__class__.bond_repo
+            snap = self.__class__.snapshot.get()
+            today = date.today()
+
+            # Filas ya computadas de ambos paneles ONs (NY + AR = todas las ONs MEP).
+            live_rows = []
+            for m in snap.get("monitors", []):
+                if m.get("id") in ("ons_ny", "ons_ar"):
+                    live_rows.extend(m.get("rows", []) or [])
+
+            def _clean(s):
+                if s is None:
+                    return ""
+                s = str(s).strip()
+                return "" if s.lower() in ("nan", "none") else s
+
+            FREQ_LABEL = {1: "Anual", 2: "Semestral", 4: "Trimestral", 12: "Mensual"}
+
+            run_rows = []
+            for r in live_rows:
+                ticker = (r.get("ticker") or "").strip()
+                if not ticker:
+                    continue
+                inst = repo.get_instrument_by_ticker(ticker)
+                if inst is None:
+                    continue
+                price   = r.get("price")
+                tir_pct = r.get("tir")        # ya en unidades de %
+                md      = r.get("duration")
+
+                # TIR no-significativa: precios glitcheados (ej. 0.068) o
+                # anualización explosiva a pocos días del vto producen TIRs
+                # absurdas (millones de %) que ensucian el promedio del sector
+                # y serían ilegibles en la tabla. Se neutralizan (igual que una
+                # mesa al armar un run) — la ON igual se cuenta y se lista.
+                if tir_pct is not None and not (-95.0 <= tir_pct <= 120.0):
+                    tir_pct = None
+
+                # CY y Convexidad no están en la fila base — se calculan acá.
+                cy = convex = None
+                try:
+                    if price:
+                        cyd = FinancialEngine.current_yield(inst, price, today)
+                        cy = round(cyd * 100.0, 2) if cyd is not None else None
+                    if tir_pct is not None:
+                        cxd = FinancialEngine.convexity(inst, tir_pct / 100.0, today)
+                        convex = round(cxd, 2) if cxd is not None else None
+                except Exception:
+                    logger.debug("ons_run: CY/convex falló para %s", ticker, exc_info=True)
+
+                leg = (inst.legislacion or "").upper()
+                ley = "EXT" if leg in ("NY", "EXT", "NEW YORK") else ("AR" if leg else "")
+                freq = inst.payment_frequency or 0
+
+                rating = ons_ratings.get_rating(inst.short_name)
+
+                run_rows.append({
+                    "ticker":      inst.ticker,
+                    "emisor":      _clean(inst.short_name),
+                    "sector":      _clean(inst.sector) or "Otros",
+                    "ley":         ley,
+                    "tipo":        "HD",
+                    "calif":       rating["rating"] if rating else None,
+                    "calif_persp": rating.get("perspectiva") if rating else None,
+                    "calif_fecha": rating.get("fecha") if rating else None,
+                    "emision":     inst.emission_date.isoformat() if inst.emission_date else None,
+                    "vto":         inst.maturity_date.isoformat() if inst.maturity_date else None,
+                    "cupon":       inst.coupon_rate,          # decimal anual (0.085 = 8.5%)
+                    "frec":        freq,
+                    "frec_label":  FREQ_LABEL.get(freq, str(freq) if freq else ""),
+                    "dias_cup":    r.get("days_next_coupon"),
+                    "price":       price,
+                    "parity":      r.get("parity"),           # % units
+                    "tir":         tir_pct,                   # % units
+                    "cy":          cy,                        # % units
+                    "md":          md,
+                    "convex":      convex,
+                    "change_pct":  r.get("change_pct"),
+                    "volume":      r.get("volume"),
+                })
+
+            def _avg(vals):
+                vals = [v for v in vals if v is not None]
+                return round(sum(vals) / len(vals), 2) if vals else None
+
+            by_sector = defaultdict(list)
+            for row in run_rows:
+                by_sector[row["sector"]].append(row)
+
+            sectors = []
+            for sector, rows in by_sector.items():
+                issuers_map = defaultdict(list)
+                for row in rows:
+                    issuers_map[row["emisor"] or "—"].append(row)
+                issuers = []
+                for name, irows in issuers_map.items():
+                    irows.sort(key=lambda x: (x["md"] is None, x["md"] or 0.0))
+                    issuers.append({"name": name, "count": len(irows), "rows": irows})
+                issuers.sort(key=lambda i: (-i["count"], i["name"]))
+                sectors.append({
+                    "sector":    sector,
+                    "count":     len(rows),
+                    "count_ar":  sum(1 for x in rows if x["ley"] == "AR"),
+                    "count_ext": sum(1 for x in rows if x["ley"] == "EXT"),
+                    "tir_prom":  _avg([x["tir"] for x in rows]),
+                    "md_prom":   _avg([x["md"] for x in rows]),
+                    "issuers":   issuers,
+                })
+            sectors.sort(key=lambda s: (-s["count"], s["sector"]))
+
+            body = json.dumps({
+                "as_of":         today.isoformat(),
+                "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "total":         len(run_rows),
+                "sectors":       sectors,
+            }, default=_json_default).encode("utf-8")
+            return self._send(HTTPStatus.OK, body, "application/json; charset=utf-8")
+        except Exception as e:
+            logger.exception("ons_run failed")
             return self._send(HTTPStatus.INTERNAL_SERVER_ERROR,
                               json.dumps({"error": str(e)}).encode("utf-8"),
                               "application/json; charset=utf-8")

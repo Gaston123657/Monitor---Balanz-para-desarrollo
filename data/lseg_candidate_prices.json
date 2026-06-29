@@ -1,0 +1,292 @@
+{
+  "BACHD": [
+    {
+      "isin": "US05963GAH11",
+      "mat": "2026-11-04",
+      "cpn": 6.643,
+      "lseg_price": 99.5,
+      "tir_lseg": 10.8107122072831,
+      "data912_price": 109.65,
+      "tir_at_data912": -16.5579368840103
+    },
+    {
+      "isin": "US05963GAK40",
+      "mat": "2029-06-23",
+      "cpn": 8.0,
+      "lseg_price": 101.63,
+      "tir_lseg": 7.37976164205307,
+      "data912_price": 109.65,
+      "tir_at_data912": 4.50334053297256
+    },
+    {
+      "isin": "US05963GAL23",
+      "mat": "2031-01-28",
+      "cpn": 8.0,
+      "lseg_price": 102.13,
+      "tir_lseg": 7.43371279619984,
+      "data912_price": 109.65,
+      "tir_at_data912": 5.54694182748952
+    }
+  ],
+  "CP38D": [
+    {
+      "isin": "USP3063DAC67",
+      "mat": "2030-11-28",
+      "cpn": 11.875,
+      "lseg_price": 102.75,
+      "tir_lseg": 10.8802811387305,
+      "data912_price": 107.0,
+      "tir_at_data912": 9.42100870500402
+    },
+    {
+      "isin": "ARCGCO5600O0",
+      "mat": "2031-09-17",
+      "cpn": 6.05,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 107.0,
+      "tir_at_data912": -15.1876246894267
+    }
+  ],
+  "DNCAD": [
+    {
+      "isin": "US29244AAM45",
+      "mat": "2030-10-24",
+      "cpn": 9.75,
+      "lseg_price": 103.4998,
+      "tir_lseg": 8.05311910295207,
+      "data912_price": 104.9,
+      "tir_at_data912": 7.39981481305887
+    },
+    {
+      "isin": "US29244AAN28",
+      "mat": "2033-04-28",
+      "cpn": 9.5,
+      "lseg_price": 100.25,
+      "tir_lseg": 9.44450242164192,
+      "data912_price": 104.9,
+      "tir_at_data912": 8.53389420650999
+    }
+  ],
+  "GN49D": [
+    {
+      "isin": "AREMGA5600T3",
+      "mat": "2026-07-14",
+      "cpn": 0.0,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 106.0,
+      "tir_at_data912": -147.574123989218
+    },
+    {
+      "isin": "AREMGA5600P1",
+      "mat": "2026-11-11",
+      "cpn": 0.0,
+      "lseg_price": null,
+      "tir_lseg": 200.288292766951,
+      "data912_price": 106.0,
+      "tir_at_data912": -13542.8773584906
+    },
+    {
+      "isin": "AR0329026279",
+      "mat": "2027-05-16",
+      "cpn": 0.0,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 106.0,
+      "tir_at_data912": -344.33962264151
+    },
+    {
+      "isin": "AREMGA5600R7",
+      "mat": "2028-07-14",
+      "cpn": 2.0,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 106.0,
+      "tir_at_data912": -0.912208322849533
+    },
+    {
+      "isin": "USP46756BQ76",
+      "mat": "2033-12-02",
+      "cpn": 7.75,
+      "lseg_price": 101.875,
+      "tir_lseg": 7.24447823479473,
+      "data912_price": 106.0,
+      "tir_at_data912": 6.17675016603701
+    }
+  ],
+  "VSCXD": [
+    {
+      "isin": "US92841RAB69",
+      "mat": "2033-06-10",
+      "cpn": 8.5,
+      "lseg_price": 106.5,
+      "tir_lseg": 6.59946240128158,
+      "data912_price": 108.2,
+      "tir_at_data912": 6.06109087828765
+    },
+    {
+      "isin": "US92841RAA86",
+      "mat": "2035-12-10",
+      "cpn": 7.625,
+      "lseg_price": 103.25,
+      "tir_lseg": 6.98875176925986,
+      "data912_price": 108.2,
+      "tir_at_data912": 5.88158437974452
+    },
+    {
+      "isin": "USP9659RAD00",
+      "mat": "2038-04-08",
+      "cpn": 7.875,
+      "lseg_price": 103.09,
+      "tir_lseg": 7.34369612270374,
+      "data912_price": 108.2,
+      "tir_at_data912": 6.43558701367571
+    }
+  ],
+  "EAC4D": [
+    {
+      "isin": "AR0053684038",
+      "mat": "2026-10-12",
+      "cpn": 1.0,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 102.45,
+      "tir_at_data912": -29.0948409971987
+    },
+    {
+      "isin": "US55375GAA31",
+      "mat": "2036-06-16",
+      "cpn": 9.75,
+      "lseg_price": 98.97,
+      "tir_lseg": 9.91373073663904,
+      "data912_price": 102.45,
+      "tir_at_data912": 9.20508582244014
+    }
+  ],
+  "OZC8D": [
+    {
+      "isin": "USP37213AG34",
+      "mat": "2031-07-28",
+      "cpn": 9.75,
+      "lseg_price": 97.59,
+      "tir_lseg": 11.0678752291651,
+      "data912_price": 100.3,
+      "tir_at_data912": 9.62738478933512
+    },
+    {
+      "isin": "USP37213AH17",
+      "mat": "2033-06-11",
+      "cpn": 9.75,
+      "lseg_price": 96.85,
+      "tir_lseg": 10.3955052163457,
+      "data912_price": 100.3,
+      "tir_at_data912": 9.57186550285216
+    }
+  ],
+  "MR46D": [
+    {
+      "isin": "AR0024707215",
+      "mat": "2026-09-18",
+      "cpn": 9.5,
+      "lseg_price": null,
+      "tir_lseg": 46096.9537526836,
+      "data912_price": 84.5,
+      "tir_at_data912": 87.2722615499255
+    },
+    {
+      "isin": "AR0036587696",
+      "mat": "2026-12-19",
+      "cpn": 9.5,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 84.5,
+      "tir_at_data912": 49.9665923585785
+    },
+    {
+      "isin": "AR0548838991",
+      "mat": "2027-06-17",
+      "cpn": 9.0,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 84.5,
+      "tir_at_data912": 27.8044172503791
+    },
+    {
+      "isin": "AR0387988725",
+      "mat": "2027-06-17",
+      "cpn": 9.5,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 84.5,
+      "tir_at_data912": 28.9847783524662
+    }
+  ],
+  "MR47D": [
+    {
+      "isin": "AR0024707215",
+      "mat": "2026-09-18",
+      "cpn": 9.5,
+      "lseg_price": null,
+      "tir_lseg": 46096.9537526836,
+      "data912_price": 36.0,
+      "tir_at_data912": 694.415522953147
+    },
+    {
+      "isin": "AR0036587696",
+      "mat": "2026-12-19",
+      "cpn": 9.5,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 36.0,
+      "tir_at_data912": 400.388939419347
+    },
+    {
+      "isin": "AR0548838991",
+      "mat": "2027-06-17",
+      "cpn": 9.0,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 36.0,
+      "tir_at_data912": 138.773123781846
+    },
+    {
+      "isin": "AR0387988725",
+      "mat": "2027-06-17",
+      "cpn": 9.5,
+      "lseg_price": null,
+      "tir_lseg": 1.0,
+      "data912_price": 36.0,
+      "tir_at_data912": 159.459860880292
+    }
+  ],
+  "YFCDD": [
+    {
+      "isin": "ARYPFE5600I1",
+      "mat": "2026-08-29",
+      "cpn": 0.0,
+      "lseg_price": null,
+      "tir_lseg": -399.883665109695,
+      "data912_price": 100.0,
+      "tir_at_data912": -406.738983050847
+    },
+    {
+      "isin": "AR0976739711",
+      "mat": "2027-02-27",
+      "cpn": 3.0,
+      "lseg_price": 98.296,
+      "tir_lseg": 7.29288295777704,
+      "data912_price": 100.0,
+      "tir_at_data912": 2.99177262528048
+    },
+    {
+      "isin": "US98424MAB90",
+      "mat": "2032-10-16",
+      "cpn": 7.875,
+      "lseg_price": 102.85,
+      "tir_lseg": 6.88774494762637,
+      "data912_price": 100.0,
+      "tir_at_data912": 7.86856129962914
+    }
+  ]
+}

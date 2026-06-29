@@ -2028,6 +2028,12 @@ function _renderBondDetailesTab(overlay, payload) {
     const _leg = String(meta.legislacion).toUpperCase();
     metaRows.push(["Ley", _leg === "NY" ? "Ley NY" : (_leg === "AR" ? "Ley ARG" : _leg)]);
   }
+  if (meta.calificacion) {
+    let _cal = meta.calificacion + " (FIXscr)";
+    if (meta.calificacion_persp) _cal += " · " + meta.calificacion_persp;
+    if (meta.calificacion_fecha) _cal += " · " + meta.calificacion_fecha;
+    metaRows.push(["Calificación", _cal]);
+  }
   if (meta.category) metaRows.splice(2, 0, ["Categoría", meta.category]);
   if (meta.cer_base != null) metaRows.push(["CER base", _bondFmtNum(meta.cer_base, 4)]);
   if (meta.cer_lag != null) metaRows.push(["CER lag (días háb.)", meta.cer_lag]);

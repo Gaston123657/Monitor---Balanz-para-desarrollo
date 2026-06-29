@@ -1,0 +1,602 @@
+[
+  {
+    "ticker": "BACHD",
+    "issuer_query": "BANCO MACRO",
+    "n_fresh": 5,
+    "n_groups": 3,
+    "fresh": [
+      {
+        "isin": "US05963GAH11",
+        "mat": "2026-11-04",
+        "cpn": 6.643,
+        "title": "Banco Macro SA, Bond, TRACE Eligible BMA 6.643 04-Nov-2026"
+      },
+      {
+        "isin": "USP1047VAF42",
+        "mat": "2026-11-04",
+        "cpn": 6.643,
+        "title": "Banco Macro SA, Bond, TRACE Eligible BMA 6.643 04-Nov-2026"
+      },
+      {
+        "isin": "US05963GAK40",
+        "mat": "2029-06-23",
+        "cpn": 8.0,
+        "title": "Banco Macro SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible BMA 8 23-Jun-2029"
+      },
+      {
+        "isin": "US05963GAL23",
+        "mat": "2031-01-28",
+        "cpn": 8.0,
+        "title": "Banco Macro SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible BMA 8 28-Jan-2031"
+      },
+      {
+        "isin": "USP1047VAN75",
+        "mat": "2031-01-28",
+        "cpn": 8.0,
+        "title": "Banco Macro SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible BMA 8 28-Jan-2031"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "CP38D",
+    "issuer_query": "COMPANIA GENERAL DE COMBUSTIBLES",
+    "n_fresh": 3,
+    "n_groups": 2,
+    "fresh": [
+      {
+        "isin": "USP3063DAC67",
+        "mat": "2030-11-28",
+        "cpn": 11.875,
+        "title": "Compania General de Combustibles SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible LTNEXM 11.875 28-Nov-2030"
+      },
+      {
+        "isin": "US20448QAC42",
+        "mat": "2030-11-28",
+        "cpn": 11.875,
+        "title": "Compania General de Combustibles SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible LTNEXM 11.875 28-Nov-2030"
+      },
+      {
+        "isin": "ARCGCO5600O0",
+        "mat": "2031-09-17",
+        "cpn": 6.05,
+        "title": "Compania General de Combustibles SA, Plain Vanilla Fixed Coupon Bond, LTNEXM 6.05 17-Sep-2031"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "DNCAD",
+    "issuer_query": "EMPRESA DISTRIBUIDORA Y COMERCIALIZADORA NORTE EDENOR",
+    "n_fresh": 3,
+    "n_groups": 2,
+    "fresh": [
+      {
+        "isin": "US29244AAM45",
+        "mat": "2030-10-24",
+        "cpn": 9.75,
+        "title": "Empresa Distribuidora y Comercializadora Norte SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EDN 9.75 24-Oct-2030"
+      },
+      {
+        "isin": "US29244AAN28",
+        "mat": "2033-04-28",
+        "cpn": 9.5,
+        "title": "Empresa Distribuidora y Comercializadora Norte SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EDN 9.5 28-Apr-2033"
+      },
+      {
+        "isin": "USP3710FBA14",
+        "mat": "2033-04-28",
+        "cpn": 9.5,
+        "title": "Empresa Distribuidora y Comercializadora Norte SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EDN 9.5 28-Apr-2033"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "GN49D",
+    "issuer_query": "GENNEIA",
+    "n_fresh": 6,
+    "n_groups": 5,
+    "fresh": [
+      {
+        "isin": "AREMGA5600T3",
+        "mat": "2026-07-14",
+        "cpn": 0.0,
+        "title": "Genneia SA, Zero Coupon Bond, EMGSD 0 14-Jul-2026"
+      },
+      {
+        "isin": "AREMGA5600P1",
+        "mat": "2026-11-11",
+        "cpn": 0.0,
+        "title": "Genneia SA, Zero Coupon Bond, EMGSD 0 11-Nov-2026"
+      },
+      {
+        "isin": "AR0329026279",
+        "mat": "2027-05-16",
+        "cpn": 0.0,
+        "title": "Genneia SA, Zero Coupon Bond, EMGSD 0 16-May-2027"
+      },
+      {
+        "isin": "AREMGA5600R7",
+        "mat": "2028-07-14",
+        "cpn": 2.0,
+        "title": "Genneia SA, Plain Vanilla Fixed Coupon Bond, EMGSD 2 14-Jul-2028"
+      },
+      {
+        "isin": "USP46756BQ76",
+        "mat": "2033-12-02",
+        "cpn": 7.75,
+        "title": "Genneia SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EMGSD 7.75 02-Dec-2033"
+      },
+      {
+        "isin": "US372319AC70",
+        "mat": "2033-12-02",
+        "cpn": 7.75,
+        "title": "Genneia SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EMGSD 7.75 02-Dec-2033"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "MU31D",
+    "issuer_query": "HIJOS DE SALVADOR MUNOZ",
+    "n_fresh": 1,
+    "n_groups": 1,
+    "fresh": [
+      {
+        "isin": "AR0136472021",
+        "mat": "2027-10-27",
+        "cpn": 7.7,
+        "title": "Hijos de Salvador Munoz SA, Plain Vanilla Fixed Coupon Bond, HIMUN 7.7 27-Oct-2027"
+      }
+    ],
+    "ref": {
+      "maturity": "2027-10-27",
+      "coupon_rate": 7.7,
+      "coupon_frequency": 2,
+      "issue_date": "2026-04-27",
+      "issuer": "HIJOS DE SALVADOR MUNOZ SA",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "HIMUN  7.700 10/27/27",
+      "isin": "AR0136472021",
+      "trbc_economic": "Consumer Non-Cyclicals",
+      "trbc_business": "Food & Beverages",
+      "trbc_industry": "Food & Tobacco",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-10-27",
+        "interest": 3.85,
+        "amortization": 0.0,
+        "total": 3.85
+      },
+      {
+        "date": "2027-04-27",
+        "interest": 3.85,
+        "amortization": 0.0,
+        "total": 3.85
+      },
+      {
+        "date": "2027-10-27",
+        "interest": 3.85,
+        "amortization": 100.0,
+        "total": 103.85
+      }
+    ],
+    "status": "resolved_unique"
+  },
+  {
+    "ticker": "RC1CD",
+    "issuer_query": "ARCOR",
+    "n_fresh": 2,
+    "n_groups": 1,
+    "fresh": [
+      {
+        "isin": "US03965PAE16",
+        "mat": "2033-07-31",
+        "cpn": 7.6,
+        "title": "Arcor SAIC, Plain Vanilla Fixed Coupon Bond, TRACE Eligible GRUARA 7.6 31-Jul-2033"
+      },
+      {
+        "isin": "USP04559BE29",
+        "mat": "2033-07-31",
+        "cpn": 7.6,
+        "title": "Arcor SAIC, Plain Vanilla Fixed Coupon Bond, TRACE Eligible GRUARA 7.6 31-Jul-2033"
+      }
+    ],
+    "ref": {
+      "maturity": "2033-07-31",
+      "coupon_rate": 7.6,
+      "coupon_frequency": 2,
+      "issue_date": "2025-07-31",
+      "issuer": "ARCOR SAIC",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "GRUAR  7.600 07/31/33 '28",
+      "isin": "US03965PAE16",
+      "trbc_economic": "Consumer Non-Cyclicals",
+      "trbc_business": "Food & Beverages",
+      "trbc_industry": "Food & Tobacco",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-07-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2027-02-01",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2027-08-02",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2028-01-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2028-07-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2029-01-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2029-07-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2030-01-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2030-07-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2031-01-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2031-07-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2032-02-02",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2032-08-02",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2033-01-31",
+        "interest": 3.8,
+        "amortization": 0.0,
+        "total": 3.8
+      },
+      {
+        "date": "2033-08-01",
+        "interest": 3.8,
+        "amortization": 100.0,
+        "total": 103.8
+      }
+    ],
+    "status": "resolved_unique"
+  },
+  {
+    "ticker": "SBC2D",
+    "issuer_query": "SCANIA CREDIT ARGENTINA",
+    "n_fresh": 1,
+    "n_groups": 1,
+    "fresh": [
+      {
+        "isin": "AR0318379242",
+        "mat": "2029-01-16",
+        "cpn": 7.49,
+        "title": "Scania Credit Argentina S A U, Plain Vanilla Fixed Coupon Bond, SCANI 7.49 16-Jan-2029"
+      }
+    ],
+    "ref": {
+      "maturity": "2029-01-16",
+      "coupon_rate": 7.49,
+      "coupon_frequency": 4,
+      "issue_date": "2026-01-16",
+      "issuer": "SCANIA CREDIT ARGENTINA S A U",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "SCANI  7.490 01/16/29",
+      "isin": "AR0318379242",
+      "trbc_economic": "Financials",
+      "trbc_business": "Banking & Investment Services",
+      "trbc_industry": "Banking Services",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-07-16",
+        "interest": 3.714219,
+        "amortization": 9.0,
+        "total": 12.714219
+      },
+      {
+        "date": "2026-10-16",
+        "interest": 1.703975,
+        "amortization": 9.0,
+        "total": 10.703975
+      },
+      {
+        "date": "2027-01-18",
+        "interest": 1.53545,
+        "amortization": 9.0,
+        "total": 10.53545
+      },
+      {
+        "date": "2027-04-16",
+        "interest": 1.366925,
+        "amortization": 9.0,
+        "total": 10.366925
+      },
+      {
+        "date": "2027-07-16",
+        "interest": 1.1984,
+        "amortization": 9.0,
+        "total": 10.1984
+      },
+      {
+        "date": "2027-10-18",
+        "interest": 1.029875,
+        "amortization": 9.0,
+        "total": 10.029875
+      },
+      {
+        "date": "2028-01-17",
+        "interest": 0.86135,
+        "amortization": 9.0,
+        "total": 9.86135
+      },
+      {
+        "date": "2028-04-17",
+        "interest": 0.692825,
+        "amortization": 9.0,
+        "total": 9.692825
+      },
+      {
+        "date": "2028-07-17",
+        "interest": 0.5243,
+        "amortization": 9.0,
+        "total": 9.5243
+      },
+      {
+        "date": "2028-10-17",
+        "interest": 0.355775,
+        "amortization": 9.0,
+        "total": 9.355775
+      },
+      {
+        "date": "2029-01-16",
+        "interest": 0.18725,
+        "amortization": 10.0,
+        "total": 10.18725
+      }
+    ],
+    "status": "resolved_unique"
+  },
+  {
+    "ticker": "VSCXD",
+    "issuer_query": "VISTA ENERGY ARGENTINA",
+    "n_fresh": 4,
+    "n_groups": 3,
+    "fresh": [
+      {
+        "isin": "US92841RAB69",
+        "mat": "2033-06-10",
+        "cpn": 8.5,
+        "title": "Vista Energy Argentina SAU, Plain Vanilla Fixed Coupon Bond, TRACE Eligible VIST 8.5 10-Jun-2033"
+      },
+      {
+        "isin": "US92841RAA86",
+        "mat": "2035-12-10",
+        "cpn": 7.625,
+        "title": "Vista Energy Argentina SAU, Plain Vanilla Fixed Coupon Bond, TRACE Eligible VIST 7.625 10-Dec-2035"
+      },
+      {
+        "isin": "USP9659RAD00",
+        "mat": "2038-04-08",
+        "cpn": 7.875,
+        "title": "Vista Energy Argentina SAU, Plain Vanilla Fixed Coupon Bond, TRACE Eligible VIST 7.875 08-Apr-2038"
+      },
+      {
+        "isin": "US92841RAC43",
+        "mat": "2038-04-08",
+        "cpn": 7.875,
+        "title": "Vista Energy Argentina SAU, Plain Vanilla Fixed Coupon Bond, TRACE Eligible VIST 7.875 08-Apr-2038"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "EAC4D",
+    "issuer_query": "MSU GREEN ENERGY",
+    "n_fresh": 3,
+    "n_groups": 2,
+    "fresh": [
+      {
+        "isin": "AR0053684038",
+        "mat": "2026-10-12",
+        "cpn": 1.0,
+        "title": "MSU Green Energy SA, Multiple Payment Frequencies Bond, MSUAIX 1 12-Oct-2026"
+      },
+      {
+        "isin": "US55375GAA31",
+        "mat": "2036-06-16",
+        "cpn": 9.75,
+        "title": "MSU Green Energy SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible MSUAIX 9.75 16-Jun-2036"
+      },
+      {
+        "isin": "USP7000TAA27",
+        "mat": "2036-06-16",
+        "cpn": 9.75,
+        "title": "MSU Green Energy SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible MSUAIX 9.75 16-Jun-2036"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "OZC8D",
+    "issuer_query": "DISTRIBUIDORA DE ELECTRICIDAD DE MENDOZA",
+    "n_fresh": 4,
+    "n_groups": 2,
+    "fresh": [
+      {
+        "isin": "USP37213AG34",
+        "mat": "2031-07-28",
+        "cpn": 9.75,
+        "title": "Empresa Distribuidora de Electricidad de Mendoza SA, Step Up / Step Down Bond, TRACE Eligible EDEM 9.75 28-Jul-2031"
+      },
+      {
+        "isin": "US29245HAG11",
+        "mat": "2031-07-28",
+        "cpn": 9.75,
+        "title": "Empresa Distribuidora de Electricidad de Mendoza SA, Step Up / Step Down Bond, TRACE Eligible EDEM 9.75 28-Jul-2031"
+      },
+      {
+        "isin": "USP37213AH17",
+        "mat": "2033-06-11",
+        "cpn": 9.75,
+        "title": "Empresa Distribuidora de Electricidad de Mendoza SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EDEM 9.75 11-Jun-2033"
+      },
+      {
+        "isin": "US29245HAH93",
+        "mat": "2033-06-11",
+        "cpn": 9.75,
+        "title": "Empresa Distribuidora de Electricidad de Mendoza SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible EDEM 9.75 11-Jun-2033"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "MR46D",
+    "issuer_query": "MERANOL",
+    "n_fresh": 4,
+    "n_groups": 4,
+    "fresh": [
+      {
+        "isin": "AR0024707215",
+        "mat": "2026-09-18",
+        "cpn": 9.5,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9.5 18-Sep-2026"
+      },
+      {
+        "isin": "AR0036587696",
+        "mat": "2026-12-19",
+        "cpn": 9.5,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9.5 19-Dec-2026"
+      },
+      {
+        "isin": "AR0548838991",
+        "mat": "2027-06-17",
+        "cpn": 9.0,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9 17-Jun-2027"
+      },
+      {
+        "isin": "AR0387988725",
+        "mat": "2027-06-17",
+        "cpn": 9.5,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9.5 17-Jun-2027"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "MR47D",
+    "issuer_query": "MERANOL",
+    "n_fresh": 4,
+    "n_groups": 4,
+    "fresh": [
+      {
+        "isin": "AR0024707215",
+        "mat": "2026-09-18",
+        "cpn": 9.5,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9.5 18-Sep-2026"
+      },
+      {
+        "isin": "AR0036587696",
+        "mat": "2026-12-19",
+        "cpn": 9.5,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9.5 19-Dec-2026"
+      },
+      {
+        "isin": "AR0548838991",
+        "mat": "2027-06-17",
+        "cpn": 9.0,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9 17-Jun-2027"
+      },
+      {
+        "isin": "AR0387988725",
+        "mat": "2027-06-17",
+        "cpn": 9.5,
+        "title": "Meranol SACI, Plain Vanilla Fixed Coupon Bond, MERA 9.5 17-Jun-2027"
+      }
+    ],
+    "status": "ambiguous"
+  },
+  {
+    "ticker": "YFCDD",
+    "issuer_query": "YPF ENERGIA ELECTRICA",
+    "n_fresh": 3,
+    "n_groups": 3,
+    "fresh": [
+      {
+        "isin": "ARYPFE5600I1",
+        "mat": "2026-08-29",
+        "cpn": 0.0,
+        "title": "YPF Energia Electrica SA, Zero Coupon Bond, TRACE Eligible YPFDA 0 29-Aug-2026"
+      },
+      {
+        "isin": "AR0976739711",
+        "mat": "2027-02-27",
+        "cpn": 3.0,
+        "title": "YPF Energia Electrica SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible YPFDA 3 27-Feb-2027"
+      },
+      {
+        "isin": "US98424MAB90",
+        "mat": "2032-10-16",
+        "cpn": 7.875,
+        "title": "YPF Energia Electrica SA, Plain Vanilla Fixed Coupon Bond, TRACE Eligible YPFDA 7.875 16-Oct-2032"
+      }
+    ],
+    "status": "ambiguous"
+  }
+]

@@ -1,0 +1,554 @@
+[
+  {
+    "ticker": "CP38D",
+    "universe_id": "USP3063DAC67",
+    "status": "resolved_unique",
+    "ref": {
+      "maturity": "2030-11-28",
+      "coupon_rate": 11.875,
+      "coupon_frequency": 2,
+      "issue_date": "2025-11-28",
+      "issuer": "COMPANIA GENERAL DE COMBUSTIBLES SA",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "LTNEX 11.875 11/28/30 '27",
+      "isin": "USP3063DAC67",
+      "trbc_economic": "Energy",
+      "trbc_business": "Energy - Fossil Fuels",
+      "trbc_industry": "Oil & Gas",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-11-30",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2027-05-28",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2027-11-29",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2028-05-30",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2028-11-28",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2029-05-29",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2029-11-28",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2030-05-28",
+        "interest": 5.9375,
+        "amortization": 0.0,
+        "total": 5.9375
+      },
+      {
+        "date": "2030-11-29",
+        "interest": 5.9375,
+        "amortization": 100.0,
+        "total": 105.9375
+      }
+    ]
+  },
+  {
+    "ticker": "GN49D",
+    "universe_id": "USP46756BQ76",
+    "status": "resolved_unique",
+    "ref": {
+      "maturity": "2033-12-02",
+      "coupon_rate": 7.75,
+      "coupon_frequency": 2,
+      "issue_date": "2025-12-02",
+      "issuer": "GENNEIA SA",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "EMGSD  7.750 12/02/33 '28",
+      "isin": "USP46756BQ76",
+      "trbc_economic": "Utilities",
+      "trbc_business": "Utilities",
+      "trbc_industry": "Electric Utilities & IPPs",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-12-02",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2027-06-02",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2027-12-02",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2028-06-02",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2028-12-04",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2029-06-04",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2029-12-03",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2030-06-03",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2030-12-02",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2031-06-02",
+        "interest": 3.875,
+        "amortization": 0.0,
+        "total": 3.875
+      },
+      {
+        "date": "2031-12-02",
+        "interest": 3.875,
+        "amortization": 33.0,
+        "total": 36.875
+      },
+      {
+        "date": "2032-06-02",
+        "interest": 2.59625,
+        "amortization": 0.0,
+        "total": 2.59625
+      },
+      {
+        "date": "2032-12-02",
+        "interest": 2.59625,
+        "amortization": 22.11,
+        "total": 24.70625
+      },
+      {
+        "date": "2033-06-02",
+        "interest": 1.739488,
+        "amortization": 0.0,
+        "total": 1.739488
+      },
+      {
+        "date": "2033-12-02",
+        "interest": 1.739488,
+        "amortization": 44.89,
+        "total": 46.629488
+      }
+    ]
+  },
+  {
+    "ticker": "EAC4D",
+    "universe_id": "US55375GAA31",
+    "status": "resolved_unique",
+    "ref": {
+      "maturity": "2036-06-16",
+      "coupon_rate": 9.75,
+      "coupon_frequency": 2,
+      "issue_date": "2026-06-16",
+      "issuer": "MSU GREEN ENERGY SA",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "MSUAI  9.750 06/16/36 '30",
+      "isin": "US55375GAA31",
+      "trbc_economic": "Utilities",
+      "trbc_business": "Utilities",
+      "trbc_industry": "Electric Utilities & IPPs",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-12-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2027-06-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2027-12-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2028-06-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2028-12-18",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2029-06-18",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2029-12-17",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2030-06-17",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2030-12-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2031-06-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2031-12-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2032-06-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2032-12-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2033-06-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2033-12-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2034-06-16",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2034-12-18",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2035-06-18",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2035-12-17",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2036-06-16",
+        "interest": 4.875,
+        "amortization": 100.0,
+        "total": 104.875
+      }
+    ]
+  },
+  {
+    "ticker": "DNCAD",
+    "universe_id": "US29244AAM45",
+    "status": "resolved_unique",
+    "ref": {
+      "maturity": "2030-10-24",
+      "coupon_rate": 9.75,
+      "coupon_frequency": 2,
+      "issue_date": "2024-10-24",
+      "issuer": "EMPRESA DISTRIBUIDORA Y COMERCIALIZADORA NORTE SA",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "EDN    9.750 10/24/30 '26",
+      "isin": "US29244AAM45",
+      "trbc_economic": "Utilities",
+      "trbc_business": "Utilities",
+      "trbc_industry": "Electric Utilities & IPPs",
+      "gics": "Utilities"
+    },
+    "schedule": [
+      {
+        "date": "2026-10-26",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2027-04-26",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2027-10-25",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2028-04-24",
+        "interest": 4.875,
+        "amortization": 0.0,
+        "total": 4.875
+      },
+      {
+        "date": "2028-10-24",
+        "interest": 4.875,
+        "amortization": 33.33,
+        "total": 38.205
+      },
+      {
+        "date": "2029-04-24",
+        "interest": 3.250163,
+        "amortization": 0.0,
+        "total": 3.250163
+      },
+      {
+        "date": "2029-10-24",
+        "interest": 3.250163,
+        "amortization": 33.33,
+        "total": 36.580163
+      },
+      {
+        "date": "2030-04-24",
+        "interest": 1.625325,
+        "amortization": 0.0,
+        "total": 1.625325
+      },
+      {
+        "date": "2030-10-24",
+        "interest": 1.625325,
+        "amortization": 33.34,
+        "total": 34.965325
+      }
+    ]
+  },
+  {
+    "ticker": "VSCXD",
+    "universe_id": "US92841RAB69",
+    "status": "resolved_unique",
+    "ref": {
+      "maturity": "2033-06-10",
+      "coupon_rate": 8.5,
+      "coupon_frequency": 2,
+      "issue_date": "2025-06-10",
+      "issuer": "VISTA ENERGY ARGENTINA SAU",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "VIST   8.500 06/10/33 '28",
+      "isin": "US92841RAB69",
+      "trbc_economic": "Energy",
+      "trbc_business": "Energy - Fossil Fuels",
+      "trbc_industry": "Oil & Gas",
+      "gics": "Energy"
+    },
+    "schedule": [
+      {
+        "date": "2026-12-10",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2027-06-10",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2027-12-10",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2028-06-12",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2028-12-11",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2029-06-11",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2029-12-10",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2030-06-10",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2030-12-10",
+        "interest": 4.25,
+        "amortization": 0.0,
+        "total": 4.25
+      },
+      {
+        "date": "2031-06-10",
+        "interest": 4.25,
+        "amortization": 33.333333,
+        "total": 37.583333
+      },
+      {
+        "date": "2031-12-10",
+        "interest": 2.833333,
+        "amortization": 0.0,
+        "total": 2.833333
+      },
+      {
+        "date": "2032-06-10",
+        "interest": 2.833333,
+        "amortization": 33.333333,
+        "total": 36.166667
+      },
+      {
+        "date": "2032-12-10",
+        "interest": 1.416667,
+        "amortization": 0.0,
+        "total": 1.416667
+      },
+      {
+        "date": "2033-06-10",
+        "interest": 1.416667,
+        "amortization": 33.333333,
+        "total": 34.75
+      }
+    ]
+  },
+  {
+    "ticker": "YFCDD",
+    "universe_id": "AR0976739711",
+    "status": "resolved_unique",
+    "ref": {
+      "maturity": "2027-02-27",
+      "coupon_rate": 3,
+      "coupon_frequency": 4,
+      "issue_date": "2024-02-27",
+      "issuer": "YPF ENERGIA ELECTRICA SA",
+      "currency": "USD",
+      "coupon_type": "FXPV",
+      "description": "YPFD   3.000 02/27/27 '26",
+      "isin": "AR0976739711",
+      "trbc_economic": "Utilities",
+      "trbc_business": "Utilities",
+      "trbc_industry": "Electric Utilities & IPPs",
+      "gics": null
+    },
+    "schedule": [
+      {
+        "date": "2026-08-27",
+        "interest": 0.75,
+        "amortization": 50.0,
+        "total": 50.75
+      },
+      {
+        "date": "2026-11-27",
+        "interest": 0.375,
+        "amortization": 0.0,
+        "total": 0.375
+      },
+      {
+        "date": "2027-03-01",
+        "interest": 0.375,
+        "amortization": 50.0,
+        "total": 50.375
+      }
+    ]
+  }
+]

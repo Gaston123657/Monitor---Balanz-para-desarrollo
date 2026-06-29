@@ -25,6 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from core.domain.models import Instrument, MarketSnapshot
 from core.domain.services import FinancialEngine, _is_cer_type, _cer_reference_date
 from core.holiday_engine import settlement_byma, date_range_habil
+from core.infrastructure import ons_ratings
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +221,14 @@ def _bond_metadata(instrument: Instrument, *, leg: Optional[str] = None) -> Dict
         "legislacion": getattr(instrument, "legislacion", None),
         "is_tamar_family": is_tamar_family,
     }
+    # Calificación crediticia FIXscr (largo plazo, nivel emisor) — sólo ONs.
+    if (instrument.instrument_type or "").upper() == "ON":
+        rating = ons_ratings.get_rating(instrument.short_name)
+        if rating:
+            meta["calificacion"] = rating["rating"]
+            meta["calificacion_persp"] = rating.get("perspectiva")
+            meta["calificacion_fecha"] = rating.get("fecha")
+            meta["calificacion_fuente"] = rating.get("source")
     # CER fields: bonos CER + DUAL_CER_TAMAR (que usa cer_base como rail CER).
     if is_cer or is_dual_cer:
         meta["cer_base"] = _safe(instrument.cer_base)

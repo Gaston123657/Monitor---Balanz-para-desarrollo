@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run ONs · Cotizaciones · Balanz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <style>
+    /* ===================================================================
+       Documento "Run" de ONs — layout claro tipo papel, optimizado para
+       impresión (Imprimir → Guardar como PDF). NO usa style.css del
+       dashboard (es un documento de reporte, no un panel).
+       =================================================================== */
+    :root {
+      --ink:       #0b1230;   /* texto principal */
+      --ink-soft:  #3a4566;   /* texto atenuado */
+      --line:      #d9deef;   /* bordes finos */
+      --band-bg:   #111e55;   /* franja header documento / columnas */
+      --row-alt:   #f4f6fc;   /* fila alterna */
+      --pos:       #128a3a;   /* %día positivo */
+      --neg:       #c0392b;   /* %día negativo */
+      --accent:    #1f2a5a;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #e9ecf4;
+      color: var(--ink);
+      font-family: "Inter Tight", system-ui, sans-serif;
+      font-size: 13px;
+    }
+
+    /* ---- Barra de control (no se imprime) ---- */
+    .toolbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      padding: 10px 18px;
+      background: var(--band-bg); color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+    .toolbar h1 {
+      font-size: 15px; font-weight: 800; letter-spacing: .5px; margin: 0;
+      text-transform: uppercase;
+    }
+    .toolbar .status { font-size: 12px; color: #b9c2ee; }
+    .toolbar .spacer { margin-left: auto; }
+    .toolbar button {
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      color: #0b1230; background: #ffd93d; border: 0; border-radius: 5px;
+      padding: 7px 14px; cursor: pointer;
+    }
+    .toolbar button:hover { background: #ffe879; }
+    .toolbar button.secondary { background: #2c3a78; color: #fff; }
+    .toolbar button.secondary:hover { background: #3a4a92; }
+
+    /* ---- Hoja del documento ---- */
+    .sheet {
+      max-width: 1180px; margin: 18px auto; padding: 0;
+      background: #fff; box-shadow: 0 2px 14px rgba(11,18,48,.15);
+    }
+
+    .doc-head {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--band-bg); color: #fff; padding: 12px 16px;
+    }
+    .doc-head .title { font-size: 17px; font-weight: 800; letter-spacing: .4px; }
+    .doc-head .title small { font-weight: 500; opacity: .85; }
+    .doc-head .meta { font-size: 12px; text-align: right; line-height: 1.4; }
+
+    /* ---- Tabla principal (una sola, thead se repite al imprimir) ---- */
+    table.run {
+      width: 100%; border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+    table.run thead th {
+      background: var(--accent); color: #fff;
+      font-size: 9px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .3px;
+      padding: 5px 5px; text-align: right; white-space: nowrap;
+      border-bottom: 1px solid var(--band-bg);
+    }
+    table.run thead th.l { text-align: left; }
+
+    table.run td {
+      font-size: 9.5px; padding: 2.5px 5px; border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    table.run td.num { text-align: right; font-family: "JetBrains Mono", monospace; }
+    table.run td.tk  { font-family: "JetBrains Mono", monospace; font-weight: 600; }
+    table.run tbody tr.on.alt td { background: var(--row-alt); }
+    .pos { color: var(--pos); }
+    .neg { color: var(--neg); }
+    .muted { color: var(--ink-soft); }
+
+    /* Chips de calificación FIXscr por tramo */
+    .rt { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 9px;
+          padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+    .rt-a   { background: #d5f3df; color: #0f7a37; }   /* AAA…A: alta calidad */
+    .rt-bbb { background: #dbe8ff; color: #1f4fa0; }   /* BBB: grado de inversión */
+    .rt-b   { background: #fdeccb; color: #9a6400; }   /* BB/B: especulativo */
+    .rt-d   { background: #fbd8d4; color: #b0271a; }   /* C/D: distress */
+
+    /* Franja de sector */
+    tr.sector-band td {
+      background: var(--band-bg); color: #fff;
+      font-weight: 700; font-size: 11px; letter-spacing: .4px;
+      padding: 6px 8px; text-transform: uppercase;
+      border-bottom: 0;
+    }
+    tr.sector-band .sec-name { display: inline-block; }
+    tr.sector-band .sec-stats { float: right; font-weight: 500; font-size: 10px; opacity: .92; }
+    /* Acento de color por sector (barra izquierda) */
+    tr.sector-band td { border-left: 5px solid var(--sec-accent, #6cb4ff); }
+
+    /* Sub-encabezado de emisor */
+    tr.issuer td {
+      background: #e7ebf7; color: var(--ink);
+      font-weight: 700; font-size: 10px;
+      padding: 3px 8px; border-bottom: 1px solid var(--line);
+    }
+    tr.issuer .cnt { color: var(--ink-soft); font-weight: 500; }
+
+    /* No cortar filas a la mitad; mantener banda con su primer contenido */
+    table.run tr { break-inside: avoid; }
+    tr.sector-band, tr.issuer { break-after: avoid; }
+
+    .doc-foot {
+      padding: 8px 16px; font-size: 10px; color: var(--ink-soft);
+      border-top: 1px solid var(--line); line-height: 1.4;
+    }
+
+    .empty {
+      padding: 40px; text-align: center; color: var(--ink-soft); font-size: 14px;
+    }
+
+    /* =================== Reglas de impresión =================== */
+    @page { size: A4 landscape; margin: 10mm 8mm 14mm 8mm; }
+    @media print {
+      html, body { background: #fff; }
+      .toolbar { display: none !important; }
+      .sheet { box-shadow: none; margin: 0; max-width: none; width: 100%; }
+      /* Forzar impresión de fondos de color (bandas, headers, filas alternas) */
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      thead { display: table-header-group; }   /* repetir columnas por página */
+      tr.sector-band td { border-left-width: 5px; }
+      /* Pie repetido en cada página */
+      .print-foot {
+        display: block; position: fixed; bottom: 0; left: 0; right: 0;
+        font-size: 8px; color: #555; text-align: center; padding: 2px 0;
+      }
+    }
+    .print-foot { display: none; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <h1>Run ONs · Cotizaciones</h1>
+    <span class="status" id="status">Cargando…</span>
+    <span class="spacer"></span>
+    <button class="secondary" type="button" id="btn-reload">Actualizar</button>
+    <button type="button" id="btn-print">Imprimir / Guardar PDF</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="empty" id="placeholder">Cargando cotizaciones de ONs…</div>
+  </div>
+
+  <div class="print-foot" id="print-foot"></div>
+
+  <script src="/static/ons_run.js?v=2"></script>
+</body>
+</html>

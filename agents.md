@@ -33,7 +33,31 @@ Monitor automatizado de los principales segmentos de renta fija en Argentina (So
 | **1. Una config por curva (panel)** | `apps/web/server.py::_build_refresh_context` | Cada curva es un panel del dashboard, declarado como tupla `(id, tipos, opts)`; todos comparten el row-builder `_base_bond_row()`. |
 | **2. Excel central como única fuente de instrumentos** | `core/infrastructure/repositories.py::ExcelInstrumentsRepository` | Nadie más lee `instruments_master.xlsx`. Sin listas hardcodeadas. ABM web (en [apps/web/instruments_abm.py](apps/web/instruments_abm.py)) es el único otro escritor permitido (atomic writes vía `.tmp` + `os.replace`). |
 | **3. Matemática financiera centralizada** | `core/domain/services.py::FinancialEngine` + `core/domain/cashflow_synth.py` | Única implementación de xirr, TIR, MD, V.Téc, TNA, TEM. Nadie reimplementa fórmulas. Cashflow synthesis es un módulo puro reutilizado por el repo y la ABM. |
-| **4. Datos puramente Data912** | `core/infrastructure/repositories.py::Data912MarketDataProvider` | Único provider de precios live + histórico (OHLC). Excepciones documentadas: BCRA (CER, TAMAR), dolarapi (FX), Matba/Primary WS (futuros DLR + spot A3500, sin auth), REM (expectativas IPC), CAFCI (FCI: catálogo + rendimientos diarios). Convención corp-only: tickers ON en pesos (sufijo O) vienen ×1000 desde `arg_corp` y se normalizan in-place al fetch. |
+| **4. Datos puramente Data912** | `core/infrastructure/repositories.py::Data912MarketDataProvider` (envuelto por el `DataHub`) | Único provider de precios live + histórico (OHLC). Excepciones documentadas: BCRA (CER, TAMAR), dolarapi (FX), Matba/Primary WS (futuros DLR + spot A3500, sin auth), REM (expectativas IPC), CAFCI (FCI: catálogo + rendimientos diarios). Convención corp-only: tickers ON en pesos (sufijo O) vienen ×1000 desde `arg_corp` y se normalizan in-place al fetch. **Los providers complementarios del HUB (BYMADATA, LSEG) NUNCA sirven precios de panel** — solo profundidad/referencia/índices/EOD. |
+
+---
+
+## HUB DE DATOS (DataHub)
+
+`core/infrastructure/data_hub.py::DataHub` es el **facade único de fuentes de datos**. Lo arma
+`apps/web/server.py::_build_data_hub()` y se pasa como `market_provider` a `GenerateMonitorReport`.
+
+- **Es drop-in del provider de precios.** Implementa `IMarketDataProvider` delegando
+  `fetch_snapshots`/`fetch_historical_prices` a `Data912MarketDataProvider`, y cualquier método extra
+  (`fetch_stock_history`, `invalidate_cache`) vía `__getattr__`. El loop de 5s no cambió — **precios = Data912 (Pilar 4 intacto)**.
+- **Capacidades complementarias** ruteadas a providers registrados por orden de prioridad, cada uno gateado
+  por `is_available()` (que NO lanza); primera respuesta no vacía gana, si no hay fuente degrada a `None`/`{}`:
+  `fetch_depth` (order book), `fetch_reference_data` (vto/cupones/ISIN), `fetch_indices`, `fetch_turnover`, `fetch_eod`.
+- **Providers registrados:**
+  - `BYMADATAProvider` (`core/infrastructure/bymadata_provider.py`) — modos `rest` (API oficial
+    `api-mgr.byma.com.ar`, OAuth2 client_credentials; requiere app del portal de desarrolladores) y `excel`
+    (puente COM vía `xlwings` contra el Add-in de Excel cargado/logueado; desktop-only, deps en
+    `requirements-bymadata.txt`). Config por `.env` (`BYMADATA_MODE`, `BYMADATA_CLIENT_ID/SECRET`,
+    `BYMADATA_WORKBOOK`, ...). **OJO:** el .xll es un add-in ExcelDNA sin endpoints en texto plano; los paths
+    REST y nombres de UDF se confirman por captura de tráfico (`scripts/bymadata_probe.py` →
+    `BYMADATA_EXCEL/PROBE-FINDINGS.md`). Hasta entonces las capacidades degradan.
+  - `LSEGWorkspaceProvider` — registrado (wired) pero aún sin métodos de capacidad ni puente de venv
+    (`.venv-lseg`); el hub lo saltea hasta que se enchufe (ver `LSEG-WORKSPACE-README.txt`).
 
 ---
 
@@ -100,6 +124,8 @@ Monitores - Data912/
 │   ├── infrastructure/
 │   │   ├── _http.py                    # http_get_json: session keep-alive + single-shot retry sobre transient (timeout/5xx/429/conn)
 │   │   ├── repositories.py             # ExcelInstrumentsRepository + Data912MarketDataProvider (live + OHLC histórico)
+│   │   ├── data_hub.py                 # DataHub — facade único de fuentes: precios→Data912 (drop-in IMarketDataProvider) + capacidades (depth/reference/indices/turnover/eod) ruteadas a providers complementarios con degradación elegante
+│   │   ├── bymadata_provider.py        # BYMADATAProvider — complementario; modos rest (api-mgr.byma.com.ar, OAuth2) / excel (puente xlwings contra Add-in). Config .env (BYMADATA_*). Deps modo excel en requirements-bymadata.txt
 │   │   ├── indices_provider.py         # BCRAIndicesProvider (CER + TAMAR, disk-mirrored + offline-friendly)
 │   │   ├── fx_provider.py              # DolarAPIProvider (USD/ARS quotes)
 │   │   ├── futures_provider.py         # RofexProvider — WS público matba/primary, sin auth, thread daemon persistente
@@ -413,6 +439,12 @@ Todos los tickers son clickeables (independiente de si tienen OHLC) — la tab C
 | Variable | Valor | Para qué sirve |
 |---|---|---|
 | (ninguna) | — | El provider de futuros usa el WS público de Matba/Primary (modo `guest`, sin credenciales). No hay ROFEX_* env vars desde la migración a WebSocket. |
+| `LSEG_APP_KEY` | App key | Eikon Data API (venv aislado `.venv-lseg`, Desktop Session). |
+| `BYMADATA_MODE` | `rest`/`excel`/(vacío) | Activa el provider complementario BYMADATA. Vacío = deshabilitado (degrada). |
+| `BYMADATA_CLIENT_ID` / `_SECRET` | credenciales app | Modo `rest` (API oficial `api-mgr.byma.com.ar`). |
+| `BYMADATA_USER` / `_PASSWORD` / `BYMADATA_WORKBOOK` | login Add-in + ruta .xlsx | Modo `excel` (puente xlwings; deps en `requirements-bymadata.txt`). |
+
+Detalle completo de variables BYMADATA/LSEG en `.env.example`.
 
 `config/settings.py` tiene su propio `_load_dotenv()` mini-parser — no requiere `python-dotenv`.
 

@@ -1,0 +1,4246 @@
+[
+  {
+    "ticker": "CS44D",
+    "isin_local": null,
+    "current": {
+      "ticker": "CS44D",
+      "short_name": "CRESUD",
+      "tipo": "ON",
+      "sector": "Consumo Masivo y Agro",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-01-17",
+      "fecha_vencimiento": "2027-01-17",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-01-17",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "CS48D",
+    "isin_local": null,
+    "current": {
+      "ticker": "CS48D",
+      "short_name": "CRESUD",
+      "tipo": "ON",
+      "sector": "Consumo Masivo y Agro",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2025-07-11",
+      "fecha_vencimiento": "2028-07-11",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2028-07-11",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": "20",
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "CS49D",
+    "isin_local": null,
+    "current": {
+      "ticker": "CS49D",
+      "short_name": "CRESUD",
+      "tipo": "ON",
+      "sector": "Consumo Masivo y Agro",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2025-09-02",
+      "fecha_vencimiento": "2027-09-02",
+      "cupon anual %": "7.25",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-09-02",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "CS53D",
+    "isin_local": null,
+    "current": {
+      "ticker": "CS53D",
+      "short_name": "CRESUD",
+      "tipo": "ON",
+      "sector": "Consumo Masivo y Agro",
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": "2026-04-30",
+      "fecha_vencimiento": "2030-04-30",
+      "cupon anual %": "6.25",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2030-04-30",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": "33",
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "legislacion",
+      "isin"
+    ]
+  },
+  {
+    "ticker": "IRCJD",
+    "isin_local": null,
+    "current": {
+      "ticker": "IRCJD",
+      "short_name": "IRSA S.A",
+      "tipo": "ON",
+      "sector": "Construcción",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-02-28",
+      "fecha_vencimiento": "2027-02-28",
+      "cupon anual %": "7",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-02-28",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": "33",
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "IRCND",
+    "isin_local": null,
+    "current": {
+      "ticker": "IRCND",
+      "short_name": "IRSA S.A",
+      "tipo": "ON",
+      "sector": "Construcción",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-10-23",
+      "fecha_vencimiento": "2027-10-23",
+      "cupon anual %": "5.75",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-10-23",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": "30",
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "OT42D",
+    "isin_local": null,
+    "current": {
+      "ticker": "OT42D",
+      "short_name": "Oiltanking Ebytem SA",
+      "tipo": "ON",
+      "sector": "Petróleo y Gas",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2025-01-17",
+      "fecha_vencimiento": "2030-01-17",
+      "cupon anual %": "8",
+      "frecuencia pagos": "4",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2030-01-17",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "OTS2D",
+    "isin_local": null,
+    "current": {
+      "ticker": "OTS2D",
+      "short_name": "Oiltanking Ebytem SA",
+      "tipo": "ON",
+      "sector": "Petróleo y Gas",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-04-24",
+      "fecha_vencimiento": "2027-04-24",
+      "cupon anual %": "7",
+      "frecuencia pagos": "4",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-04-24",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "OTS3D",
+    "isin_local": null,
+    "current": {
+      "ticker": "OTS3D",
+      "short_name": "Oiltanking Ebytem SA",
+      "tipo": "ON",
+      "sector": "Petróleo y Gas",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-11-01",
+      "fecha_vencimiento": "2028-11-01",
+      "cupon anual %": "7",
+      "frecuencia pagos": "4",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2028-11-01",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "YFCGD",
+    "isin_local": null,
+    "current": {
+      "ticker": "YFCGD",
+      "short_name": "YPF Energia Electrica SA",
+      "tipo": "ON",
+      "sector": "Servicios Públicos y Generación",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-02-27",
+      "fecha_vencimiento": "2027-02-27",
+      "cupon anual %": "6",
+      "frecuencia pagos": "4",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-02-27",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "YFCOD",
+    "isin_local": null,
+    "current": {
+      "ticker": "YFCOD",
+      "short_name": "YPF Energia Electrica SA",
+      "tipo": "ON",
+      "sector": "Servicios Públicos y Generación",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2025-12-15",
+      "fecha_vencimiento": "2028-12-15",
+      "cupon anual %": "6.75",
+      "frecuencia pagos": "4",
+      "base calculo": "30/360",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2028-12-15",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "YMCZD",
+    "isin_local": null,
+    "current": {
+      "ticker": "YMCZD",
+      "short_name": "YPF SA",
+      "tipo": "ON",
+      "sector": "Petróleo y Gas",
+      "legislacion": "AR",
+      "isin": null,
+      "fecha_emision": "2024-10-10",
+      "fecha_vencimiento": "2028-10-10",
+      "cupon anual %": "7",
+      "frecuencia pagos": "2",
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2028-10-10",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "isin"
+    ]
+  },
+  {
+    "ticker": "LUC4D",
+    "isin_local": "ARLUZT560047",
+    "current": {
+      "ticker": "LUC4D",
+      "short_name": "Luz De Tres Picos SA",
+      "tipo": "ON",
+      "sector": "Servicios Públicos y Generación",
+      "legislacion": "AR",
+      "isin": "ARLUZT560047",
+      "fecha_emision": "2022-09-29",
+      "fecha_vencimiento": "2026-09-29",
+      "cupon anual %": "0",
+      "frecuencia pagos": null,
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "amortizing",
+      "amort inicio": "2026-09-29",
+      "amort cantidad": "1",
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "OLC3D",
+    "isin_local": "AROLDV560039",
+    "current": {
+      "ticker": "OLC3D",
+      "short_name": "Oleoductos del Valle SA",
+      "tipo": "ON",
+      "sector": "Petróleo y Gas",
+      "legislacion": "AR",
+      "isin": "AROLDV560039",
+      "fecha_emision": "2023-07-10",
+      "fecha_vencimiento": "2027-07-10",
+      "cupon anual %": "0",
+      "frecuencia pagos": null,
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-07-10",
+      "amort cantidad": "1",
+      "amort frec": "2",
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "MGCED",
+    "isin_local": "ARPAMP5600G7",
+    "current": {
+      "ticker": "MGCED",
+      "short_name": "Pampa Energia SA",
+      "tipo": "ON",
+      "sector": "Servicios Públicos y Generación",
+      "legislacion": "AR",
+      "isin": "ARPAMP5600G7",
+      "fecha_emision": "2022-12-19",
+      "fecha_vencimiento": "2027-12-19",
+      "cupon anual %": "0",
+      "frecuencia pagos": null,
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2027-12-19",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": "33.33",
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "YMCTD",
+    "isin_local": "AR0688075032",
+    "current": {
+      "ticker": "YMCTD",
+      "short_name": "YPF SA",
+      "tipo": "ON",
+      "sector": "Petróleo y Gas",
+      "legislacion": "AR",
+      "isin": "AR0688075032",
+      "fecha_emision": "2023-10-10",
+      "fecha_vencimiento": "2026-10-10",
+      "cupon anual %": "0",
+      "frecuencia pagos": null,
+      "base calculo": "ACT/365",
+      "tipo amortizacion": "bullet",
+      "amort inicio": "2026-10-10",
+      "amort cantidad": "1",
+      "amort frec": "1",
+      "amort %": "17.5",
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "AERBD",
+    "isin_local": "AR0162186347",
+    "current": {
+      "ticker": "AERBD",
+      "short_name": "AEROPUERTOS ARGENTINA 2000 SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0162186347",
+      "fecha_emision": "2024-12-23",
+      "fecha_vencimiento": "2026-12-15",
+      "cupon anual %": "5.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "AFCHD",
+    "isin_local": "AR0271987817",
+    "current": {
+      "ticker": "AFCHD",
+      "short_name": "BANCO COMAFI SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0271987817",
+      "fecha_emision": "2025-08-19",
+      "fecha_vencimiento": "2026-08-19",
+      "cupon anual %": "6.75",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "AFCID",
+    "isin_local": "AR0736238632",
+    "current": {
+      "ticker": "AFCID",
+      "short_name": "BANCO COMAFI SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0736238632",
+      "fecha_emision": "2025-11-07",
+      "fecha_vencimiento": "2026-11-07",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "AFCJD",
+    "isin_local": "AR0089654062",
+    "current": {
+      "ticker": "AFCJD",
+      "short_name": "BANCO COMAFI SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0089654062",
+      "fecha_emision": "2026-02-06",
+      "fecha_vencimiento": "2027-02-06",
+      "cupon anual %": "4.75",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "AFCKD",
+    "isin_local": "AR0500799496",
+    "current": {
+      "ticker": "AFCKD",
+      "short_name": "BANCO COMAFI SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0500799496",
+      "fecha_emision": "2026-02-06",
+      "fecha_vencimiento": "2029-02-06",
+      "cupon anual %": "7",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BACHD",
+    "isin_local": null,
+    "current": {
+      "ticker": "BACHD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "BF37D",
+    "isin_local": "AR0042275856",
+    "current": {
+      "ticker": "BF37D",
+      "short_name": "BANCO BBVA ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0042275856",
+      "fecha_emision": "2025-08-22",
+      "fecha_vencimiento": "2026-08-22",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BF40D",
+    "isin_local": "AR0078136758",
+    "current": {
+      "ticker": "BF40D",
+      "short_name": "BANCO BBVA ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0078136758",
+      "fecha_emision": "2026-02-27",
+      "fecha_vencimiento": "2027-08-27",
+      "cupon anual %": "5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BF45D",
+    "isin_local": "AR0463317443",
+    "current": {
+      "ticker": "BF45D",
+      "short_name": "BANCO BBVA ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0463317443",
+      "fecha_emision": "2026-05-08",
+      "fecha_vencimiento": "2027-05-08",
+      "cupon anual %": "3.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BGC4D",
+    "isin_local": "AR0401371130",
+    "current": {
+      "ticker": "BGC4D",
+      "short_name": "BANCO PATAGONIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0401371130",
+      "fecha_emision": "2025-11-13",
+      "fecha_vencimiento": "2026-11-13",
+      "cupon anual %": "6.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BPCSD",
+    "isin_local": "AR0982170596",
+    "current": {
+      "ticker": "BPCSD",
+      "short_name": "BANCO SUPERVIELLE SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0982170596",
+      "fecha_emision": "2025-08-26",
+      "fecha_vencimiento": "2026-08-26",
+      "cupon anual %": "6.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BPCUD",
+    "isin_local": "AR0334891071",
+    "current": {
+      "ticker": "BPCUD",
+      "short_name": "BANCO SUPERVIELLE SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0334891071",
+      "fecha_emision": "2025-12-04",
+      "fecha_vencimiento": "2026-12-04",
+      "cupon anual %": "6.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BPCVD",
+    "isin_local": "AR0291241559",
+    "current": {
+      "ticker": "BPCVD",
+      "short_name": "BANCO SUPERVIELLE SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0291241559",
+      "fecha_emision": "2026-05-05",
+      "fecha_vencimiento": "2027-05-05",
+      "cupon anual %": "3.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BVCPD",
+    "isin_local": "AR0869750478",
+    "current": {
+      "ticker": "BVCPD",
+      "short_name": "BANCO DE SERVICIOS Y TRANSACCIONES SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0869750478",
+      "fecha_emision": "2025-10-21",
+      "fecha_vencimiento": "2026-10-21",
+      "cupon anual %": "8",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CACBD",
+    "isin_local": "AR0561391449",
+    "current": {
+      "ticker": "CACBD",
+      "short_name": "CAPEX SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0561391449",
+      "fecha_emision": "2025-06-17",
+      "fecha_vencimiento": "2028-06-17",
+      "cupon anual %": "7.75",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CIC7D",
+    "isin_local": "AR0687434818",
+    "current": {
+      "ticker": "CIC7D",
+      "short_name": "CNH INDUSTRIAL CAPITAL ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0687434818",
+      "fecha_emision": "2024-11-12",
+      "fecha_vencimiento": "2026-11-12",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CIC8D",
+    "isin_local": "AR0624205800",
+    "current": {
+      "ticker": "CIC8D",
+      "short_name": "CNH INDUSTRIAL CAPITAL ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0624205800",
+      "fecha_emision": "2024-11-12",
+      "fecha_vencimiento": "2028-11-12",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CIC9D",
+    "isin_local": "AR0073116151",
+    "current": {
+      "ticker": "CIC9D",
+      "short_name": "CNH INDUSTRIAL CAPITAL ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0073116151",
+      "fecha_emision": "2025-05-21",
+      "fecha_vencimiento": "2027-05-21",
+      "cupon anual %": "8.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CICBD",
+    "isin_local": "AR0416016134",
+    "current": {
+      "ticker": "CICBD",
+      "short_name": "CNH INDUSTRIAL CAPITAL ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0416016134",
+      "fecha_emision": "2026-02-09",
+      "fecha_vencimiento": "2029-02-09",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CLI1D",
+    "isin_local": null,
+    "current": {
+      "ticker": "CLI1D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "CLSID",
+    "isin_local": null,
+    "current": {
+      "ticker": "CLSID",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "CP37D",
+    "isin_local": "AR0172788611",
+    "current": {
+      "ticker": "CP37D",
+      "short_name": "COMPANIA GENERAL DE COMBUSTIBLES SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0172788611",
+      "fecha_emision": "2025-03-10",
+      "fecha_vencimiento": "2027-03-10",
+      "cupon anual %": "7",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CP38D",
+    "isin_local": null,
+    "current": {
+      "ticker": "CP38D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "CS45D",
+    "isin_local": "AR0529152206",
+    "current": {
+      "ticker": "CS45D",
+      "short_name": "CRESUD SACIF Y A",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0529152206",
+      "fecha_emision": "2024-04-22",
+      "fecha_vencimiento": "2026-08-22",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CS51D",
+    "isin_local": "AR0452589218",
+    "current": {
+      "ticker": "CS51D",
+      "short_name": "CRESUD SACIF Y A",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0452589218",
+      "fecha_emision": "2026-01-20",
+      "fecha_vencimiento": "2027-01-20",
+      "cupon anual %": "5.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CS52D",
+    "isin_local": "AR0122431304",
+    "current": {
+      "ticker": "CS52D",
+      "short_name": "CRESUD SACIF Y A",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0122431304",
+      "fecha_emision": "2026-04-30",
+      "fecha_vencimiento": "2028-04-30",
+      "cupon anual %": "4.75",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "CWC6D",
+    "isin_local": "AR0134464806",
+    "current": {
+      "ticker": "CWC6D",
+      "short_name": "CROWN POINT ENERGIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0134464806",
+      "fecha_emision": "2024-10-30",
+      "fecha_vencimiento": "2027-10-30",
+      "cupon anual %": "9.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "DEC2D",
+    "isin_local": "AR0021181018",
+    "current": {
+      "ticker": "DEC2D",
+      "short_name": "EMPRESA DISTRIBUIDORA DE ELECTRICIDAD DE SALTA EDESA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0021181018",
+      "fecha_emision": "2025-02-24",
+      "fecha_vencimiento": "2027-02-24",
+      "cupon anual %": "8.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "DNCAD",
+    "isin_local": null,
+    "current": {
+      "ticker": "DNCAD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "EAC3D",
+    "isin_local": "AR0333366083",
+    "current": {
+      "ticker": "EAC3D",
+      "short_name": "MSU GREEN ENERGY SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0333366083",
+      "fecha_emision": "2024-12-20",
+      "fecha_vencimiento": "2028-12-20",
+      "cupon anual %": "8.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "FO4AD",
+    "isin_local": "AR0854004584",
+    "current": {
+      "ticker": "FO4AD",
+      "short_name": "FUTUROS Y OPCIONES.COM SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0854004584",
+      "fecha_emision": "2026-01-20",
+      "fecha_vencimiento": "2027-07-20",
+      "cupon anual %": "7.9",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "FYC1D",
+    "isin_local": "AR0766650987",
+    "current": {
+      "ticker": "FYC1D",
+      "short_name": "FARMCITY SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0766650987",
+      "fecha_emision": "2026-05-11",
+      "fecha_vencimiento": "2029-05-11",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "GN43D",
+    "isin_local": "AR0667572231",
+    "current": {
+      "ticker": "GN43D",
+      "short_name": "GENNEIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0667572231",
+      "fecha_emision": "2024-03-08",
+      "fecha_vencimiento": "2027-03-08",
+      "cupon anual %": "6.25",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "GN47D",
+    "isin_local": "AR0341140462",
+    "current": {
+      "ticker": "GN47D",
+      "short_name": "GENNEIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0341140462",
+      "fecha_emision": "2024-10-17",
+      "fecha_vencimiento": "2028-10-17",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "GN48D",
+    "isin_local": "AR0580434501",
+    "current": {
+      "ticker": "GN48D",
+      "short_name": "GENNEIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0580434501",
+      "fecha_emision": "2025-03-05",
+      "fecha_vencimiento": "2028-03-05",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "GN49D",
+    "isin_local": null,
+    "current": {
+      "ticker": "GN49D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "GOC4D",
+    "isin_local": "AR0855924731",
+    "current": {
+      "ticker": "GOC4D",
+      "short_name": "GENERACION LITORAL SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0855924731",
+      "fecha_emision": "2024-10-24",
+      "fecha_vencimiento": "2029-04-28",
+      "cupon anual %": "11",
+      "frecuencia pagos": "12",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "GYC4D",
+    "isin_local": "AR0361594168",
+    "current": {
+      "ticker": "GYC4D",
+      "short_name": "360ENERGY SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0361594168",
+      "fecha_emision": "2024-10-30",
+      "fecha_vencimiento": "2027-10-30",
+      "cupon anual %": "8",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "GYC5D",
+    "isin_local": "AR0253143579",
+    "current": {
+      "ticker": "GYC5D",
+      "short_name": "360ENERGY SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0253143579",
+      "fecha_emision": "2025-03-05",
+      "fecha_vencimiento": "2027-09-05",
+      "cupon anual %": "8.75",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HBCAD",
+    "isin_local": "AR0137295777",
+    "current": {
+      "ticker": "HBCAD",
+      "short_name": "BANCO HIPOTECARIO SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0137295777",
+      "fecha_emision": "2025-08-22",
+      "fecha_vencimiento": "2026-08-22",
+      "cupon anual %": "7",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HBCDD",
+    "isin_local": "AR0151686091",
+    "current": {
+      "ticker": "HBCDD",
+      "short_name": "BANCO HIPOTECARIO SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0151686091",
+      "fecha_emision": "2025-11-20",
+      "fecha_vencimiento": "2026-11-20",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HJCFD",
+    "isin_local": "AR0594233345",
+    "current": {
+      "ticker": "HJCFD",
+      "short_name": "JOHN DEERE CREDIT COMPANIA FINANCIERA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0594233345",
+      "fecha_emision": "2024-10-21",
+      "fecha_vencimiento": "2026-10-21",
+      "cupon anual %": "5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HJCGD",
+    "isin_local": "AR0756895030",
+    "current": {
+      "ticker": "HJCGD",
+      "short_name": "JOHN DEERE CREDIT COMPANIA FINANCIERA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0756895030",
+      "fecha_emision": "2024-10-21",
+      "fecha_vencimiento": "2028-10-21",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HVS1D",
+    "isin_local": "AR0105218975",
+    "current": {
+      "ticker": "HVS1D",
+      "short_name": "HAVANNA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0105218975",
+      "fecha_emision": "2025-07-08",
+      "fecha_vencimiento": "2028-07-08",
+      "cupon anual %": "8.75",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "JNC5D",
+    "isin_local": "AR0809983775",
+    "current": {
+      "ticker": "JNC5D",
+      "short_name": "INVERSORA JURAMENTO SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0809983775",
+      "fecha_emision": "2024-10-09",
+      "fecha_vencimiento": "2026-10-09",
+      "cupon anual %": "6",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "JNC6D",
+    "isin_local": "AR0959790582",
+    "current": {
+      "ticker": "JNC6D",
+      "short_name": "INVERSORA JURAMENTO SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0959790582",
+      "fecha_emision": "2025-10-03",
+      "fecha_vencimiento": "2027-10-03",
+      "cupon anual %": "9",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "LDCGD",
+    "isin_local": "AR0079775596",
+    "current": {
+      "ticker": "LDCGD",
+      "short_name": "LEDESMA SAAI",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0079775596",
+      "fecha_emision": "2025-02-04",
+      "fecha_vencimiento": "2027-10-04",
+      "cupon anual %": "7",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "LIC6D",
+    "isin_local": "AR0844690534",
+    "current": {
+      "ticker": "LIC6D",
+      "short_name": "LIPSA SRL",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0844690534",
+      "fecha_emision": "2024-07-02",
+      "fecha_vencimiento": "2026-07-02",
+      "cupon anual %": "9",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "LUC5D",
+    "isin_local": "AR0305664218",
+    "current": {
+      "ticker": "LUC5D",
+      "short_name": "LUZ DE TRES PICOS SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0305664218",
+      "fecha_emision": "2026-02-26",
+      "fecha_vencimiento": "2029-02-26",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MCC1D",
+    "isin_local": "AR0518594251",
+    "current": {
+      "ticker": "MCC1D",
+      "short_name": "PECOM SERVICIOS ENERGIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0518594251",
+      "fecha_emision": "2025-03-10",
+      "fecha_vencimiento": "2029-03-10",
+      "cupon anual %": "7.9",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MCC2D",
+    "isin_local": "AR0713356035",
+    "current": {
+      "ticker": "MCC2D",
+      "short_name": "PECOM SERVICIOS ENERGIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0713356035",
+      "fecha_emision": "2025-06-02",
+      "fecha_vencimiento": "2027-06-02",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MCC3D",
+    "isin_local": "AR0922852063",
+    "current": {
+      "ticker": "MCC3D",
+      "short_name": "PECOM SERVICIOS ENERGIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0922852063",
+      "fecha_emision": "2026-05-11",
+      "fecha_vencimiento": "2030-05-11",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MIC3D",
+    "isin_local": "AR0743608512",
+    "current": {
+      "ticker": "MIC3D",
+      "short_name": "MIRGOR SACIFIA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0743608512",
+      "fecha_emision": "2025-11-11",
+      "fecha_vencimiento": "2026-11-11",
+      "cupon anual %": "8.5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MIC4D",
+    "isin_local": "AR0262817601",
+    "current": {
+      "ticker": "MIC4D",
+      "short_name": "MIRGOR SACIFIA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0262817601",
+      "fecha_emision": "2026-01-29",
+      "fecha_vencimiento": "2027-07-29",
+      "cupon anual %": "8.25",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MIC6D",
+    "isin_local": "AR0958484906",
+    "current": {
+      "ticker": "MIC6D",
+      "short_name": "MIRGOR SACIFIA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0958484906",
+      "fecha_emision": "2026-05-28",
+      "fecha_vencimiento": "2028-05-28",
+      "cupon anual %": "8",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MR39D",
+    "isin_local": null,
+    "current": {
+      "ticker": "MR39D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "MSSED",
+    "isin_local": "ARMSUS5600F5",
+    "current": {
+      "ticker": "MSSED",
+      "short_name": "MSU SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "ARMSUS5600F5",
+      "fecha_emision": "2023-07-17",
+      "fecha_vencimiento": "2026-07-17",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "1",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MSSFD",
+    "isin_local": "AR0820572623",
+    "current": {
+      "ticker": "MSSFD",
+      "short_name": "MSU SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0820572623",
+      "fecha_emision": "2024-07-23",
+      "fecha_vencimiento": "2027-07-23",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MSSGD",
+    "isin_local": "AR0268611834",
+    "current": {
+      "ticker": "MSSGD",
+      "short_name": "MSU SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0268611834",
+      "fecha_emision": "2025-04-16",
+      "fecha_vencimiento": "2029-04-16",
+      "cupon anual %": "8.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MU31D",
+    "isin_local": null,
+    "current": {
+      "ticker": "MU31D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "MU32D",
+    "isin_local": "AR0492624165",
+    "current": {
+      "ticker": "MU32D",
+      "short_name": "HIJOS DE SALVADOR MUNOZ SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0492624165",
+      "fecha_emision": "2024-12-19",
+      "fecha_vencimiento": "2027-12-19",
+      "cupon anual %": "9",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "NBS1D",
+    "isin_local": null,
+    "current": {
+      "ticker": "NBS1D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "NPCDD",
+    "isin_local": "AR0670326856",
+    "current": {
+      "ticker": "NPCDD",
+      "short_name": "CENTRAL PUERTO SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0670326856",
+      "fecha_emision": "2026-04-30",
+      "fecha_vencimiento": "2030-04-30",
+      "cupon anual %": "6",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "OT41D",
+    "isin_local": "AR0369871972",
+    "current": {
+      "ticker": "OT41D",
+      "short_name": "OILTANKING EBYTEM SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0369871972",
+      "fecha_emision": "2025-01-17",
+      "fecha_vencimiento": "2028-01-17",
+      "cupon anual %": "7",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "OZC3D",
+    "isin_local": "AR0428738048",
+    "current": {
+      "ticker": "OZC3D",
+      "short_name": "EMPRESA DISTRIBUIDORA DE ELECTRICIDAD DE MENDOZA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0428738048",
+      "fecha_emision": "2024-11-29",
+      "fecha_vencimiento": "2027-11-29",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PECMD",
+    "isin_local": "AR0990368851",
+    "current": {
+      "ticker": "PECMD",
+      "short_name": "TANGO ENERGY ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0990368851",
+      "fecha_emision": "2025-08-25",
+      "fecha_vencimiento": "2032-08-25",
+      "cupon anual %": "3",
+      "frecuencia pagos": "1",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PECND",
+    "isin_local": "AR0199819753",
+    "current": {
+      "ticker": "PECND",
+      "short_name": "TANGO ENERGY ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0199819753",
+      "fecha_emision": "2025-08-25",
+      "fecha_vencimiento": "2032-08-25",
+      "cupon anual %": "3",
+      "frecuencia pagos": "1",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PFC3D",
+    "isin_local": "AR0645095644",
+    "current": {
+      "ticker": "PFC3D",
+      "short_name": "PROFERTIL SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0645095644",
+      "fecha_emision": "2026-05-08",
+      "fecha_vencimiento": "2029-11-08",
+      "cupon anual %": "5.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PN34D",
+    "isin_local": "AR0770773957",
+    "current": {
+      "ticker": "PN34D",
+      "short_name": "PAN AMERICAN ENERGY SL (BUENOS AIRES BRANCH)",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0770773957",
+      "fecha_emision": "2024-09-27",
+      "fecha_vencimiento": "2027-09-27",
+      "cupon anual %": "4.97",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PQCRD",
+    "isin_local": "AR0530125704",
+    "current": {
+      "ticker": "PQCRD",
+      "short_name": "PETROQUIMICA COMODORO RIVADAVIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0530125704",
+      "fecha_emision": "2024-10-22",
+      "fecha_vencimiento": "2028-10-22",
+      "cupon anual %": "6.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PQCTD",
+    "isin_local": "AR0998747122",
+    "current": {
+      "ticker": "PQCTD",
+      "short_name": "PETROQUIMICA COMODORO RIVADAVIA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0998747122",
+      "fecha_emision": "2025-07-21",
+      "fecha_vencimiento": "2028-07-21",
+      "cupon anual %": "8.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PZCGD",
+    "isin_local": "AR0560145721",
+    "current": {
+      "ticker": "PZCGD",
+      "short_name": "PLAZA LOGISTICA SRL",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0560145721",
+      "fecha_emision": "2024-12-04",
+      "fecha_vencimiento": "2028-06-04",
+      "cupon anual %": "7",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "RC1CD",
+    "isin_local": null,
+    "current": {
+      "ticker": "RC1CD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "RC3CD",
+    "isin_local": null,
+    "current": {
+      "ticker": "RC3CD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "RC5CD",
+    "isin_local": "AR0634275322",
+    "current": {
+      "ticker": "RC5CD",
+      "short_name": "ARCOR SAIC",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0634275322",
+      "fecha_emision": "2026-05-21",
+      "fecha_vencimiento": "2029-05-21",
+      "cupon anual %": "5.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "RZABD",
+    "isin_local": "AR0272566107",
+    "current": {
+      "ticker": "RZABD",
+      "short_name": "RIZOBACTER ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0272566107",
+      "fecha_emision": "2024-11-28",
+      "fecha_vencimiento": "2027-11-28",
+      "cupon anual %": "8",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SBC1D",
+    "isin_local": "AR0200205687",
+    "current": {
+      "ticker": "SBC1D",
+      "short_name": "SCANIA CREDIT ARGENTINA S A U",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0200205687",
+      "fecha_emision": "2025-09-05",
+      "fecha_vencimiento": "2027-09-05",
+      "cupon anual %": "8.75",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SBC2D",
+    "isin_local": null,
+    "current": {
+      "ticker": "SBC2D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "SIC1D",
+    "isin_local": "AR0869460326",
+    "current": {
+      "ticker": "SIC1D",
+      "short_name": "SIDERSA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0869460326",
+      "fecha_emision": "2024-12-09",
+      "fecha_vencimiento": "2026-12-09",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SNABD",
+    "isin_local": "AR0398843448",
+    "current": {
+      "ticker": "SNABD",
+      "short_name": "SA SAN MIGUEL AGICI Y F",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0398843448",
+      "fecha_emision": "2024-07-29",
+      "fecha_vencimiento": "2026-07-29",
+      "cupon anual %": "9",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SNEAD",
+    "isin_local": "AR0077785621",
+    "current": {
+      "ticker": "SNEAD",
+      "short_name": "SA SAN MIGUEL AGICI Y F",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0077785621",
+      "fecha_emision": "2026-01-14",
+      "fecha_vencimiento": "2029-01-14",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SNEBD",
+    "isin_local": "AR0295506908",
+    "current": {
+      "ticker": "SNEBD",
+      "short_name": "SA SAN MIGUEL AGICI Y F",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0295506908",
+      "fecha_emision": "2026-01-14",
+      "fecha_vencimiento": "2029-01-14",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SNSBD",
+    "isin_local": "AR0792131879",
+    "current": {
+      "ticker": "SNSBD",
+      "short_name": "SA SAN MIGUEL AGICI Y F",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0792131879",
+      "fecha_emision": "2024-10-14",
+      "fecha_vencimiento": "2026-10-14",
+      "cupon anual %": "9.5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SNSDD",
+    "isin_local": "AR0228143829",
+    "current": {
+      "ticker": "SNSDD",
+      "short_name": "SA SAN MIGUEL AGICI Y F",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0228143829",
+      "fecha_emision": "2025-02-06",
+      "fecha_vencimiento": "2027-02-06",
+      "cupon anual %": "9.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "STCFD",
+    "isin_local": "AR0633927196",
+    "current": {
+      "ticker": "STCFD",
+      "short_name": "GRUPO ST SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0633927196",
+      "fecha_emision": "2026-02-18",
+      "fecha_vencimiento": "2027-02-18",
+      "cupon anual %": "8.25",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SXC4D",
+    "isin_local": "AR0707719248",
+    "current": {
+      "ticker": "SXC4D",
+      "short_name": "MERCADO PAGO SERVICIOS DE PROCESAMIENTO SRL",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0707719248",
+      "fecha_emision": "2026-05-18",
+      "fecha_vencimiento": "2026-09-01",
+      "cupon anual %": "0",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "T641D",
+    "isin_local": "AR0501573346",
+    "current": {
+      "ticker": "T641D",
+      "short_name": "TARJETA NARANJA SAU",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0501573346",
+      "fecha_emision": "2025-04-29",
+      "fecha_vencimiento": "2027-04-30",
+      "cupon anual %": "7.9",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "T672D",
+    "isin_local": "AR0409953244",
+    "current": {
+      "ticker": "T672D",
+      "short_name": "TARJETA NARANJA SAU",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0409953244",
+      "fecha_emision": "2026-05-22",
+      "fecha_vencimiento": "2027-02-22",
+      "cupon anual %": "5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "TLCVD",
+    "isin_local": "AR0031549709",
+    "current": {
+      "ticker": "TLCVD",
+      "short_name": "TELECOM ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0031549709",
+      "fecha_emision": "2026-05-29",
+      "fecha_vencimiento": "2027-05-29",
+      "cupon anual %": "3.5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "TLCWD",
+    "isin_local": "AR0931859976",
+    "current": {
+      "ticker": "TLCWD",
+      "short_name": "TELECOM ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0931859976",
+      "fecha_emision": "2026-05-29",
+      "fecha_vencimiento": "2030-05-29",
+      "cupon anual %": "6.25",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "TTCED",
+    "isin_local": "AR0121767674",
+    "current": {
+      "ticker": "TTCED",
+      "short_name": "TECPETROL SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0121767674",
+      "fecha_emision": "2026-05-21",
+      "fecha_vencimiento": "2029-05-21",
+      "cupon anual %": "5.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "VBC1D",
+    "isin_local": "AR0935778958",
+    "current": {
+      "ticker": "VBC1D",
+      "short_name": "BANCO DE VALORES SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0935778958",
+      "fecha_emision": "2025-03-11",
+      "fecha_vencimiento": "2027-03-11",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "VBC2D",
+    "isin_local": "AR0188242348",
+    "current": {
+      "ticker": "VBC2D",
+      "short_name": "BANCO DE VALORES SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0188242348",
+      "fecha_emision": "2025-09-05",
+      "fecha_vencimiento": "2026-09-05",
+      "cupon anual %": "7.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "VSCID",
+    "isin_local": "AROILG5600H2",
+    "current": {
+      "ticker": "VSCID",
+      "short_name": "VISTA ENERGY ARGENTINA SAU",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AROILG5600H2",
+      "fecha_emision": "2022-12-06",
+      "fecha_vencimiento": "2026-12-06",
+      "cupon anual %": "0",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "VSCPD",
+    "isin_local": "AR0637277028",
+    "current": {
+      "ticker": "VSCPD",
+      "short_name": "VISTA ENERGY ARGENTINA SAU",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0637277028",
+      "fecha_emision": "2024-05-03",
+      "fecha_vencimiento": "2029-05-03",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "VSCXD",
+    "isin_local": null,
+    "current": {
+      "ticker": "VSCXD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "WBS1D",
+    "isin_local": "AR0821189211",
+    "current": {
+      "ticker": "WBS1D",
+      "short_name": "BANCO MARIVA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0821189211",
+      "fecha_emision": "2025-09-29",
+      "fecha_vencimiento": "2026-09-29",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "YFCKD",
+    "isin_local": "AR0015491712",
+    "current": {
+      "ticker": "YFCKD",
+      "short_name": "YPF ENERGIA ELECTRICA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0015491712",
+      "fecha_emision": "2024-11-22",
+      "fecha_vencimiento": "2026-11-22",
+      "cupon anual %": "5.25",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "ZPC2D",
+    "isin_local": "AR0411671628",
+    "current": {
+      "ticker": "ZPC2D",
+      "short_name": "PLAZA LOGISTICA SRL",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0411671628",
+      "fecha_emision": "2025-06-02",
+      "fecha_vencimiento": "2027-06-02",
+      "cupon anual %": "7.5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "ZPC3D",
+    "isin_local": "AR0723157217",
+    "current": {
+      "ticker": "ZPC3D",
+      "short_name": "PLAZA LOGISTICA SRL",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0723157217",
+      "fecha_emision": "2025-09-03",
+      "fecha_vencimiento": "2027-09-03",
+      "cupon anual %": "8.5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "PUC2D",
+    "isin_local": "AR0069816632",
+    "current": {
+      "ticker": "PUC2D",
+      "short_name": "PETROLES SUDAMERICANOS SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0069816632",
+      "fecha_emision": "2025-02-28",
+      "fecha_vencimiento": "2027-08-28",
+      "cupon anual %": "8.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "ICC6D",
+    "isin_local": "AR0529985522",
+    "current": {
+      "ticker": "ICC6D",
+      "short_name": "INDUSTRIAL AND COMMERCIAL BANK OF CHINA ARGENTINA SAU",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0529985522",
+      "fecha_emision": "2026-05-22",
+      "fecha_vencimiento": "2027-05-22",
+      "cupon anual %": "3.7",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "MJC1D",
+    "isin_local": "AR0207947562",
+    "current": {
+      "ticker": "MJC1D",
+      "short_name": "MINAS ARGENTINAS SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0207947562",
+      "fecha_emision": "2026-02-19",
+      "fecha_vencimiento": "2027-02-19",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BPCTD",
+    "isin_local": "AR0325784970",
+    "current": {
+      "ticker": "BPCTD",
+      "short_name": "BANCO SUPERVIELLE SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0325784970",
+      "fecha_emision": "2025-08-26",
+      "fecha_vencimiento": "2027-08-26",
+      "cupon anual %": "8",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BVCOD",
+    "isin_local": "AR0771037964",
+    "current": {
+      "ticker": "BVCOD",
+      "short_name": "BANCO DE SERVICIOS Y TRANSACCIONES SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0771037964",
+      "fecha_emision": "2025-07-15",
+      "fecha_vencimiento": "2026-07-15",
+      "cupon anual %": "8",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "BYY2D",
+    "isin_local": "AR0040043033",
+    "current": {
+      "ticker": "BYY2D",
+      "short_name": "BANCO DE GALICIA Y BUENOS AIRES SAU",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0040043033",
+      "fecha_emision": "2026-06-05",
+      "fecha_vencimiento": "2028-06-05",
+      "cupon anual %": "4.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HJCLD",
+    "isin_local": "AR0438063809",
+    "current": {
+      "ticker": "HJCLD",
+      "short_name": "JOHN DEERE CREDIT COMPANIA FINANCIERA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0438063809",
+      "fecha_emision": "2026-06-08",
+      "fecha_vencimiento": "2028-12-08",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "RZBBD",
+    "isin_local": "AR0725094301",
+    "current": {
+      "ticker": "RZBBD",
+      "short_name": "RIZOBACTER ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0725094301",
+      "fecha_emision": "2026-06-03",
+      "fecha_vencimiento": "2029-09-03",
+      "cupon anual %": "9",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "RZBCD",
+    "isin_local": "AR0336169369",
+    "current": {
+      "ticker": "RZBCD",
+      "short_name": "RIZOBACTER ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0336169369",
+      "fecha_emision": "2026-06-03",
+      "fecha_vencimiento": "2029-09-03",
+      "cupon anual %": "9",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "BF44D",
+    "isin_local": "AR0576992660",
+    "current": {
+      "ticker": "BF44D",
+      "short_name": "BANCO BBVA ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0576992660",
+      "fecha_emision": "2026-05-08",
+      "fecha_vencimiento": "2028-05-08",
+      "cupon anual %": "5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "RZBAD",
+    "isin_local": "AR0900508240",
+    "current": {
+      "ticker": "RZBAD",
+      "short_name": "RIZOBACTER ARGENTINA SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0900508240",
+      "fecha_emision": "2026-06-03",
+      "fecha_vencimiento": "2029-09-03",
+      "cupon anual %": "9",
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "frecuencia pagos"
+    ]
+  },
+  {
+    "ticker": "EAC4D",
+    "isin_local": null,
+    "current": {
+      "ticker": "EAC4D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "IRCQD",
+    "isin_local": "AR0336616088",
+    "current": {
+      "ticker": "IRCQD",
+      "short_name": "IRSA INVERSIONES Y REPRESENTACIONES SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0336616088",
+      "fecha_emision": "2026-06-08",
+      "fecha_vencimiento": "2027-06-08",
+      "cupon anual %": "3.75",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SBC3D",
+    "isin_local": "AR0183143921",
+    "current": {
+      "ticker": "SBC3D",
+      "short_name": "SCANIA CREDIT ARGENTINA S A U",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0183143921",
+      "fecha_emision": "2026-05-26",
+      "fecha_vencimiento": "2029-05-26",
+      "cupon anual %": "6.5",
+      "frecuencia pagos": "4",
+      "base calculo": null,
+      "tipo amortizacion": "amortizing",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "HBCFD",
+    "isin_local": "AR0325357397",
+    "current": {
+      "ticker": "HBCFD",
+      "short_name": "BANCO HIPOTECARIO SA",
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": "AR0325357397",
+      "fecha_emision": "2026-02-23",
+      "fecha_vencimiento": "2027-02-23",
+      "cupon anual %": "5",
+      "frecuencia pagos": "2",
+      "base calculo": null,
+      "tipo amortizacion": "bullet",
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo"
+    ]
+  },
+  {
+    "ticker": "SIC2D",
+    "isin_local": null,
+    "current": {
+      "ticker": "SIC2D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "MTC2D",
+    "isin_local": null,
+    "current": {
+      "ticker": "MTC2D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "OZC8D",
+    "isin_local": null,
+    "current": {
+      "ticker": "OZC8D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "AFCPD",
+    "isin_local": null,
+    "current": {
+      "ticker": "AFCPD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "JNC7D",
+    "isin_local": null,
+    "current": {
+      "ticker": "JNC7D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "MR46D",
+    "isin_local": null,
+    "current": {
+      "ticker": "MR46D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "MR47D",
+    "isin_local": null,
+    "current": {
+      "ticker": "MR47D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "RC6CD",
+    "isin_local": null,
+    "current": {
+      "ticker": "RC6CD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "VSCKD",
+    "isin_local": null,
+    "current": {
+      "ticker": "VSCKD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "YFCDD",
+    "isin_local": null,
+    "current": {
+      "ticker": "YFCDD",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  },
+  {
+    "ticker": "ZPC5D",
+    "isin_local": null,
+    "current": {
+      "ticker": "ZPC5D",
+      "short_name": null,
+      "tipo": "ON",
+      "sector": null,
+      "legislacion": null,
+      "isin": null,
+      "fecha_emision": null,
+      "fecha_vencimiento": null,
+      "cupon anual %": null,
+      "frecuencia pagos": null,
+      "base calculo": null,
+      "tipo amortizacion": null,
+      "amort inicio": null,
+      "amort cantidad": null,
+      "amort frec": null,
+      "amort %": null,
+      "amort cant1": null,
+      "amort %2": null
+    },
+    "missing": [
+      "sector",
+      "legislacion",
+      "base calculo",
+      "isin",
+      "fecha_emision",
+      "fecha_vencimiento",
+      "cupon anual %",
+      "frecuencia pagos",
+      "tipo amortizacion"
+    ]
+  }
+]

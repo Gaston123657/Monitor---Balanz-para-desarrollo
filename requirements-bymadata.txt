@@ -1,0 +1,17 @@
+# BYMADATA — dependencias del modo `excel` (puente COM contra Excel + Add-in).
+#
+# Por qué separado de requirements.txt: el modo `excel` solo aplica en Windows con
+# Excel instalado y el Add-in de BYMADATA cargado/logueado. xlwings (y su dependencia
+# pywin32) no aportan nada al monitor en producción/servidor headless, así que NO se
+# meten en el entorno principal. El provider importa xlwings de forma lazy: sin estas
+# deps, BYMADATAProvider.is_available() devuelve False y el DataHub degrada elegante.
+#
+# El modo `rest` NO necesita esto (usa requests, ya en requirements.txt).
+#
+# Setup (solo si se va a usar el modo excel):
+#   py -3.12 -m pip install -r requirements-bymadata.txt
+#
+# Requiere: Windows + Microsoft Excel + Add-in BYMADATA (BYMADATA_EXCEL/*.xll)
+# cargado y con sesión iniciada (BYMADATA_USER/PASSWORD).
+
+xlwings==0.33.15
